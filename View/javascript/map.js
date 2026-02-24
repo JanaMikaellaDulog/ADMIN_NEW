@@ -11,17 +11,33 @@ document.addEventListener("DOMContentLoaded", () => {
   // PROJECT MAP CONFIG
   // =========================
   const MAPS = {
-    "STO.TOMAS PHASE 1": { image: '../assets/img/maps/subdivision1.png', size: [2000, 1500] },
-    "Imperial Meadows": { image: '../assets/img/maps/ISM SITE MAP.jpg', size: [2000, 1500] },
-    "Brgy. Tartaria": { image: '../assets/img/maps/Silang Cavite.jpg', size: [2000, 1500] },
-    "Rancho Imperial": { image: '../assets/img/maps/Rancho imperial de Silang-Model with color.jpg', size: [2000, 1500] },
-    "Tagaytay Meridien": { image: '../assets/img/maps/Tagaytay Meridien map 1.jpg', size: [2000, 1500] },
-    "The Venetto Heights": { image: '../assets/img/maps/The-Venetto-Heights-Updated-2014-Model.jpg', size: [2000, 1500] },
-    "Trece Martires": { image: '../assets/img/maps/W-Trece Martires.jpg', size: [2000, 1500] },
-    "Padre Garcia": { image: '../assets/img/maps/PADRE GARCIA phase1.jpg', size: [2000, 1500] },
-    "Priya Meridian": { image: '../assets/img/maps/Priya Meridian.jpg', size: [2000, 1500] },
-    "Cinta Dessa": { image: '../assets/img/maps/Cinta Dessa.jpg', size: [2000, 1500] }
-  };
+  "STO.TOMAS PHASE 1": { image: '../assets/img/maps/subdivision1.png', size: [2000, 1500] },
+  "Imperial Meadows": { image: '../assets/img/maps/ISM SITE MAP.jpg', size: [2000, 1500] },
+  "Brgy. Tartaria": { image: '../assets/img/maps/Silang Cavite.jpg', size: [2000, 1500] },
+  "Rancho Imperial": { image: '../assets/img/maps/Rancho imperial de Silang-Model with color.jpg', size: [2000, 1500] },
+  "Tagaytay Meridien": { image: '../assets/img/maps/Tagaytay Meridien map 1.jpg', size: [2000, 1500] },
+  "The Venetto Heights": { image: '../assets/img/maps/The-Venetto-Heights-Updated-2014-Model.jpg', size: [2000, 1500] },
+  "Trece Martires": { image: '../assets/img/maps/W-Trece Martires.jpg', size: [2000, 1500] },
+  "Padre Garcia": { image: '../assets/img/maps/PADRE GARCIA phase1.jpg', size: [2000, 1500] },
+  "Priya Meridian": { image: '../assets/img/maps/Priya Meridian.jpg', size: [2000, 1500] },
+  "Cinta Dessa": { image: '../assets/img/maps/Cinta Dessa.jpg', size: [2000, 1500] },
+  "Brgy. STO.Domingo": { image: '../assets/img/maps/BrgySTO.Domingo,IrigaCity.jpg', size: [2000, 1500] },
+  "Brgy. Estanza": { image: '../assets/img/maps/BRGY. ESTANZA LEGAZPI CITY.jpg', size: [2000, 1500] },
+  "Homapon Legazpi City": { image: '../assets/img/maps/HOMAPON LEGAZPI CITY.jpg', size: [2000, 1500] },
+  "VHS PH 2": { image: '../assets/img/maps/VHS PH 2.JPG', size: [2000, 1500] },
+
+  //NEW MAPS
+  "Sorsogon": { image: '../assets/img/maps/Sorsogon - with alteration_page-0001.jpg', size: [2000, 1500] },
+  "Buragwis": { image: '../assets/img/maps/Buragwis_page-0001.jpg', size: [2000, 1500] },
+  "Estanza PH 1 & 2": { image: '../assets/img/maps/Estanza ph 1 & 2_page-0001.jpg', size: [2000, 1500] },
+  "Estanza Phase 1": { image: '../assets/img/maps/Estanza Phase 1_page-0001.jpg', size: [2000, 1500] },
+  "Iriga Phase 1": { image: '../assets/img/maps/Iriga Phase 1_page-0001.jpg', size: [2000, 1500] },
+  "Labo": { image: '../assets/img/maps/Labo_page-0001.jpg', size: [2000, 1500] },
+  "LeGrand 1 & 2": { image: '../assets/img/maps/LeGrand 1 & 2_page-0001.jpg', size: [2000, 1500] },
+  "OLV Buragwis": { image: '../assets/img/maps/OLV Buragwis_page-0001.jpg', size: [2000, 1500] },
+  "Polangui": { image: '../assets/img/maps/Polangui_page-0001.jpg', size: [2000, 1500] },
+  "San Fernando": { image: '../assets/img/maps/San Fernando_page-0001.jpg', size: [2000, 1500] }
+};
 
   // =========================
 // OPEN LOT MODAL FUNCTION (supports flattened residents)

@@ -1,5 +1,10 @@
-// residentManagement.js
 document.addEventListener("DOMContentLoaded", () => {
+
+  // Ensure global residents exists
+  if (!window.residents) {
+    console.error("window.residents is not defined. Make sure residentsData.js loads first.");
+    return;
+  }
 
   // =========================
   // Render Residents Table
@@ -8,19 +13,19 @@ document.addEventListener("DOMContentLoaded", () => {
     const tbody = document.getElementById("residentsTableBody");
     if (!tbody) return;
 
-    const residentsList = window.residents || [];
+    const searchTerm = filter.toLowerCase();
 
-    const filteredResidents = residentsList
+    const filteredResidents = window.residents
       .map((res, index) => ({ ...res, originalIndex: index }))
-      .filter(res => {
-        const searchTerm = filter.toLowerCase();
-        return (
-          res.name.toLowerCase().includes(searchTerm) ||
-          res.project.toLowerCase().includes(searchTerm) ||
-          res.block.toLowerCase().includes(searchTerm) ||
-          res.lot.toLowerCase().includes(searchTerm)
-        );
-      });
+      .filter(res =>
+        res.project.toLowerCase().includes(searchTerm) ||
+        res.block.toLowerCase().includes(searchTerm) ||
+        res.lot.toLowerCase().includes(searchTerm) ||
+        res.status.toLowerCase().includes(searchTerm) ||
+        res.residents.some(name =>
+          name.toLowerCase().includes(searchTerm)
+        )
+      );
 
     tbody.innerHTML = "";
 
@@ -28,11 +33,17 @@ document.addEventListener("DOMContentLoaded", () => {
       const tr = document.createElement("tr");
 
       tr.innerHTML = `
-        <td>${res.name}</td>
+        <td>${res.residents.join(", ")}</td>
         <td>${res.project}</td>
         <td>${res.block}</td>
         <td>${res.lot}</td>
-        <td><span class="status-tag ${res.status.toLowerCase()}">${res.status}</span></td>
+        <td>
+          <span class="status-tag ${res.status.toLowerCase()}">
+            ${res.status}
+          </span>
+        </td>
+        <td>₱ ${res.electricity.toLocaleString()}</td>
+        <td>₱ ${res.water.toLocaleString()}</td>
         <td>
           <button class="edit-btn" onclick="editResident(${res.originalIndex})">Edit</button>
           <button class="delete-btn" onclick="deleteResident(${res.originalIndex})">Delete</button>
@@ -50,73 +61,104 @@ document.addEventListener("DOMContentLoaded", () => {
   // =========================
   const searchInput = document.getElementById("residentSearch");
   if (searchInput) {
-    searchInput.addEventListener("input", e => renderResidentsTable(e.target.value));
+    searchInput.addEventListener("input", e =>
+      renderResidentsTable(e.target.value)
+    );
   }
 
   // =========================
-  // Add Resident Modal
+  // Modal Helpers
   // =========================
-  window.openResidentForm = () =>
-    document.getElementById("addResidentModal")?.classList.add("show");
-  window.closeAddModal = () =>
-    document.getElementById("addResidentModal")?.classList.remove("show");
+  function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) modal.classList.add("show");
+  }
 
+  function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) modal.classList.remove("show");
+  }
+
+  function setupModalCloseOnOverlay(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) closeModal(modalId);
+    });
+  }
+
+  // =========================
+  // Add Resident
+  // =========================
   const addForm = document.getElementById("addResidentForm");
   if (addForm) {
     addForm.addEventListener("submit", function (e) {
       e.preventDefault();
 
-      window.residents.push({
-        name: addName.value,
-        project: addProject.value,
-        block: addBlock.value,
-        lot: addLot.value,
-        status: addStatus.value
-      });
+      const newResident = {
+        residents: [document.getElementById("addName").value],
+        project: document.getElementById("addProject").value,
+        block: document.getElementById("addBlock").value,
+        lot: document.getElementById("addLot").value,
+        status: document.getElementById("addStatus").value,
+        electricity: 0,
+        water: 0
+      };
+
+      window.residents.push(newResident);
 
       renderResidentsTable();
-      closeAddModal();
       this.reset();
+      closeModal("addResidentModal");
     });
   }
 
+  window.openResidentForm = () => openModal("addResidentModal");
+  window.closeAddModal = () => closeModal("addResidentModal");
+  setupModalCloseOnOverlay("addResidentModal");
+
   // =========================
-  // Edit Resident Modal
+  // Edit Resident
   // =========================
   window.editResident = function (index) {
     const resident = window.residents[index];
 
-    editIndex.value = index;
-    editName.value = resident.name;
-    editProject.value = resident.project;
-    editBlock.value = resident.block;
-    editLot.value = resident.lot;
-    editStatus.value = resident.status;
+    document.getElementById("editIndex").value = index;
+    document.getElementById("editName").value = resident.residents.join(", ");
+    document.getElementById("editProject").value = resident.project;
+    document.getElementById("editBlock").value = resident.block;
+    document.getElementById("editLot").value = resident.lot;
+    document.getElementById("editStatus").value = resident.status;
 
-    document.getElementById("editResidentModal")?.classList.add("show");
+    openModal("editResidentModal");
   };
-
-  window.closeEditModal = () =>
-    document.getElementById("editResidentModal")?.classList.remove("show");
 
   const editForm = document.getElementById("editResidentForm");
   if (editForm) {
     editForm.addEventListener("submit", function (e) {
       e.preventDefault();
-      const index = editIndex.value;
+
+      const index = document.getElementById("editIndex").value;
 
       window.residents[index] = {
-        name: editName.value,
-        project: editProject.value,
-        block: editBlock.value,
-        lot: editLot.value,
-        status: editStatus.value
+        ...window.residents[index],
+        residents: document
+          .getElementById("editName")
+          .value.split(",")
+          .map(name => name.trim()),
+        project: document.getElementById("editProject").value,
+        block: document.getElementById("editBlock").value,
+        lot: document.getElementById("editLot").value,
+        status: document.getElementById("editStatus").value
       };
 
       renderResidentsTable();
-      closeEditModal();
+      closeModal("editResidentModal");
     });
   }
+
+  window.closeEditModal = () => closeModal("editResidentModal");
+  setupModalCloseOnOverlay("editResidentModal");
 
   // =========================
   // Delete Resident
@@ -125,21 +167,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.deleteResident = function (index) {
     deleteIndex = index;
-    document.getElementById("deleteResidentModal")?.classList.add("show");
+    openModal("deleteResidentModal");
   };
-
-  window.closeDeleteModal = () =>
-    document.getElementById("deleteResidentModal")?.classList.remove("show");
 
   window.confirmDelete = function () {
     if (deleteIndex !== null) {
       window.residents.splice(deleteIndex, 1);
       renderResidentsTable();
-      closeDeleteModal();
+      closeModal("deleteResidentModal");
       deleteIndex = null;
     }
   };
 
-  // Initial render
+  window.closeDeleteModal = () => closeModal("deleteResidentModal");
+  setupModalCloseOnOverlay("deleteResidentModal");
+
+  // =========================
+  // Initial Render
+  // =========================
   renderResidentsTable();
+
 });
