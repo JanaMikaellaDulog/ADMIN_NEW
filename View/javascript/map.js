@@ -133,6 +133,7 @@ window.openLotModal = function(projectKey, block, lotNumber) {
       mapContainer.style.display = 'block';
 
       if (!map) map = L.map('mapContainer', { crs: L.CRS.Simple, minZoom: -1, maxZoom: 2 });
+      
 
       if (currentLayer) map.removeLayer(currentLayer);
       if (markersLayer) map.removeLayer(markersLayer);
@@ -140,6 +141,23 @@ window.openLotModal = function(projectKey, block, lotNumber) {
       const bounds = [[0, 0], [projectData.size[1], projectData.size[0]]];
       currentLayer = L.imageOverlay(projectData.image, bounds).addTo(map);
       map.fitBounds(bounds);
+
+      // =========================
+      // DEBUG: Log coordinates on map click
+      // =========================
+      map.off('click'); // prevent duplicate listeners
+
+      map.on('click', function(e) {
+        const x = Math.round(e.latlng.lng);
+        const y = Math.round(e.latlng.lat);
+
+        console.log(`Clicked coordinates: [${y}, ${x}]`);
+
+        // Optional: show preview marker
+        L.marker([y, x]).addTo(map)
+          .bindTooltip(`[${y}, ${x}]`)
+          .openTooltip();
+      });
 
       markersLayer = L.layerGroup().addTo(map);
 
