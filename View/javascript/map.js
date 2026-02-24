@@ -145,19 +145,26 @@ window.openLotModal = function(projectKey, block, lotNumber) {
       // =========================
       // DEBUG: Log coordinates on map click
       // =========================
-      map.off('click'); // prevent duplicate listeners
+      map.off('click');
 
-      map.on('click', function(e) {
-        const x = Math.round(e.latlng.lng);
-        const y = Math.round(e.latlng.lat);
+        let debugMarker = null;
 
-        console.log(`Clicked coordinates: [${y}, ${x}]`);
+        map.on('click', function(e) {
+          const x = Math.round(e.latlng.lng);
+          const y = Math.round(e.latlng.lat);
 
-        // Optional: show preview marker
-        L.marker([y, x]).addTo(map)
-          .bindTooltip(`[${y}, ${x}]`)
-          .openTooltip();
-      });
+          console.log(`Clicked coordinates: [${y}, ${x}]`);
+
+          // Remove previous marker if exists
+          if (debugMarker) {
+            map.removeLayer(debugMarker);
+          }
+
+          // Create new preview marker
+          debugMarker = L.marker([y, x]).addTo(map)
+            .bindTooltip(`[${y}, ${x}]`, { permanent: true })
+            .openTooltip();
+        });
 
       markersLayer = L.layerGroup().addTo(map);
 
