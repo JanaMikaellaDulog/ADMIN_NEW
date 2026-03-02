@@ -60,6 +60,14 @@ document.addEventListener("DOMContentLoaded", () => {
       currentLayer = L.imageOverlay(projectData.image, bounds).addTo(map);
       map.fitBounds(bounds);
 
+      // --- NEW: Trigger Analytics Update ---
+      if (typeof window.updateProjectCharts === "function") {
+        window.updateProjectCharts(projectKey);
+      }
+      if (typeof window.updateGlobalRibbon === "function") {
+        window.updateGlobalRibbon();
+      }
+
       // =========================
       // DEBUG: Coordinate Logger
       // =========================
@@ -83,7 +91,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const lotNum = String(markerData.lot).trim(); 
         const blockNum = String(markerData.block).trim();
 
-        // Check if the helper exists
         const lotInfo = (typeof window.getResidentByLotBlock === "function")
           ? window.getResidentByLotBlock(lotNum, blockNum, projectKey) 
           : null;
@@ -93,8 +100,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (lotInfo) {
           residentCount = (lotInfo.residents) ? lotInfo.residents.length : 0;
-          
-          // Get status and force to lowercase for CSS match
           const status = String(lotInfo.status || "").toLowerCase().trim();
           
           if (status === "active") {
