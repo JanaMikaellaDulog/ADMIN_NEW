@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Imperial House - Admin Dashboard</title>
   <link rel="stylesheet" href="../assets/style.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
@@ -49,35 +50,46 @@
         </div>
       </div>
 
-      <h2 class="section-title">Locations</h2>
-      <div class="location-cards-container">
-        <div class="location-card" data-location="STO.TOMAS PHASE 1">VIA VERDE STO.TOMAS PHASE 1</div>
-        <div class="location-card" data-location="Imperial Meadows">Imperial Meadows</div>
-        <div class="location-card" data-location="Brgy. Tartaria">Brgy. Tartaria</div>
-        <div class="location-card" data-location="Rancho Imperial">Rancho Imperial</div>
-        <div class="location-card" data-location="Tagaytay Meridien">Tagaytay Meridien</div>
-        <div class="location-card" data-location="The Venetto Heights">The Venetto Heights</div>
-        <div class="location-card" data-location="Trece Martires">Trece Martires</div>
-        <div class="location-card" data-location="Padre Garcia">Padre Garcia</div>
-        <div class="location-card" data-location="Priya Meridian">Priya Meridian</div>
-        <div class="location-card" data-location="Brgy. STO.Domingo">Brgy. STO.Domingo</div>
-        <div class="location-card" data-location="Brgy. Estanza">Brgy. Estanza</div>
-        <div class="location-card" data-location="Homapon Legazpi City">Homapon Legazpi City</div>
-        <div class="location-card" data-location="VHS PH 2">VHS PH 2</div>
-        <div class="location-card" data-location="Sorsogon">Sorsogon</div>
-        <div class="location-card" data-location="Buragwis">Buragwis</div>
-        <div class="location-card" data-location="Estanza PH 1 & 2">Estanza PH 1 & 2</div>
-        <div class="location-card" data-location="Estanza Phase 1">Estanza Phase 1</div>
-        <div class="location-card" data-location="Iriga Phase 1">Iriga Phase 1</div>
-        <div class="location-card" data-location="Labo">Labo</div>
-        <div class="location-card" data-location="LeGrand 1 & 2">LeGrand 1 & 2</div>
-        <div class="location-card" data-location="OLV Buragwis">OLV Buragwis</div>
-        <div class="location-card" data-location="Polangui">Polangui</div>
-        <div class="location-card" data-location="San Fernando">San Fernando</div>
+      <div class="location-selector-section">
+        <h2 class="section-title">Project Selection</h2>
+        <div class="selector-wrapper">
+          <select id="locationSelect" class="clean-dropdown">
+            <option value="" disabled selected>— Choose a Project Location —</option>
+            <option value="STO.TOMAS PHASE 1">VIA VERDE STO.TOMAS PHASE 1</option>
+            <option value="Imperial Meadows">Imperial Meadows</option>
+            <option value="Brgy. Tartaria">Brgy. Tartaria</option>
+            <option value="Rancho Imperial">Rancho Imperial</option>
+            <option value="Tagaytay Meridien">Tagaytay Meridien</option>
+            <option value="The Venetto Heights">The Venetto Heights</option>
+            <option value="Trece Martires">Trece Martires</option>
+            <option value="Padre Garcia">Padre Garcia</option>
+            <option value="Priya Meridian">Priya Meridian</option>
+            <option value="Brgy. STO.Domingo">Brgy. STO.Domingo</option>
+            <option value="Brgy. Estanza">Brgy. Estanza</option>
+            <option value="Homapon Legazpi City">Homapon Legazpi City</option>
+            <option value="VHS PH 2">VHS PH 2</option>
+            <option value="Sorsogon">Sorsogon</option>
+            <option value="Buragwis">Buragwis</option>
+            <option value="Estanza PH 1 & 2">Estanza PH 1 & 2</option>
+            <option value="Estanza Phase 1">Estanza Phase 1</option>
+            <option value="Iriga Phase 1">Iriga Phase 1</option>
+            <option value="Labo">Labo</option>
+            <option value="LeGrand 1 & 2">LeGrand 1 & 2</option>
+            <option value="OLV Buragwis">OLV Buragwis</option>
+            <option value="Polangui">Polangui</option>
+            <option value="San Fernando">San Fernando</option>
+          </select>
+          <button class="primary-btn load-btn" onclick="handleLocationChange()">Load Project</button>
+        </div>
       </div>
 
       <div class="map-wrapper">
-        <div id="mapContainer"></div>
+        <div id="map-controls" style="display: none; justify-content: flex-end; margin-bottom: 10px;">
+            <button class="danger-btn" onclick="window.closeMapSection()" style="padding: 8px 16px; font-weight: bold;">
+                ✖ Close Map & Project Data
+            </button>
+        </div>
+        <div id="mapContainer" style="display:none; height: 550px; border-radius: 15px;"></div>
       </div>
 
       <div id="project-analytics-box" class="analytics-container" style="display:none;">
@@ -125,11 +137,11 @@
     <div class="modal-container">
       <div class="modal-top-bar">
         <span id="modalTitle">Project Details</span>
-        <button class="close-x" id="modalClose">✕</button>
+        <button class="close-x" id="modalClose" style="background:none; border:none; color:white; font-size:22px; cursor:pointer;">✕</button>
       </div>
-      <div class="modal-flex">
-        <div class="solar-accent"></div>
-        <div class="content-area" id="modalContent"></div>
+      <div class="modal-body" style="padding: 25px;">
+        <div id="modalContent">
+            </div>
       </div>
     </div>
   </div>
@@ -138,12 +150,13 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <script src="../javascript/residentsData.js"></script>
-
+  <script src="../javascript/marker.js"></script>
   <script src="../javascript/residentsManagement.js"></script>
   <script src="../javascript/app.js"></script>
   <script src="../javascript/projectAnalytics.js"></script>
-  <script src="../javascript/marker.js"></script>
-  <script src="../javascript/mapModal.js"></script>
+  
+  <script src="../javascript/mapModal.js"></script> 
+  
   <script src="../javascript/map.js"></script>
 
 </body>
