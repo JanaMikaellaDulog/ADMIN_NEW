@@ -55,16 +55,69 @@
     // ============================
     // MODAL CONTROL
     // ============================
-    const closeModal = () => {
+    window.closeModal = function() {
         modalOverlay.classList.remove("show");
         modalContent.innerHTML = ""; 
     };
 
-    if (modalCloseBtn) modalCloseBtn.addEventListener("click", closeModal);
+    if (modalCloseBtn) modalCloseBtn.addEventListener("click", window.closeModal);
     modalOverlay.addEventListener("click", (e) => {
-        if (e.target === modalOverlay) closeModal();
+        if (e.target === modalOverlay) window.closeModal();
     });
 
+    // ==========================================================
+    // RESIDENT FORM (Add / Edit) - Fixes the "null" property error
+    // ==========================================================
+    window.openResidentForm = function(resident = null) {
+        if (modalTitle) modalTitle.innerText = resident ? "Edit Resident Details" : "Register New Resident";
+        
+        // Generate Form HTML first
+        let formHTML = `
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div class="detail-group">
+                    <label style="display:block; font-size:11px; font-weight:bold; margin-bottom:5px; color:#64748b;">FULL NAME</label>
+                    <input type="text" id="form-name" class="clean-dropdown" placeholder="e.g. John Doe">
+                </div>
+                <div class="detail-group">
+                    <label style="display:block; font-size:11px; font-weight:bold; margin-bottom:5px; color:#64748b;">PROJECT LOCATION</label>
+                    <input type="text" id="form-project" class="clean-dropdown" placeholder="e.g. Imperial Meadows">
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex:1;">
+                        <label style="display:block; font-size:11px; font-weight:bold; margin-bottom:5px; color:#64748b;">BLOCK</label>
+                        <input type="text" id="form-block" class="clean-dropdown">
+                    </div>
+                    <div style="flex:1;">
+                        <label style="display:block; font-size:11px; font-weight:bold; margin-bottom:5px; color:#64748b;">LOT</label>
+                        <input type="text" id="form-lot" class="clean-dropdown">
+                    </div>
+                </div>
+                <button class="primary-btn" style="margin-top: 10px;" onclick="window.saveResidentData ? window.saveResidentData() : alert('Save logic not connected')">
+                    ${resident ? 'Update Resident' : 'Add Resident'}
+                </button>
+            </div>
+        `;
+
+        modalContent.innerHTML = formHTML;
+        modalOverlay.classList.add("show");
+
+        // ONLY fill values after HTML is injected to prevent "null" error
+        if (resident) {
+            const nameField = document.getElementById('form-name');
+            const projectField = document.getElementById('form-project');
+            const blockField = document.getElementById('form-block');
+            const lotField = document.getElementById('form-lot');
+
+            if(nameField) nameField.value = resident.name || "";
+            if(projectField) projectField.value = resident.project || "";
+            if(blockField) blockField.value = resident.block || "";
+            if(lotField) lotField.value = resident.lot || "";
+        }
+    };
+
+    // ============================
+    // MAP PIN MODAL
+    // ============================
     window.openLotModal = function (projectKey, block, lotNumber) {
         const bNum = String(block).trim(); 
         const lNum = String(lotNumber).trim();

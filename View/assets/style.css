@@ -336,7 +336,35 @@ html, body {
     border-radius: 10px;
     font-weight: 700;
     cursor: pointer;
+    transition: background 0.2s;
 }
+.primary-btn:hover { background: #b87d05; }
+
+/* Table Action Buttons (Fixes the "gone" CSS) */
+.btn-edit, .edit-btn {
+    background: #0ea5e9;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    margin-right: 5px;
+    transition: opacity 0.2s;
+}
+
+.btn-delete, .delete-btn {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: opacity 0.2s;
+}
+
+.btn-edit:hover, .btn-delete:hover { opacity: 0.8; }
 
 .residents-table {
     width: 100%;
@@ -356,19 +384,20 @@ html, body {
     padding: 15px;
     background: #1e293b;
     font-size: 14px;
+    color: #e2e8f0;
 }
 
 .residents-table td:first-child { border-radius: 12px 0 0 12px; }
 .residents-table td:last-child { border-radius: 0 12px 12px 0; }
 
 /* =========================
-   10. MODALS (RETAINED ORIGINAL DESIGN)
+   10. MODALS
 ========================= */
 .modal-overlay {
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.75);
-    display: none; /* Hidden by default */
+    display: none;
     justify-content: center;
     align-items: center;
     z-index: 9999 !important; 
@@ -426,7 +455,6 @@ html, body {
     background: rgba(255,255,255,0.3);
 }
 
-/* Original Modal Flex Design */
 .modal-flex {
     display: flex;
     min-height: 250px;
@@ -449,6 +477,12 @@ html, body {
     color: #334155;
     border-bottom: 1px solid #f1f5f9;
     padding-bottom: 10px;
+}
+
+/* Modal Form Controls */
+.modal-container input, .modal-container select {
+    width: 100%;
+    margin-top: 5px;
 }
 
 .status-tag {

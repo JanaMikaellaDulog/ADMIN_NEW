@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const MAPS = {
         "STO.TOMAS PHASE 1": { image: '../assets/img/maps/subdivision1.png', size: [2000, 1500] },
+        "STO.TOMAS BATANGAS": { image: '../assets/img/maps/VVST3-SDP_page-0001.jpg', size: [2000, 1500] },
         "Imperial Meadows": { image: '../assets/img/maps/ISM SITE MAP.jpg', size: [2000, 1500] },
         "Brgy. Tartaria": { image: '../assets/img/maps/Silang Cavite.jpg', size: [2000, 1500] },
         "Rancho Imperial": { image: '../assets/img/maps/Rancho imperial de Silang-Model with color.jpg', size: [2000, 1500] },
