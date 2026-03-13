@@ -6,106 +6,126 @@ document.addEventListener("DOMContentLoaded", () => {
     let currentLayer;
     let markersLayer;
 
-    const MAPS = {
-        "STO.TOMAS PHASE 1": { image: '../assets/img/maps/subdivision1.png', size: [2000, 1500] },
-        "STO.TOMAS BATANGAS": { image: '../assets/img/maps/VVST3-SDP_page-0001.jpg', size: [2000, 1500] },
-        "Imperial Meadows": { image: '../assets/img/maps/ISM SITE MAP.jpg', size: [2000, 1500] },
-        "Brgy. Tartaria": { image: '../assets/img/maps/Silang Cavite.jpg', size: [2000, 1500] },
-        "Rancho Imperial": { image: '../assets/img/maps/Rancho imperial de Silang-Model with color.jpg', size: [2000, 1500] },
-        "Tagaytay Meridien": { image: '../assets/img/maps/Tagaytay Meridien map 1.jpg', size: [2000, 1500] },
-        "The Venetto Heights": { image: '../assets/img/maps/The-Venetto-Heights-Updated-2014-Model.jpg', size: [2000, 1500] },
-        "Trece Martires": { image: '../assets/img/maps/W-Trece Martires.jpg', size: [2000, 1500] },
-        "Padre Garcia": { image: '../assets/img/maps/PADRE GARCIA phase1.jpg', size: [2000, 1500] },
-        "Priya Meridian": { image: '../assets/img/maps/Priya Meridian.jpg', size: [2000, 1500] },
-        "Cinta Dessa": { image: '../assets/img/maps/Cinta Dessa.jpg', size: [2000, 1500] },
-        "Brgy. STO.Domingo": { image: '../assets/img/maps/BrgySTO.Domingo,IrigaCity.jpg', size: [2000, 1500] },
-        "Brgy. Estanza": { image: '../assets/img/maps/BRGY. ESTANZA LEGAZPI CITY.jpg', size: [2000, 1500] },
-        "Homapon Legazpi City": { image: '../assets/img/maps/HOMAPON LEGAZPI CITY.jpg', size: [2000, 1500] },
-        "VHS PH 2": { image: '../assets/img/maps/VHS PH 2.JPG', size: [2000, 1500] },
-        "Sorsogon": { image: '../assets/img/maps/Sorsogon - with alteration_page-0001.jpg', size: [2000, 1500] },
-        "Buragwis": { image: '../assets/img/maps/Buragwis_page-0001.jpg', size: [2000, 1500] },
-        "Estanza PH 1 & 2": { image: '../assets/img/maps/Estanza ph 1 & 2_page-0001.jpg', size: [2000, 1500] },
-        "Estanza Phase 1": { image: '../assets/img/maps/Estanza Phase 1_page-0001.jpg', size: [2000, 1500] },
-        "Iriga Phase 1": { image: '../assets/img/maps/Iriga Phase 1_page-0001.jpg', size: [2000, 1500] },
-        "Labo": { image: '../assets/img/maps/Labo_page-0001.jpg', size: [2000, 1500] },
-        "LeGrand 1 & 2": { image: '../assets/img/maps/LeGrand 1 & 2_page-0001.jpg', size: [2000, 1500] },
-        "OLV Buragwis": { image: '../assets/img/maps/OLV Buragwis_page-0001.jpg', size: [2000, 1500] },
-        "Polangui": { image: '../assets/img/maps/Polangui_page-0001.jpg', size: [2000, 1500] },
-        "San Fernando": { image: '../assets/img/maps/San Fernando_page-0001.jpg', size: [2000, 1500] }
-    };
+    // --- FUNCTION TO CLOSE/HIDE MAP ---
+    window.closeMapSection = function() {
+    // 1. Hide the Map and its controls
+    if (mapContainer) mapContainer.style.display = 'none';
+    
+    const mapControls = document.getElementById('map-controls');
+    if (mapControls) mapControls.style.display = 'none';
+
+    console.log("Map closed, but analytics remain visible.");
+};
 
     window.handleLocationChange = function() {
-        const projectKey = locationSelect.value;
-        const projectData = MAPS[projectKey];
+        if (!locationSelect || !locationSelect.value) return;
+        
+        // FIXED: Using exact value to match "Rancho Imperial" (Removed .toUpperCase())
+        const projectKey = locationSelect.value.trim(); 
+        
+        // Check if MAPS exists and contains our project
+        const projectData = (typeof MAPS !== 'undefined') ? MAPS[projectKey] : null;
 
         if (!projectData) {
-            alert("Please select a valid project.");
+            console.error("Project Key not found in MAPS:", projectKey);
+            if (typeof MAPS !== 'undefined') {
+                console.log("Available keys in MAPS object:", Object.keys(MAPS));
+            }
+            alert(`Map data not found for "${projectKey}". Please check if the name in the Database matches the name in your MAPS configuration.`);
             return;
         }
 
-        mapContainer.style.display = 'block';
-        document.getElementById('map-controls').style.display = 'flex';
-        document.getElementById('project-analytics-box').style.display = 'block';
+        // --- SHOW UI ELEMENTS ---
+        if (mapContainer) mapContainer.style.display = 'block';
 
-        if (!map) {
-            map = L.map('mapContainer', { crs: L.CRS.Simple, minZoom: -1, maxZoom: 2 });
+        const mapControls = document.getElementById('map-controls');
+        if (mapControls) mapControls.style.display = 'flex';
+
+        const analyticsBox = document.getElementById('project-analytics-box');
+        if (analyticsBox) analyticsBox.style.display = 'block';
+
+        // Initialize Map if it doesn't exist
+        if (!map && mapContainer) {
+            map = L.map('mapContainer', { 
+                crs: L.CRS.Simple, 
+                minZoom: -1, 
+                maxZoom: 2,
+                zoomControl: true 
+            });
             
-            // Coordinate Logger (only fires if not clicking a pin)
             map.on('click', function(e) {
-                console.log("Map background clicked at:", [Math.round(e.latlng.lat), Math.round(e.latlng.lng)]);
+                console.log("Coordinates for marker.js:", [Math.round(e.latlng.lat), Math.round(e.latlng.lng)]);
             });
         }
 
-        if (currentLayer) map.removeLayer(currentLayer);
-        if (markersLayer) map.removeLayer(markersLayer);
+        // Clear previous layers to prevent overlap
+        if (currentLayer && map) map.removeLayer(currentLayer);
+        if (markersLayer && map) map.removeLayer(markersLayer);
 
+        // Add Image Overlay (The Subdivision Map)
+        // Uses the database dimensions (e.g., [2000, 1500])
         const bounds = [[0, 0], [projectData.size[1], projectData.size[0]]];
         currentLayer = L.imageOverlay(projectData.image, bounds).addTo(map);
         map.fitBounds(bounds);
 
+        // Update Charts (from projectAnalytics.js)
         if (typeof window.updateProjectCharts === "function") {
             window.updateProjectCharts(projectKey);
         }
 
+        // Create new Layer Group for markers
         markersLayer = L.layerGroup().addTo(map);
-        const projectMarkers = PROJECT_MARKERS[projectKey] || [];
+        
+        // Load Markers from marker.js using the exact Project Key
+        const projectMarkers = (typeof PROJECT_MARKERS !== 'undefined') ? PROJECT_MARKERS[projectKey] || [] : [];
+        console.log(`Found ${projectMarkers.length} markers for ${projectKey}`);
 
         projectMarkers.forEach(markerData => {
             const lotNum = String(markerData.lot).trim(); 
             const blockNum = String(markerData.block).trim();
+            
+            // This function checks window.residents (the database data)
             const lotInfo = (typeof window.getResidentByLotBlock === "function")
                 ? window.getResidentByLotBlock(lotNum, blockNum, projectKey) 
                 : null;
 
-            let pinClass = "no-resident";
+            let pinClass = "no-resident"; // Default Red
             let residentCount = 0;
 
             if (lotInfo) {
                 residentCount = (lotInfo.residents) ? lotInfo.residents.length : 0;
                 const status = String(lotInfo.status || "").toLowerCase().trim();
+                
+                // If found in database, turn Green
                 if (status === "active") pinClass = "active-resident";
                 else if (status === "inactive") pinClass = "inactive-resident";
             }
 
+            // Create the Pin Icon
             const icon = L.divIcon({
                 className: `custom-pin ${pinClass}`,
-                html: `<div class="pin"></div>`,
+                html: `<div class="pin"></div>`, 
                 iconSize: [20, 20],
                 iconAnchor: [10, 10] 
             });
 
+            // Add Marker to Map
             const marker = L.marker(markerData.pos, { icon });
-            marker.bindTooltip(`Block ${blockNum} Lot ${lotNum} (${residentCount} residents)`);
+            marker.bindTooltip(`Block ${blockNum} Lot ${lotNum} <br> ${residentCount > 0 ? residentCount + ' Resident(s)' : 'Vacant'}`);
             
-            // FIX: Added stopPropagation to prevent the map click from blocking the marker click
             marker.on('click', (e) => {
                 L.DomEvent.stopPropagation(e); 
-                window.openLotModal(projectKey, blockNum, lotNum);
+                if (typeof window.openLotModal === "function") {
+                    window.openLotModal(projectKey, blockNum, lotNum);
+                }
             });
             
             markersLayer.addLayer(marker);
         });
 
-        mapContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Smooth scroll to map
+        if (mapContainer) {
+            mapContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
     };
 });

@@ -1,14 +1,53 @@
-// menu.js
-window.openRightMenu = function () {
-  const rightMenu = document.getElementById("rightMenu");
-  const rightMenuOverlay = document.getElementById("rightMenuOverlay");
-  rightMenu?.classList.add("open");
-  rightMenuOverlay?.classList.add("show");
-};
+/* =========================
+    IMPERIAL HOUSE NAVIGATION
+========================= */
+document.addEventListener('DOMContentLoaded', () => {
+    const menuItems = document.querySelectorAll('.left-menu-item');
+    const sections = document.querySelectorAll('.app-page');
 
-window.closeRightMenu = function () {
-  const rightMenu = document.getElementById("rightMenu");
-  const rightMenuOverlay = document.getElementById("rightMenuOverlay");
-  rightMenu?.classList.remove("open");
-  rightMenuOverlay?.classList.remove("show");
-};
+    // Function to switch pages
+    function showPage(pageId) {
+        // 1. Hide all sections
+        sections.forEach(section => {
+            section.style.display = 'none';
+        });
+
+        // 2. Show target section
+        const target = document.getElementById('section-' + pageId);
+        if (target) {
+            target.style.display = 'block';
+            
+            // SAVE the current page to browser memory
+            localStorage.setItem('imperial_last_page', pageId);
+        }
+    }
+
+    // CLICK HANDLER
+    menuItems.forEach(item => {
+        item.addEventListener('click', function() {
+            const targetPage = this.getAttribute('data-page');
+
+            // Update Sidebar UI
+            menuItems.forEach(i => i.classList.remove('active'));
+            this.classList.add('active');
+
+            // Switch the page
+            showPage(targetPage);
+        });
+    });
+
+    // RECOVERY LOGIC: Check if there's a saved page, otherwise default to dashboard
+    const savedPage = localStorage.getItem('imperial_last_page') || 'dashboard';
+
+    // Update the Sidebar UI to match the saved page
+    menuItems.forEach(item => {
+        if (item.getAttribute('data-page') === savedPage) {
+            item.classList.add('active');
+        } else {
+            item.classList.remove('active');
+        }
+    });
+
+    // Load the saved page on startup
+    showPage(savedPage);
+});

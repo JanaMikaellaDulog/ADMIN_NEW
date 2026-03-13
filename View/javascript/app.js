@@ -2,8 +2,40 @@
 document.addEventListener("DOMContentLoaded", () => {
   const rightMenu = document.getElementById("rightMenu");
   const rightMenuOverlay = document.getElementById("rightMenuOverlay");
+  const menuItems = document.querySelectorAll(".right-menu-item");
 
-  // Topbar menu
+  // --- 1. TAB PERSISTENCE LOGIC ---
+  // Check if we have a saved page from the last time we were here
+  const savedPage = localStorage.getItem("activeDashboardTab") || "dashboard";
+
+  function switchPage(pageId) {
+    // Update Menu Selection
+    menuItems.forEach(i => {
+      i.classList.remove("active");
+      if (i.dataset.page === pageId) i.classList.add("active");
+    });
+
+    // Update Content Visibility
+    document.querySelectorAll(".app-page").forEach(p => p.classList.remove("active-page"));
+    const selectedPage = document.getElementById(`section-${pageId}`);
+    selectedPage?.classList.add("active-page");
+
+    // Save the current page choice
+    localStorage.setItem("activeDashboardTab", pageId);
+
+    // Specific logic for maps/tables
+    if (pageId === "dashboard" && window.map) {
+      setTimeout(() => window.map.invalidateSize(), 300);
+    }
+    if (pageId === "residents" && window.renderResidentsTable) {
+      window.renderResidentsTable();
+    }
+  }
+
+  // Initialize the page on load
+  switchPage(savedPage);
+
+  // --- 2. MENU CONTROLS ---
   window.openRightMenu = () => {
     rightMenu?.classList.add("open");
     rightMenuOverlay?.classList.add("show");
@@ -14,27 +46,11 @@ document.addEventListener("DOMContentLoaded", () => {
     rightMenuOverlay?.classList.remove("show");
   };
 
-  // Page switching
-  const menuItems = document.querySelectorAll(".right-menu-item");
+  // --- 3. CLICK LISTENERS ---
   menuItems.forEach(item => {
     item.addEventListener("click", () => {
       const page = item.dataset.page;
-      menuItems.forEach(i => i.classList.remove("active"));
-      item.classList.add("active");
-
-      document.querySelectorAll(".app-page").forEach(p => p.classList.remove("active-page"));
-      const selectedPage = document.getElementById(`section-${page}`);
-      selectedPage?.classList.add("active-page");
-
-      // Refresh map size when dashboard is selected
-      if (page === "dashboard" && window.map) {
-        setTimeout(() => window.map.invalidateSize(), 300);
-      }
-
-      if (page === "residents" && window.renderResidentsTable) {
-        window.renderResidentsTable();
-      }
-
+      switchPage(page);
       closeRightMenu();
     });
   });
