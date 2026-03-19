@@ -1,155 +1,245 @@
-// mapModal.js
 (function () {
-    const modalOverlay = document.getElementById("modalOverlay");
-    const modalContent = document.getElementById("modalContent");
-    const modalTitle = document.getElementById("modalTitle");
-    const modalCloseBtn = document.getElementById("modalClose");
+    // 1. Pointing to the IDs restored in admin.php
+    let markerModal, markerContent, markerTitle;
 
-    if (!modalOverlay || !modalContent) {
-        console.error("Critical Error: Modal elements missing from DOM.");
-        return;
-    }
+    document.addEventListener("DOMContentLoaded", () => {
+        markerModal = document.getElementById("modalOverlay");
+        markerContent = document.getElementById("modalContent");
+        markerTitle = document.getElementById("modalTitle");
 
-    // ==========================================================
-    // CLOSE MAP LOGIC
-    // ==========================================================
-    window.closeMapSection = function() {
-        const mapContainer = document.getElementById('mapContainer');
-        const analyticsBox = document.getElementById('project-analytics-box');
-        const mapControls = document.getElementById('map-controls');
-        const locationSelect = document.getElementById('locationSelect'); 
-        
-        if(mapContainer) mapContainer.style.display = 'none';
-        if(analyticsBox) analyticsBox.style.display = 'none';
-        if(mapControls) mapControls.style.display = 'none';
-        
-        if(locationSelect) locationSelect.selectedIndex = 0;
-        
-        if (typeof window.updateGlobalRibbon === "function") {
-            window.updateGlobalRibbon(); 
+        if (!markerModal || !markerContent) {
+            console.warn("Notice: Modal elements (#modalOverlay) not found in admin.php.");
         }
-        
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
 
-    // ==========================================================
-    // RESIDENT LOOKUP ENGINE
-    // ==========================================================
-    window.getResidentByLotBlock = function (lotNumber, blockNumber, projectKey) {
-        const source = window.residents || window.residentsData;
-        if (!source) return null;
+        if (markerModal) {
+            markerModal.addEventListener("click", (e) => {
+                if (e.target === markerModal) window.closeMarkerModal();
+            });
+        }
 
-        return source.find(res => {
-            const resProject = String(res.project || "").trim().toLowerCase();
-            const resLot = String(res.lot || "").trim().toLowerCase();
-            const resBlock = String(res.block || "").trim().toLowerCase();
-
-            const searchProject = String(projectKey || "").trim().toLowerCase();
-            const searchLot = String(lotNumber || "").trim().toLowerCase();
-            const searchBlock = String(blockNumber || "").trim().toLowerCase();
-
-            return resProject === searchProject && resLot === searchLot && resBlock === searchBlock;
-        });
-    };
-
-    // ============================
-    // MODAL CONTROL
-    // ============================
-    window.closeModal = function() {
-        modalOverlay.classList.remove("show");
-        modalContent.innerHTML = ""; 
-    };
-
-    if (modalCloseBtn) modalCloseBtn.addEventListener("click", window.closeModal);
-    modalOverlay.addEventListener("click", (e) => {
-        if (e.target === modalOverlay) window.closeModal();
+        const closeBtn = document.getElementById("modalClose");
+        if (closeBtn) {
+            closeBtn.onclick = () => window.closeMarkerModal();
+        }
     });
 
     // ==========================================================
-    // RESIDENT FORM (Add / Edit) - Fixes the "null" property error
+    // FIXED RESIDENT LOOKUP ENGINE (Using Subdivision ID: 2)
     // ==========================================================
-    window.openResidentForm = function(resident = null) {
-        if (modalTitle) modalTitle.innerText = resident ? "Edit Resident Details" : "Register New Resident";
+   window.getResidentByLotBlock = function (lotNumber, blockNumber, projectID) {
+    const source = window.residents || [];
+    
+    // Normalize targets to strings for strict matching
+    const targetProjectID = String(projectID).trim();
+    const targetLot = String(lotNumber).trim();
+    const targetBlock = String(blockNumber).trim();
+
+    return source.find(res => {
+        const resSubID = String(res.subdivision_id || "").trim();
+        const resLot = String(res.lot_no || "").trim();
+        const resBlock = String(res.block_no || "").trim();
+
+        // Exact match on ID, Lot, and Block
+        return resSubID === targetProjectID && 
+               resLot === targetLot && 
+               resBlock === targetBlock;
+    });
+};
+
+    // ============================
+    // MODAL CONTROLS
+    // ============================
+    window.closeMarkerModal = function() {
+        if (markerModal) markerModal.classList.remove("show");
+    };
+
+    /**
+     * MASTER REDIRECT: Fixed index finding to ensure edit mode works
+     */
+    window.jumpToManagement = function(resident = null, block = null, lot = null, projectID = null) {
+        window.closeMarkerModal();
+
+        if (typeof window.closeMapSection === "function") {
+            window.closeMapSection();
+        }
+
+        setTimeout(() => {
+            if (resident) {
+                if (typeof window.editResident === "function") {
+                    // Find by resident_id for accuracy
+                    const idx = window.residents.findIndex(r => r.resident_id === resident.resident_id);
+                    if (idx !== -1) window.editResident(idx);
+                }
+            } else {
+                const addModal = document.getElementById("addResidentModal");
+                if (addModal) {
+                    if (block) document.getElementById("addBlock").value = block;
+                    if (lot) document.getElementById("addLot").value = lot;
+                    if (projectID) {
+                        const projectDropdown = document.getElementById("addProject");
+                        if (projectDropdown) {
+                            // If it's Padre Garcia, force it to 2
+                            projectDropdown.value = (projectID.toLowerCase().includes("padre garcia")) ? "2" : projectID;
+                        }
+                    }
+                    addModal.classList.add("show");
+                }
+            }
+        }, 150);
+    };
+
+    // ==========================================================
+    // MAP PIN MODAL (The UI Builder)
+    // ==========================================================
+    window.openLotModal = function(project, block, lot) {
+    if (!markerModal || !markerContent) return;
+
+    markerTitle.innerText = `Property Detail View`;
+    
+    const resident = window.getResidentByLotBlock(lot, block, project);
+
+    if (resident) {
+        const status = (resident.resident_status || "Active").trim();
+        const statusClass = status.toLowerCase() === 'active' ? 'active' : 'inactive';
         
-        // Generate Form HTML first
-        let formHTML = `
-            <div style="display: flex; flex-direction: column; gap: 12px;">
-                <div class="detail-group">
-                    <label style="display:block; font-size:11px; font-weight:bold; margin-bottom:5px; color:#64748b;">FULL NAME</label>
-                    <input type="text" id="form-name" class="clean-dropdown" placeholder="e.g. John Doe">
-                </div>
-                <div class="detail-group">
-                    <label style="display:block; font-size:11px; font-weight:bold; margin-bottom:5px; color:#64748b;">PROJECT LOCATION</label>
-                    <input type="text" id="form-project" class="clean-dropdown" placeholder="e.g. Imperial Meadows">
-                </div>
-                <div style="display: flex; gap: 10px;">
-                    <div style="flex:1;">
-                        <label style="display:block; font-size:11px; font-weight:bold; margin-bottom:5px; color:#64748b;">BLOCK</label>
-                        <input type="text" id="form-block" class="clean-dropdown">
+        // Billing Formatting
+        const totalBill = resident.total_bill ? `₱ ${Number(resident.total_bill).toLocaleString()}` : "₱ 0.00";
+        const currentBill = resident.current_bill ? `₱ ${Number(resident.current_bill).toLocaleString()}` : "₱ 0.00";
+        const balance = resident.remaining_balance ? `₱ ${Number(resident.remaining_balance).toLocaleString()}` : "₱ 0.00";
+
+        markerContent.innerHTML = `
+            <div class="details-section" style="max-height: 70vh; overflow-y: auto; padding-right: 5px;">
+                
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px;">
+                    <div>
+                        <span style="color: #64748b; font-size: 11px; font-weight: bold; text-transform: uppercase;">Resident Name</span>
+                        <h2 style="margin: 0; color: #0f172a; font-size: 18px;">${resident.buyer_name || "N/A"}</h2>
+                        <span class="status-tag ${statusClass}" style="margin-top: 5px;">${status}</span>
                     </div>
-                    <div style="flex:1;">
-                        <label style="display:block; font-size:11px; font-weight:bold; margin-bottom:5px; color:#64748b;">LOT</label>
-                        <input type="text" id="form-lot" class="clean-dropdown">
+                    <div style="text-align: right;">
+                        <span style="color: #64748b; font-size: 11px; font-weight: bold; text-transform: uppercase;">Resident ID</span>
+                        <div style="color: #475569; font-weight: 600;">#${resident.resident_id || '---'}</div>
                     </div>
                 </div>
-                <button class="primary-btn" style="margin-top: 10px;" onclick="window.saveResidentData ? window.saveResidentData() : alert('Save logic not connected')">
-                    ${resident ? 'Update Resident' : 'Add Resident'}
+
+                <h3 style="font-size: 12px; color: #3b82f6; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;">Property Details</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #f1f5f9; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <div>
+                        <label style="display:block; font-size: 10px; color: #64748b;">PROJECT</label>
+                        <span style="font-size: 13px; font-weight: 600;">${project}</span>
+                    </div>
+                    <div>
+                        <label style="display:block; font-size: 10px; color: #64748b;">TCT NO.</label>
+                        <span style="font-size: 13px; font-weight: 600;">${resident.tct_no || '---'}</span>
+                    </div>
+                    <div>
+                        <label style="display:block; font-size: 10px; color: #64748b;">PHASE / BLK / LOT</label>
+                        <span style="font-size: 13px; font-weight: 600;">P${resident.phase || '1'} | B${block} L${lot}</span>
+                    </div>
+                    <div>
+                        <label style="display:block; font-size: 10px; color: #64748b;">DATE REGISTERED</label>
+                        <span style="font-size: 13px; font-weight: 600;">${resident.created_at || '---'}</span>
+                    </div>
+                </div>
+
+                <h3 style="font-size: 12px; color: #3b82f6; margin-bottom: 10px; text-transform: uppercase;">Contact & Ownership</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; padding: 0 5px;">
+                    <div style="grid-column: span 2;">
+                        <label style="display:block; font-size: 10px; color: #64748b;">NEW BUYER / ASSUMED BY</label>
+                        <span style="font-size: 13px;">${resident.new_buyer_assumed || 'None'}</span>
+                    </div>
+                    <div>
+                        <label style="display:block; font-size: 10px; color: #64748b;">REPRESENTATIVE</label>
+                        <span style="font-size: 13px;">${resident.buyer_representative || '---'}</span>
+                    </div>
+                    <div>
+                        <label style="display:block; font-size: 10px; color: #64748b;">PHONE</label>
+                        <span style="font-size: 13px; font-weight: 600;">${resident.contact_no || '---'}</span>
+                    </div>
+                    <div>
+                        <label style="display:block; font-size: 10px; color: #64748b;">EMAIL</label>
+                        <span style="font-size: 13px;">${resident.email_address || '---'}</span>
+                    </div>
+                    <div>
+                        <label style="display:block; font-size: 10px; color: #64748b;">SOCIAL MEDIA</label>
+                        <span style="font-size: 13px;">${resident.social_media || '---'}</span>
+                    </div>
+                </div>
+
+                <div style="background: #1e293b; color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <h3 style="font-size: 11px; margin-bottom: 12px; color: #94a3b8; border-bottom: 1px solid #334155; padding-bottom: 5px; text-transform: uppercase;">Utility & Billing State</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div>
+                            <label style="display:block; font-size: 9px; color: #94a3b8;">ACCOUNT NO.</label>
+                            <span style="font-size: 12px; font-weight: 600;">${resident.account_number || '---'}</span>
+                        </div>
+                        <div>
+                            <label style="display:block; font-size: 9px; color: #94a3b8;">BILL STATUS</label>
+                            <span style="font-size: 11px; color: ${resident.bill_status === 'Paid' ? '#4ade80' : '#fb7185'}; font-weight: bold;">
+                                ${(resident.bill_status || 'UNPAID').toUpperCase()}
+                            </span>
+                        </div>
+                        <div style="margin-top: 8px;">
+                            <label style="display:block; font-size: 9px; color: #94a3b8;">OUTSTANDING</label>
+                            <span style="font-size: 15px; font-weight: 700; color: #f8fafc;">${totalBill}</span>
+                        </div>
+                        <div style="margin-top: 8px;">
+                            <label style="display:block; font-size: 9px; color: #94a3b8;">REMAINING BAL.</label>
+                            <span style="font-size: 15px; font-weight: 700; color: #94a3b8;">${balance}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 25px; padding: 0 5px;">
+                    <label style="display:block; font-size: 10px; color: #64748b; text-transform: uppercase;">Remarks</label>
+                    <p style="font-size: 12px; color: #475569; margin: 5px 0;">${resident.remarks || "No additional remarks."}</p>
+                </div>
+
+                <button class="primary-btn" style="width: 100%; height: 45px; font-weight: 700;" id="btn-edit-redirect">
+                    GO TO FULL MANAGEMENT PAGE
                 </button>
             </div>
         `;
 
-        modalContent.innerHTML = formHTML;
-        modalOverlay.classList.add("show");
+        document.getElementById('btn-edit-redirect').onclick = () => window.jumpToManagement(resident);
 
-        // ONLY fill values after HTML is injected to prevent "null" error
-        if (resident) {
-            const nameField = document.getElementById('form-name');
-            const projectField = document.getElementById('form-project');
-            const blockField = document.getElementById('form-block');
-            const lotField = document.getElementById('form-lot');
-
-            if(nameField) nameField.value = resident.name || "";
-            if(projectField) projectField.value = resident.project || "";
-            if(blockField) blockField.value = resident.block || "";
-            if(lotField) lotField.value = resident.lot || "";
+        } else {
+            // VACANT STATE
+            markerContent.innerHTML = `
+                <div style="text-align: center; padding: 25px 10px;">
+                    <div style="font-size: 50px; margin-bottom: 15px;">🏠</div>
+                    <h3 style="color: #1e293b; margin-bottom: 5px; font-size: 18px;">This Lot is Vacant</h3>
+                    <p style="color: #64748b; font-size: 14px; margin-bottom: 25px;">
+                        <strong>${project}</strong><br>
+                        Block ${block} Lot ${lot}
+                    </p>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <button class="primary-btn" style="width: 100%;" 
+                                onclick="window.jumpToManagement(null, '${block}', '${lot}', '${project}')">
+                            + Add Resident
+                        </button>
+                        <button class="btn-delete" style="background: transparent; color: #64748b; border: 1px solid #cbd5e1; width: 100%;" 
+                                onclick="window.closeMarkerModal()">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            `;
         }
+        markerModal.classList.add('show');
     };
 
-    // ============================
-    // MAP PIN MODAL
-    // ============================
-    window.openLotModal = function (projectKey, block, lotNumber) {
-        const bNum = String(block).trim(); 
-        const lNum = String(lotNumber).trim();
-        const lotData = window.getResidentByLotBlock(lNum, bNum, projectKey);
-
-        if (modalTitle) modalTitle.innerText = `Block ${bNum} - Lot ${lNum}`;
-
-        let contentHTML = `
-            <div class="detail-group"><b>Project:</b> ${projectKey}</div>
-            <div class="detail-group"><b>Address:</b> Block ${bNum} | Lot ${lNum}</div>
-        `;
-
-        if (!lotData) {
-            contentHTML += `
-                <div class="detail-group"><b>Client:</b> —</div>
-                <div class="detail-group"><b>Status:</b> <span class="status-tag vacant">Vacant</span></div>
-            `;
-        } else {
-            const clientName = lotData.name || (Array.isArray(lotData.residents) ? lotData.residents.join(", ") : "Unknown");
-            const totalElectric = Number(lotData.electricity) || 0;
-            const totalWater = Number(lotData.water) || 0;
-            const status = (lotData.status || "inactive").toLowerCase();
-
-            contentHTML += `
-                <div class="detail-group"><b>Client(s):</b> ${clientName}</div>
-                <div class="detail-group"><b>Status:</b> <span class="status-tag ${status}">${status.charAt(0).toUpperCase() + status.slice(1)}</span></div>
-                <div class="detail-group"><b>Electricity:</b> ₱ ${totalElectric.toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
-                <div class="detail-group"><b>Water:</b> ₱ ${totalWater.toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
-            `;
-        }
-
-        modalContent.innerHTML = contentHTML;
-        modalOverlay.classList.add("show");
+    window.closeMapSection = function() {
+        const els = ['mapContainer', 'project-analytics-box', 'map-controls'];
+        els.forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.style.display = 'none';
+        });
+        const sel = document.getElementById('locationSelect');
+        if(sel) sel.selectedIndex = 0;
+        
+        if (typeof window.updateGlobalRibbon === "function") window.updateGlobalRibbon(); 
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 })();

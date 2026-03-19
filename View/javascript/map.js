@@ -8,22 +8,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- FUNCTION TO CLOSE/HIDE MAP ---
     window.closeMapSection = function() {
-    // 1. Hide the Map and its controls
-    if (mapContainer) mapContainer.style.display = 'none';
-    
-    const mapControls = document.getElementById('map-controls');
-    if (mapControls) mapControls.style.display = 'none';
+        if (mapContainer) mapContainer.style.display = 'none';
+        
+        const mapControls = document.getElementById('map-controls');
+        if (mapControls) mapControls.style.display = 'none';
 
-    console.log("Map closed, but analytics remain visible.");
-};
+        console.log("Map closed, but analytics remain visible.");
+    };
 
     window.handleLocationChange = function() {
         if (!locationSelect || !locationSelect.value) return;
         
-        // FIXED: Using exact value to match "Rancho Imperial" (Removed .toUpperCase())
-        const projectKey = locationSelect.value.trim(); 
-        
-        // Check if MAPS exists and contains our project
+        // 1. Get the Raw ID from the dropdown (e.g., "2")
+        const projectID = locationSelect.value.trim(); 
+
+        // 2. TRANSLATE ID TO NAME (For MAPS and PROJECT_MARKERS coordinate lookup)
+        // We use the ID for the database, but the Name for the Map Image and Pins coordinates.
+        let projectKey = projectID;
+        if (projectID === "2") {
+            projectKey = "PADRE GARCIA";
+        }
+
         const projectData = (typeof MAPS !== 'undefined') ? MAPS[projectKey] : null;
 
         if (!projectData) {
@@ -31,7 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (typeof MAPS !== 'undefined') {
                 console.log("Available keys in MAPS object:", Object.keys(MAPS));
             }
-            alert(`Map data not found for "${projectKey}". Please check if the name in the Database matches the name in your MAPS configuration.`);
+            alert(`Map data not found for "${projectKey}". Please check your MAPS configuration.`);
             return;
         }
 
@@ -62,13 +67,12 @@ document.addEventListener("DOMContentLoaded", () => {
         if (currentLayer && map) map.removeLayer(currentLayer);
         if (markersLayer && map) map.removeLayer(markersLayer);
 
-        // Add Image Overlay (The Subdivision Map)
-        // Uses the database dimensions (e.g., [2000, 1500])
+        // Add Image Overlay
         const bounds = [[0, 0], [projectData.size[1], projectData.size[0]]];
         currentLayer = L.imageOverlay(projectData.image, bounds).addTo(map);
         map.fitBounds(bounds);
 
-        // Update Charts (from projectAnalytics.js)
+        // Update Charts (Using the Name key)
         if (typeof window.updateProjectCharts === "function") {
             window.updateProjectCharts(projectKey);
         }
@@ -76,7 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Create new Layer Group for markers
         markersLayer = L.layerGroup().addTo(map);
         
-        // Load Markers from marker.js using the exact Project Key
+        // Load Markers using the Name key (e.g., "PADRE GARCIA")
         const projectMarkers = (typeof PROJECT_MARKERS !== 'undefined') ? PROJECT_MARKERS[projectKey] || [] : [];
         console.log(`Found ${projectMarkers.length} markers for ${projectKey}`);
 
@@ -84,21 +88,26 @@ document.addEventListener("DOMContentLoaded", () => {
             const lotNum = String(markerData.lot).trim(); 
             const blockNum = String(markerData.block).trim();
             
-            // This function checks window.residents (the database data)
-            const lotInfo = (typeof window.getResidentByLotBlock === "function")
-                ? window.getResidentByLotBlock(lotNum, blockNum, projectKey) 
+            // --- RESIDENT LOOKUP (Using projectID: 2) ---
+            // This ensures it matches the subdivision_id in your SQL database
+            const resident = (typeof window.getResidentByLotBlock === "function")
+                ? window.getResidentByLotBlock(lotNum, blockNum, projectID) 
                 : null;
 
-            let pinClass = "no-resident"; // Default Red
-            let residentCount = 0;
+            // COLOR LOGIC
+            let pinClass = "vacant-lot"; // Default: Orange
+            let statusText = "Vacant";
 
-            if (lotInfo) {
-                residentCount = (lotInfo.residents) ? lotInfo.residents.length : 0;
-                const status = String(lotInfo.status || "").toLowerCase().trim();
+            if (resident) {
+                const status = String(resident.resident_status || "").toLowerCase().trim();
                 
-                // If found in database, turn Green
-                if (status === "active") pinClass = "active-resident";
-                else if (status === "inactive") pinClass = "inactive-resident";
+                if (status === "active") {
+                    pinClass = "active-resident"; // Green
+                    statusText = "Occupied (Active)";
+                } else {
+                    pinClass = "inactive-resident"; // Red
+                    statusText = `Occupied (${resident.resident_status})`;
+                }
             }
 
             // Create the Pin Icon
@@ -111,12 +120,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Add Marker to Map
             const marker = L.marker(markerData.pos, { icon });
-            marker.bindTooltip(`Block ${blockNum} Lot ${lotNum} <br> ${residentCount > 0 ? residentCount + ' Resident(s)' : 'Vacant'}`);
+            
+            // Build Tooltip
+            const buyerName = resident ? `<br><b>${resident.buyer_name}</b>` : "";
+            marker.bindTooltip(`Block ${blockNum} Lot ${lotNum} ${buyerName} <br> ${statusText}`);
             
             marker.on('click', (e) => {
                 L.DomEvent.stopPropagation(e); 
                 if (typeof window.openLotModal === "function") {
-                    window.openLotModal(projectKey, blockNum, lotNum);
+                    // CRITICAL: Pass projectID (2) so the modal knows how to find the resident again
+                    window.openLotModal(projectID, blockNum, lotNum);
                 }
             });
             

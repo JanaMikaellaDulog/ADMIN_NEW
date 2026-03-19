@@ -1,35 +1,39 @@
 <?php
 include('db_connect.php');
 
-// Fetch Global Stats
+// 1. Fetch Global Stats
 $resCount = $conn->query("SELECT COUNT(*) as total FROM residents");
 $totalResidents = ($resCount) ? $resCount->fetch_assoc()['total'] : 0;
 
 $activeCount = $conn->query("SELECT COUNT(*) as total FROM residents WHERE resident_status = 'Active'");
 $activeResidents = ($activeCount) ? $activeCount->fetch_assoc()['total'] : 0;
 
-$moneyQuery = $conn->query("SELECT SUM(electric_bill + water_bill) as total FROM utility_bills");
+// Corrected sum from utility_bills table
+$moneyQuery = $conn->query("SELECT SUM(total_bill) as total FROM utility_bills");
 $totalMoney = ($moneyQuery && $row = $moneyQuery->fetch_assoc()) ? ($row['total'] ?? 0) : 0;
 
-// Fetch Subdivisions
+// 2. Fetch Subdivisions for dropdowns
 $projects = $conn->query("SELECT * FROM subdivisions ORDER BY project_name ASC");
 
-// Fetch Resident Data for JS Table
+// 3. Fetching all 17 fields + the LATEST utility data (prevents duplicates)
 $resQuery = $conn->query("
     SELECT 
-        r.resident_id,
-        r.full_name as name,
-        r.subdivision_id,
-        s.project_name as project, 
-        r.phase,
-        r.block_no as block,
-        r.lot_no as lot,
-        COALESCE(u.electric_bill, 0) as electricity, 
-        COALESCE(u.water_bill, 0) as water, 
-        r.resident_status as status
+        r.resident_id, r.subdivision_id, s.project_name as project, 
+        r.phase, r.block_no, r.lot_no, r.tct_no,
+        r.buyer_name, r.new_buyer_assumed, r.buyer_representative,
+        r.contact_no, r.social_media, r.email_address, 
+        r.account_number, r.account_address,
+        r.resident_status, r.remarks, r.created_at,
+        u.prev_reading, u.present_reading, u.total_bill, u.bill_status, u.remaining_balance, u.current_bill
     FROM residents r 
     LEFT JOIN subdivisions s ON r.subdivision_id = s.subdivision_id
-    LEFT JOIN utility_bills u ON r.resident_id = u.resident_id
+    LEFT JOIN (
+        /* This subquery ensures we only get the MOST RECENT bill per resident */
+        SELECT * FROM utility_bills WHERE bill_id IN (
+            SELECT MAX(bill_id) FROM utility_bills GROUP BY resident_id
+        )
+    ) u ON r.resident_id = u.resident_id
+    ORDER BY r.resident_id DESC
 ");
 
 $residentsArray = [];
@@ -43,285 +47,312 @@ if ($resQuery) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Imperial House - Admin Dashboard</title>
-  <link rel="stylesheet" href="../assets/style.css">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <style>
-    /* Section Visibility Handling */
-    .app-page { display: none; }
-    #section-dashboard { display: block; } /* Dashboard visible by default */
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imperial House - Admin Dashboard</title>
+    <link rel="stylesheet" href="../assets/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 </head>
 <body>
 
-  <div id="leftMenu" class="left-menu">
-    <div class="left-menu-header">
-      <div class="left-menu-title">Navigation</div>
+    <div id="leftMenu" class="left-menu">
+        <div class="left-menu-header"><div class="left-menu-title">Navigation</div></div>
+        <ul class="left-menu-nav">
+            <li class="left-menu-item active" data-page="dashboard">DASHBOARD</li>
+            <li class="left-menu-item" data-page="residents">RESIDENTS</li>
+            <li class="left-menu-item" data-page="analytics">ANALYTICS</li>
+            <li class="left-menu-item" data-page="reports">REPORT</li>
+        </ul>
     </div>
-    <ul class="left-menu-nav">
-      <li class="left-menu-item active" data-page="dashboard">DASHBOARD</li>
-      <li class="left-menu-item" data-page="residents">RESIDENTS</li>
-      <li class="left-menu-item" data-page="analytics">ANALYTICS</li>
-      <li class="left-menu-item" data-page="reports">REPORT</li>
-    </ul>
-  </div>
 
-  <header class="topbar">
-    <div class="topbar-title">IMPERIAL HOUSE</div>
-  </header>
+    <header class="topbar"><div class="topbar-title">IMPERIAL HOUSE</div></header>
 
-  <main class="main-content">
-    
-    <section id="section-dashboard" class="app-page">
-      <div class="stats-ribbon">
-        <div class="stat-card">
-          <div class="stat-label">Global Residents</div>
-          <div class="stat-value"><?php echo number_format($totalResidents); ?></div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Active Connections</div>
-          <div class="stat-value"><?php echo number_format($activeResidents); ?></div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Total Receivables</div>
-          <div class="stat-value">₱ <?php echo number_format($totalMoney, 2); ?></div>
-        </div>
-      </div>
+    <main class="main-content">
+        <section id="section-dashboard" class="app-page active">
+            <div class="stats-ribbon">
+                <div class="stat-card">
+                    <div class="stat-label">Global Residents</div>
+                    <div class="stat-value"><?php echo number_format($totalResidents); ?></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Active Connections</div>
+                    <div class="stat-value"><?php echo number_format($activeResidents); ?></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Receivables</div>
+                    <div class="stat-value">₱ <?php echo number_format($totalMoney, 2); ?></div>
+                </div>
+            </div>
 
-      <div class="location-selector-section">
-        <h2 class="section-title">Project Selection</h2>
-        <div class="selector-wrapper" style="display: flex; gap: 15px; margin-top: 15px;">
-          <select id="locationSelect" class="clean-dropdown" style="flex: 1;">
-            <option value="" disabled selected>— Choose a Project Location —</option>
-            <?php
-            if ($projects) {
-                $projects->data_seek(0);
-                while($row = $projects->fetch_assoc()) {
-                    echo "<option value='".htmlspecialchars($row['project_name'])."'>".$row['project_name']."</option>";
-                }
-            }
-            ?>
-          </select>
-          <button class="primary-btn load-btn" onclick="handleLocationChange()">Load Project</button>
-        </div>
-      </div>
+            <div class="location-selector-section">
+                <h2 class="section-title">Project Selection</h2>
+                <div class="selector-wrapper" style="display: flex; gap: 15px; margin-top: 15px;">
+                    <select id="locationSelect" class="clean-dropdown" style="flex: 1;">
+                        <option value="" disabled selected>— Choose a Project Location —</option>
+                        <?php
+                        $projects->data_seek(0);
+                        while($row = $projects->fetch_assoc()) {
+                            echo "<option value='".htmlspecialchars($row['subdivision_id'])."'>".$row['project_name']."</option>";
+                        }
+                        ?>
+                    </select>
+                    <button class="primary-btn load-btn" onclick="handleLocationChange()">Load Project</button>
+                </div>
+            </div>
 
-      <div class="map-wrapper" style="margin-top: 30px;">
-        <div id="map-controls" style="display: none; justify-content: flex-end; margin-bottom: 10px;">
-            <button class="danger-btn" onclick="window.closeMapSection()" style="background:#ef4444; color:white; border:none; padding: 8px 16px; border-radius:8px; cursor:pointer;">
-                ✖ Close Map
-            </button>
-        </div>
-        <div id="mapContainer" style="display:none; height: 550px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); z-index: 1;"></div>
-      </div>
+            <div class="map-wrapper" style="margin-top: 30px;">
+                <div id="map-controls" style="display: none; justify-content: flex-end; margin-bottom: 10px;">
+                    <button class="danger-btn" onclick="window.closeMapSection()" style="background:#ef4444; color:white; border:none; padding: 8px 16px; border-radius:8px; cursor:pointer;">✖ Close Map</button>
+                </div>
+                <div id="mapContainer" style="display:none; height: 550px; border-radius: 15px; z-index: 1;"></div>
+            </div>
 
-      <div id="project-analytics-box" style="margin-top: 30px; background: #1e293b; padding: 25px; border-radius: 15px; border: 1px solid #334155;">
-    <h3 id="analytics-title" style="color: #d49006; margin-bottom: 20px; font-weight: 700; text-transform: uppercase;">Project Analytics Overview</h3>
-    
-    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-        <div style="flex: 1; min-width: 300px; height: 300px; background: #161e2e; padding: 15px; border-radius: 10px;">
-            <canvas id="populationChart"></canvas>
-        </div>
-        <div style="flex: 1; min-width: 300px; height: 300px; background: #161e2e; padding: 15px; border-radius: 10px;">
-            <canvas id="billingChart"></canvas>
-        </div>
-    </div>
-</div>
-    </section>
+            <div id="project-analytics-box" style="margin-top: 30px; background: #1e293b; padding: 25px; border-radius: 15px; border: 1px solid #334155;">
+                <h3 id="analytics-title" style="color: #d49006; margin-bottom: 20px; font-weight: 700; text-transform: uppercase;">Project Analytics Overview</h3>
+                <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 300px; height: 300px; background: #161e2e; padding: 15px; border-radius: 10px;"><canvas id="populationChart"></canvas></div>
+                    <div style="flex: 1; min-width: 300px; height: 300px; background: #161e2e; padding: 15px; border-radius: 10px;"><canvas id="billingChart"></canvas></div>
+                </div>
+            </div>
+        </section>
 
-    <section id="section-residents" class="app-page">
-      <div class="page-header" style="margin-bottom: 25px;"><h2>Residents Management</h2></div>
-      <div class="residents-toolbar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <button class="primary-btn" onclick="openResidentForm()">+ Add Resident</button>
-        <input type="text" id="residentSearch" placeholder="Search residents..." class="search-input">
-      </div>
-      <div class="residents-table-wrapper">
-        <table class="residents-table">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Project</th>
-                    <th>Phase</th>
-                    <th>Block</th> <th>Lot</th>   <th>Status</th>
-                    <th>Electric</th>
-                    <th>Water</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="residentsTableBody"></tbody>
-        </table>
-      </div>
-    </section>
+        <section id="section-residents" class="app-page">
+            <div class="page-header" style="margin-bottom: 25px;"><h2>Residents Management</h2></div>
+            <div class="residents-toolbar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <button class="primary-btn" onclick="openResidentForm()">+ Add Resident</button>
+                <input type="text" id="residentSearch" placeholder="Search by name, TCT, or account..." class="search-input">
+            </div>
+            <div class="residents-table-wrapper">
+                <table class="residents-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th><th>Subdivision</th><th>Phase</th><th>Block</th><th>Lot</th>
+                            <th>TCT No.</th><th>Buyer Name</th><th>Status</th><th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="residentsTableBody"></tbody>
+                </table>
+            </div>
+        </section>
 
-    <section id="section-analytics" class="app-page">
-        <div class="page-header"><h2>Analytics</h2></div>
-    </section>
+        <section id="section-analytics" class="app-page">
+            <div class="page-header"><h2>Analytics</h2></div>
+        </section>
 
-    <section id="section-reports" class="app-page">
-        <div class="page-header"><h2>Reports</h2></div>
-    </section>
+        <section id="section-reports" class="app-page">
+            <div class="page-header"><h2>Reports</h2></div>
+        </section>
 
-  </main>
+    </main>
 
-  <div class="modal-overlay" id="markerModal">
-    <div class="modal-container">
-      <div class="modal-top-bar">
-        <span id="markerModalTitle">Lot Information</span>
-        <button onclick="window.closeMarkerModal()">✕</button>
-      </div>
-      <div id="markerModalContent" style="padding: 20px; color: white;"></div>
-    </div>
-  </div>
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-container" style="max-width: 650px;">
+            <div class="modal-top-bar">
+                <span id="modalTitle">Property Detail View</span>
+                <button class="close-x" id="modalClose" onclick="window.closeMarkerModal()">✕</button>
+            </div>
+            <div id="markerModalContent" style="position: relative; max-height: 80vh; overflow-y: auto; background: #1e293b; color: white;">
+                <div class="accent-bar" style="height: 4px; background: #d49006;"></div>
+                <div class="details-section" style="padding: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 15px;">
+                        <div>
+                            <span style="color: #94a3b8; font-size: 10px; font-weight: bold; text-transform: uppercase; display: block;">Primary Buyer</span>
+                            <h2 id="infoClient" style="margin: 0; color: #f8fafc; font-size: 20px;">-</h2>
+                            <span id="infoStatus" class="status-tag" style="margin-top: 5px; display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;">-</span>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="color: #94a3b8; font-size: 10px; font-weight: bold; text-transform: uppercase; display: block;">Resident ID</span>
+                            <span id="infoResId" style="font-weight: 700; color: #d49006;">-</span>
+                        </div>
+                    </div>
 
-  <div id="addResidentModal" class="modal-overlay">
-      <div class="modal-container">
-          <div class="modal-top-bar">
-              <span>Add New Resident</span>
-              <button onclick="closeAddModal()">✕</button>
-          </div>
-          <form id="addResidentForm">
-              <div class="modal-body">
-                  <div class="accent-bar"></div>
-                  <div class="form-section">
-                      <label>Full Name</label>
-                      <input type="text" id="addName" placeholder="Enter complete name" required>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                        <div><label style="color: #94a3b8; font-size: 10px; display: block;">SUBDIVISION / PROJECT</label><span id="infoAddress" style="font-size: 13px;">-</span></div>
+                        <div><label style="color: #94a3b8; font-size: 10px; display: block;">TCT NUMBER</label><span id="infoTct" style="font-size: 13px;">-</span></div>
+                        <div><label style="color: #94a3b8; font-size: 10px; display: block;">PHASE / BLK / LOT</label><span id="infoProperty" style="font-size: 13px;">-</span></div>
+                        <div><label style="color: #94a3b8; font-size: 10px; display: block;">CONTACT NO.</label><span id="infoContact" style="font-size: 13px;">-</span></div>
+                        <div><label style="color: #94a3b8; font-size: 10px; display: block;">EMAIL ADDRESS</label><span id="infoEmail" style="font-size: 13px;">-</span></div>
+                        <div><label style="color: #94a3b8; font-size: 10px; display: block;">SOCIAL MEDIA</label><span id="infoSocial" style="font-size: 13px;">-</span></div>
+                        <div><label style="color: #94a3b8; font-size: 10px; display: block;">NEW BUYER / ASSUMED</label><span id="infoNewBuyer" style="font-size: 13px;">-</span></div>
+                        <div><label style="color: #94a3b8; font-size: 10px; display: block;">REPRESENTATIVE</label><span id="infoRep" style="font-size: 13px;">-</span></div>
+                        <div style="grid-column: span 2;"><label style="color: #94a3b8; font-size: 10px; display: block;">ACCOUNT ADDRESS</label><span id="infoAccAddress" style="font-size: 13px;">-</span></div>
+                    </div>
 
-                      <label>Project/Subdivision</label>
-                      <select id="addProject" required>
-                          <option value="" disabled selected>Select Project</option>
-                          <?php 
-                          $projects->data_seek(0);
-                          while($p = $projects->fetch_assoc()): ?>
-                              <option value="<?php echo $p['subdivision_id']; ?>"><?php echo $p['project_name']; ?></option>
-                          <?php endwhile; ?>
-                      </select>
+                    <div style="background: #0f172a; padding: 15px; border-radius: 8px; border: 1px solid #334155; margin-bottom: 20px;">
+                        <h3 style="font-size: 11px; color: #d49006; margin-top: 0; margin-bottom: 12px; text-transform: uppercase;">Latest Billing Summary</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div><label style="color: #64748b; font-size: 9px; display: block;">ACCOUNT NO.</label><span id="infoAccNo" style="font-size: 13px; font-weight: 600;">-</span></div>
+                            <div><label style="color: #64748b; font-size: 9px; display: block;">BILL STATUS</label><span id="infoBillStatus" style="font-size: 13px; font-weight: bold;">-</span></div>
+                            <div><label style="color: #64748b; font-size: 9px; display: block;">OUTSTANDING BAL.</label><span id="infoTotalBill" style="font-size: 16px; font-weight: bold; color: #fb7185;">₱ 0.00</span></div>
+                            <div><label style="color: #64748b; font-size: 9px; display: block;">LAST UPDATE</label><span id="infoCreated" style="font-size: 13px;">-</span></div>
+                        </div>
+                    </div>
 
-                      <label>Phase</label>
-                      <input type="text" id="addPhase" placeholder="e.g. Phase 1">
+                    <div style="margin-bottom: 25px;">
+                        <label style="color: #94a3b8; font-size: 10px; display: block;">REMARKS</label>
+                        <p id="infoRemarks" style="font-size: 12px; color: #cbd5e1; font-style: italic; margin-top: 5px;">-</p>
+                    </div>
 
-                      <div style="display: flex; gap: 15px;">
-                          <div style="flex: 1;">
-                              <label>Block</label>
-                              <input type="text" id="addBlock" placeholder="Block No." required>
-                          </div>
-                          <div style="flex: 1;">
-                              <label>Lot</label>
-                              <input type="text" id="addLot" placeholder="Lot No." required>
-                          </div>
-                      </div>
-
-                      <label>Status</label>
-                      <select id="addStatus">
-                          <option value="Active">Active</option>
-                          <option value="Inactive">Inactive</option>
-                          <option value="Vacant">Vacant</option>
-                      </select>
-                  </div>
-              </div>
-              <div class="modal-footer">
-                  <button type="button" class="btn-delete" style="background: #334155;" onclick="closeAddModal()">Cancel</button>
-                  <button type="submit" class="primary-btn">Save Resident</button>
-              </div>
-          </form>
-      </div>
-  </div>
-
-  <div id="editResidentModal" class="modal-overlay">
-      <div class="modal-container">
-          <div class="modal-top-bar">
-              <span>Edit Resident</span>
-              <button onclick="closeEditModal()">✕</button>
-          </div>
-          <form id="editResidentForm">
-              <div class="modal-body">
-                  <div class="accent-bar"></div>
-                  <div class="form-section">
-                      <input type="hidden" id="editIndex">
-
-                      <label>Full Name</label>
-                      <input type="text" id="editName" required>
-
-                      <label>Project/Subdivision</label>
-                      <select id="editProject" required>
-                          <?php 
-                          $projects->data_seek(0);
-                          while($p = $projects->fetch_assoc()): ?>
-                              <option value="<?php echo $p['subdivision_id']; ?>"><?php echo $p['project_name']; ?></option>
-                          <?php endwhile; ?>
-                      </select>
-
-                      <label>Phase</label>
-                      <input type="text" id="editPhase">
-
-                      <div style="display: flex; gap: 15px;">
-                          <div style="flex: 1;">
-                              <label>Block</label>
-                              <input type="text" id="editBlock" required>
-                          </div>
-                          <div style="flex: 1;">
-                              <label>Lot</label>
-                              <input type="text" id="editLot" required>
-                          </div>
-                      </div>
-
-                      <label>Status</label>
-                      <select id="editStatus">
-                          <option value="Active">Active</option>
-                          <option value="Inactive">Inactive</option>
-                          <option value="Vacant">Vacant</option>
-                      </select>
-                  </div>
-              </div>
-              <div class="modal-footer">
-                  <button type="button" class="btn-delete" style="background: #334155;" onclick="closeEditModal()">Cancel</button>
-                  <button type="submit" class="primary-btn">Update Changes</button>
-              </div>
-          </form>
-      </div>
-  </div>
-
-  <div id="deleteResidentModal" class="modal-overlay">
-    <div class="modal-container" style="max-width: 400px;">
-        <div class="modal-top-bar" style="background: #ef4444;">
-            <span>Authorize Deletion</span>
-            <button onclick="closeDeleteModal()">×</button>
-        </div>
-        <div class="modal-body">
-            <div class="accent-bar" style="background: #ef4444;"></div>
-            <div class="form-section">
-                <p class="delete-warning-text" style="margin-bottom: 20px;">
-                    This action is permanent. Please enter your <strong>Admin Password</strong> to confirm.
-                </p>
-                <label>Admin Password</label>
-                <input type="password" id="deleteAuthPass" placeholder="••••••••" style="border-color: #ef4444;">
-                <div id="deleteErrorMessage" style="color: #ef4444; font-size: 12px; margin-top: -10px; display: none;">
-                    Incorrect password. Please try again.
+                    <button id="infoEditBtn" class="primary-btn" style="width: 100%; padding: 12px; font-weight: bold;">Go to Management Profile</button>
                 </div>
             </div>
         </div>
-        <div class="modal-footer">
-            <button type="button" class="btn-delete" style="background: #334155;" onclick="closeDeleteModal()">Cancel</button>
-            <button type="button" class="primary-btn" style="background: #ef4444;" onclick="confirmDelete()">Verify & Delete</button>
+    </div>
+
+    <div id="addResidentModal" class="modal-overlay">
+        <div class="modal-container" style="max-width: 800px;">
+            <div class="modal-top-bar"><span>New Resident Registration</span><button onclick="closeAddModal()">✕</button></div>
+            <form id="addResidentForm">
+                <div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
+                    <div class="modal-section-title">Property Details</div>
+                    <div class="form-grid">
+                        <div>
+                            <label>Subdivision Project</label>
+                            <select id="addProject" required>
+                                <option value="" disabled selected>Select Project</option>
+                                <?php $projects->data_seek(0); while($p = $projects->fetch_assoc()): ?>
+                                    <option value="<?php echo htmlspecialchars($p['subdivision_id']); ?>"><?php echo $p['project_name']; ?></option>
+                                <?php endwhile; ?>
+                            </select>
+                        </div>
+                        <div><label>TCT Number</label><input type="text" id="addTct"></div>
+                    </div>
+                    <div style="display: flex; gap: 15px; margin-top: 10px;">
+                        <div style="flex: 1;"><label>Phase</label><input type="text" id="addPhase"></div>
+                        <div style="flex: 1;"><label>Block No.</label><input type="text" id="addBlock" required></div>
+                        <div style="flex: 1;"><label>Lot No.</label><input type="text" id="addLot" required></div>
+                    </div>
+
+                    <div class="modal-section-title">Ownership Information</div>
+                    <div class="form-grid">
+                        <div><label>Primary Buyer Name</label><input type="text" id="addName" required></div>
+                        <div><label>Account Number</label><input type="text" id="addAccountNo"></div>
+                    </div>
+                    <div class="form-grid" style="margin-top: 10px;">
+                        <div><label>New Buyer Assumed</label><input type="text" id="addNewBuyer"></div>
+                        <div><label>Buyer Representative</label><input type="text" id="addRep"></div>
+                    </div>
+                    <label style="margin-top:10px;">Account/Billing Address</label>
+                    <input type="text" id="addAccountAddress">
+
+                    <div class="modal-section-title">Contact & Communication</div>
+                    <div class="form-grid">
+                        <div><label>Contact No.</label><input type="text" id="addContact"></div>
+                        <div><label>Email Address</label><input type="email" id="addEmail"></div>
+                    </div>
+                    <label style="margin-top:10px;">Social Media (FB/Messenger)</label>
+                    <input type="text" id="addSocial">
+
+                    <div class="modal-section-title">System Status & Remarks</div>
+                    <div class="form-grid">
+                        <div>
+                            <label>Resident Status</label>
+                            <select id="addStatus">
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                                <option value="Moved Out">Moved Out</option>
+                            </select>
+                        </div>
+                        <div><label>Registration Date</label><input type="date" id="addCreatedAt" value="<?php echo date('Y-m-d'); ?>"></div>
+                    </div>
+                    <label style="margin-top:10px;">Internal Remarks</label>
+                    <textarea id="addRemarks" placeholder="Add any specific notes..."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-delete" onclick="closeAddModal()">Cancel</button>
+                    <button type="submit" class="primary-btn">Register Resident</button>
+                </div>
+            </form>
         </div>
     </div>
-  </div>
 
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <div id="editResidentModal" class="modal-overlay">
+        <div class="modal-container" style="max-width: 800px;">
+            <div class="modal-top-bar"><span>Edit Resident Information</span><button type="button" onclick="closeEditModal()">✕</button></div>
+            <form id="editResidentForm">
+                <input type="hidden" id="editResidentId">
+                <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
+                    <div class="modal-section-title">Property Details</div>
+                    <div class="form-grid">
+                        <div>
+                            <label>Subdivision Project</label>
+                            <select id="editProject" required>
+                                <?php $projects->data_seek(0); while($p = $projects->fetch_assoc()): ?>
+                                    <option value="<?php echo htmlspecialchars($p['subdivision_id']); ?>"><?php echo $p['project_name']; ?></option>
+                                <?php endwhile; ?>
+                            </select>
+                        </div>
+                        <div><label>TCT Number</label><input type="text" id="editTct"></div>
+                        <div><label>Phase</label><input type="text" id="editPhase"></div>
+                        <div><label>Block No.</label><input type="text" id="editBlock" required></div>
+                        <div><label>Lot No.</label><input type="text" id="editLot" required></div>
+                        <div><label>Created Date</label><input type="date" id="editCreatedAt"></div>
+                    </div>
 
-  <script>
-    // Global Data
-    window.residents = <?php echo json_encode($residentsArray); ?>;
-  </script>
+                    <div class="modal-section-title">Ownership & Assumption</div>
+                    <div class="form-grid">
+                        <div><label>Primary Buyer Name</label><input type="text" id="editName" required></div>
+                        <div><label>New Buyer / Assumed By</label><input type="text" id="editNewBuyer"></div>
+                        <div><label>Buyer Representative</label><input type="text" id="editRep"></div>
+                        <div><label>Account Number</label><input type="text" id="editAccountNo"></div>
+                    </div>
 
-  <script src="get_maps_data.php"></script>      
-  <script src="../javascript/marker.js"></script>
-  <script src="../javascript/mapModal.js"></script>
-  <script src="../javascript/residentsManagement.js"></script>
-  <script src="../javascript/projectAnalytics.js"></script>
-  <script src="../javascript/menu.js"></script> <script src="../javascript/map.js"></script>
+                    <div class="modal-section-title">Contact Information</div>
+                    <div class="form-grid">
+                        <div><label>Contact No.</label><input type="text" id="editContact"></div>
+                        <div><label>Email Address</label><input type="email" id="editEmail"></div>
+                        <div><label>Social Media (Link/Handle)</label><input type="text" id="editSocial"></div>
+                        <div><label>Account Address</label><input type="text" id="editAccountAddress"></div>
+                    </div>
+                    
+                    <div class="modal-section-title">Resident Status & Remarks</div>
+                    <div class="form-grid">
+                        <div>
+                            <label>Resident Status</label>
+                            <select id="editStatus">
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                                <option value="Moved Out">Moved Out</option>
+                            </select>
+                        </div>
+                        <div><label>Remarks</label><textarea id="editRemarks"></textarea></div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="justify-content: space-between;">
+                    <button type="button" class="danger-btn" onclick="openDeleteConfirmation()" style="background: #991b1b; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer;">Delete Resident</button>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="button" class="btn-delete" onclick="closeEditModal()" style="background: #475569;">Cancel</button>
+                        <button type="submit" class="primary-btn">Save Changes</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
 
+    <div id="deleteResidentModal" class="modal-overlay" style="z-index: 2000;">
+        <div class="modal-container" style="max-width: 400px; text-align: center;">
+            <div class="modal-top-bar" style="background: #991b1b;"><span>Confirm Deletion</span><button onclick="closeDeleteModal()">✕</button></div>
+            <div class="modal-body" style="padding: 30px;">
+                <p style="color: #f87171; font-weight: bold; margin-bottom: 20px;">This action cannot be undone. Enter Admin PIN to proceed.</p>
+                <input type="password" id="adminPinInput" placeholder="Enter 4-Digit PIN" 
+                       style="text-align: center; font-size: 24px; letter-spacing: 10px; padding: 10px; width: 100%; border-radius: 8px; background: #0f172a; color: white; border: 1px solid #ef4444;">
+            </div>
+            <div class="modal-footer" style="justify-content: center; gap: 10px;">
+                <button type="button" class="btn-delete" onclick="closeDeleteModal()">Cancel</button>
+                <button type="button" class="danger-btn" onclick="processDeleteResident()" style="background: #ef4444;">Confirm Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>window.residents = <?php echo json_encode($residentsArray); ?>;</script>
+    <script src="get_maps_data.php"></script>      
+    <script src="../javascript/marker.js"></script>
+    <script src="../javascript/mapModal.js"></script>
+    <script src="../javascript/residentsManagement.js"></script>
+    <script src="../javascript/projectAnalytics.js"></script>
+    <script src="../javascript/menu.js"></script> 
+    <script src="../javascript/map.js"></script>
 </body>
 </html>

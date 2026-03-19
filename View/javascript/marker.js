@@ -2,7 +2,7 @@
 // Stores all markers for each project
 
 window.PROJECT_MARKERS = {
-  "STO.TOMAS PHASE 1": [
+  "PADRE GARCIA": [
         //Block 1
         { pos: [335, 729], lot: "70", block: "1" },
         { pos: [613, 883], lot: "69", block: "1" },
@@ -2528,5 +2528,8 @@ window.PROJECT_MARKERS = {
   ],
   "Padre Garcia": [],
   "Priya Meridian": [],
-  "Brgy. STO.Domingo": []
+  "Brgy. STO.Domingo": [
+
+      { pos: [668, 700], lot: "1", block: "11" }
+  ]
 };

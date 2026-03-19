@@ -13,7 +13,7 @@
     const data = window.residents || [];
     
     const totalResidents = data.length;
-    const activeLots = data.filter(r => r.status === 'active').length;
+    const activeLots = data.filter(r => String(r.status).toLowerCase() === 'active').length;
     const totalMoney = data.reduce((sum, r) => sum + (Number(r.electricity) || 0) + (Number(r.water) || 0), 0);
 
     const resEl = document.getElementById('stat-total-residents');
@@ -26,91 +26,125 @@
   };
 
   // ==========================================
-  // 2. PROJECT SPECIFIC CHARTS (On Card Click)
+  // 2. PROJECT SPECIFIC CHARTS
   // ==========================================
   window.updateProjectCharts = function (projectKey) {
     const data = window.residents || [];
     
-    // Filter data for the specific project
-    const projectData = data.filter(r => 
-      String(r.project).trim().toLowerCase() === String(projectKey).trim().toLowerCase()
-    );
+    // Filter data: if 'All Projects', use everything; otherwise, filter by key
+    const isGlobal = !projectKey || projectKey === 'All Projects';
+    const projectData = isGlobal 
+        ? data 
+        : data.filter(r => String(r.project).trim().toLowerCase() === String(projectKey).trim().toLowerCase());
 
     const analyticsBox = document.getElementById('project-analytics-box');
     const analyticsTitle = document.getElementById('analytics-title');
     
     if (!analyticsBox) return;
     
+    // Always keep visible now
     analyticsBox.style.display = 'block';
-    if (analyticsTitle) analyticsTitle.innerText = `${projectKey} - Analytics Overview`;
+    if (analyticsTitle) {
+        analyticsTitle.innerText = isGlobal ? `Global Analytics Overview` : `${projectKey} - Analytics Overview`;
+    }
 
     // --- Data Calculations ---
-    const activeCount = projectData.filter(r => r.status === 'active').length;
-    const inactiveCount = projectData.filter(r => r.status === 'inactive').length;
+    const activeCount = projectData.filter(r => String(r.status).toLowerCase() === 'active').length;
+    const inactiveCount = projectData.length - activeCount;
     
     const totalElectric = projectData.reduce((sum, r) => sum + (Number(r.electricity) || 0), 0);
     const totalWater = projectData.reduce((sum, r) => sum + (Number(r.water) || 0), 0);
 
-    // --- Chart Cleanup (Prevent hover bugs) ---
+    // --- Chart Cleanup ---
     if (popChartInstance) popChartInstance.destroy();
     if (billChartInstance) billChartInstance.destroy();
 
-    // --- Population Pie Chart ---
-    const ctxPop = document.getElementById('populationChart').getContext('2d');
-    popChartInstance = new Chart(ctxPop, {
-      type: 'pie',
-      data: {
-        labels: ['Active Residents', 'Inactive/Vacant'],
-        datasets: [{
-          data: [activeCount, inactiveCount],
-          backgroundColor: ['#28a745', '#dc3545'], // Green and Red
-          borderColor: '#ffffff',
-          borderWidth: 2
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { position: 'bottom' },
-          title: { display: true, text: 'Resident Population' }
-        }
-      }
-    });
-
-    // --- Billing Bar Chart ---
-    const ctxBill = document.getElementById('billingChart').getContext('2d');
-    billChartInstance = new Chart(ctxBill, {
-      type: 'bar',
-      data: {
-        labels: ['Electricity', 'Water'],
-        datasets: [{
-          label: 'Total Collected (₱)',
-          data: [totalElectric, totalWater],
-          backgroundColor: ['#d49006', '#007bff'], // Gold and Blue
-          borderRadius: 8
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { display: false },
-          title: { display: true, text: 'Total Billing Comparison' }
-        },
-        scales: {
-          y: { 
-            beginAtZero: true,
-            ticks: { callback: (val) => '₱' + val.toLocaleString() }
+    // ==========================================
+    // POPULATION PIE CHART
+    // ==========================================
+    const popCanvas = document.getElementById('populationChart');
+    if (popCanvas) {
+        const ctxPop = popCanvas.getContext('2d');
+        popChartInstance = new Chart(ctxPop, {
+          type: 'pie',
+          data: {
+            labels: ['Active', 'Inactive/Vacant'],
+            datasets: [{
+              data: [activeCount, inactiveCount],
+              backgroundColor: ['#22c55e', '#ef4444'], // Matched to your new button colors
+              borderColor: '#1e293b',
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'bottom', labels: { color: '#f8fafc' } },
+              title: { display: true, text: 'Resident Population', color: '#f8fafc' }
+            }
           }
-        }
-      }
-    });
+        });
+    }
+
+    // ==========================================
+    // BILLING BAR CHART
+    // ==========================================
+    const billCanvas = document.getElementById('billingChart');
+    if (billCanvas) {
+        const ctxBill = billCanvas.getContext('2d');
+        billChartInstance = new Chart(ctxBill, {
+          type: 'bar',
+          data: {
+            labels: ['Electricity', 'Water'],
+            datasets: [{
+              label: 'Total Collected (₱)',
+              data: [totalElectric, totalWater],
+              backgroundColor: ['#0ea5e9', '#007bff'], // Sky blue for electricity
+              borderRadius: 8
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              title: { display: true, text: 'Total Billing Comparison', color: '#f8fafc' }
+            },
+            scales: {
+              y: { 
+                beginAtZero: true,
+                grid: { color: 'rgba(255,255,255,0.05)' },
+                ticks: { 
+                    color: '#94a3b8',
+                    callback: (val) => '₱' + val.toLocaleString() 
+                }
+              },
+              x: {
+                ticks: { color: '#94a3b8' }
+              }
+            }
+          }
+        });
+    }
   };
 
-  // Initialize Global Ribbon on load
+  // ==========================================
+  // INITIALIZATION LOGIC
+  // ==========================================
   document.addEventListener("DOMContentLoaded", () => {
-    // Wait a tiny bit for data normalization to finish
     setTimeout(() => {
+        // 1. Update the top ribbon stats
         window.updateGlobalRibbon();
-    }, 100);
+
+        // 2. Check the dropdown for a value to load charts immediately
+        const locationSelect = document.getElementById('locationSelect');
+        if (locationSelect && locationSelect.value) {
+            window.updateProjectCharts(locationSelect.value);
+        } else {
+            // Default to Global view if nothing is selected
+            window.updateProjectCharts('All Projects');
+        }
+    }, 200); // Small delay to ensure database records are in window.residents
   });
 })();

@@ -16,7 +16,7 @@ html, body {
 }
 
 /* =========================
-    2. LAYOUT STRUCTURE (ADJUSTED ORIENTATION)
+    2. LAYOUT STRUCTURE
 ========================= */
 .topbar {
     height: 60px;
@@ -64,13 +64,12 @@ html, body {
     inset: 0;
     padding: 30px;
     overflow-y: auto;
-    display: none; /* JS will toggle this */
+    display: none; 
     opacity: 0;
     transform: translateX(20px);
     transition: all 0.3s ease;
 }
 
-/* This class is triggered by your menu.js */
 .app-page[style*="display: block"] {
     opacity: 1 !important;
     transform: translateX(0) !important;
@@ -195,76 +194,7 @@ html, body {
 }
 
 /* =========================
-    6. CLEAN PROJECT SELECTOR
-========================= */
-.location-selector-section {
-    background: #ffffff;
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    margin-bottom: 30px;
-}
-
-.section-title {
-    text-align: center;
-    margin-bottom: 20px;
-    font-size: 1.25rem;
-    font-weight: 800;
-}
-
-.clean-dropdown {
-    flex: 1;
-    padding: 12px 20px;
-    border-radius: 10px;
-    border: 2px solid #e2e8f0;
-    font-size: 16px;
-    font-weight: 600;
-    color: #334155;
-    outline: none;
-    transition: border-color 0.2s;
-    background: #fff;
-}
-
-.clean-dropdown:focus { border-color: #d49006; }
-
-/* =========================
-    7. MAP & CONTROLS
-========================= */
-.map-wrapper {
-    margin-top: 20px;
-}
-
-#map-controls {
-    display: none;
-    justify-content: flex-end;
-    margin-bottom: 15px;
-}
-
-.danger-btn {
-    background-color: #e63946;
-    color: white;
-    border: none;
-    padding: 10px 22px;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.danger-btn:hover { background-color: #d62828; transform: translateY(-1px); }
-
-#mapContainer {
-    width: 100%;
-    height: 550px;
-    border-radius: 20px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    background-color: #f8fafc;
-}
-
-/* =========================
-    8. RESIDENTS TABLE SECTION
+    6. RESIDENTS TABLE (COMPLEX DATA SUPPORT)
 ========================= */
 .residents-toolbar {
     display: flex;
@@ -283,44 +213,51 @@ html, body {
     outline: none;
 }
 
-.primary-btn {
-    background: #d49006;
-    color: white;
-    padding: 12px 24px;
-    border: none;
-    border-radius: 10px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-.primary-btn:hover { background: #b87d05; }
-
 .residents-table {
     width: 100%;
     border-collapse: separate;
-    border-spacing: 0 8px;
+    border-spacing: 0 2px; /* Tighter for detail rows */
 }
 
 .residents-table th {
     padding: 15px;
     text-align: left;
     color: #94a3b8;
-    font-size: 13px;
+    font-size: 12px;
     text-transform: uppercase;
 }
 
 .residents-table td {
-    padding: 15px;
+    padding: 12px 15px;
     background: #1e293b;
     font-size: 14px;
     color: #e2e8f0;
 }
 
-.residents-table td:first-child { border-radius: 12px 0 0 12px; }
-.residents-table td:last-child { border-radius: 0 12px 12px 0; }
+/* Detail Row Logic */
+.detail-row td {
+    background: #161e2e !important; /* Darker to distinguish from main row */
+    border-bottom: 8px solid #0f172a;
+    padding: 0;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    padding: 15px 20px;
+}
+
+.detail-item b {
+    display: block;
+    font-size: 10px;
+    color: #d49006;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
 
 /* =========================
-    9. MODALS (FULL UPDATE)
+    7. MODALS (UPDATED FOR 17 FIELDS)
 ========================= */
 .modal-overlay {
     position: fixed;
@@ -328,302 +265,247 @@ html, body {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: rgba(0, 0, 0, 0.8);
     display: none;
     justify-content: center;
     align-items: center;
     z-index: 9999 !important;
-    backdrop-filter: blur(4px);
+    backdrop-filter: blur(6px);
 }
 
-.modal-overlay.show {
-    display: flex !important;
-}
+.modal-overlay.show { display: flex !important; }
 
 .modal-container {
     background: #1e293b;
-    border-radius: 8px;
-    width: 90%;
-    max-width: 520px;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    width: 95%;
+    max-width: 800px; /* Wider for grid layout */
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     overflow: hidden;
-    animation: modalPop 0.25s ease-out;
     position: relative;
-}
-
-@keyframes modalPop {
-    from { transform: scale(0.95); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
 }
 
 .modal-top-bar {
     background: linear-gradient(135deg, #d4941f 0%, #c88419 100%);
-    padding: 16px 20px;
+    padding: 18px 24px;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.modal-top-bar span {
-    color: white;
-    font-size: 18px;
-    font-weight: 600;
+.modal-body {
+    padding: 24px 30px;
+    max-height: 75vh;
+    overflow-y: auto;
 }
 
+.modal-section-title {
+    color: #d49006;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    margin: 20px 0 10px 0;
+    border-bottom: 1px solid #334155;
+    padding-bottom: 5px;
+}
+
+/* Multi-column Form Grid */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.modal-body label {
+    display: block;
+    color: #94a3b8;
+    font-size: 11px;
+    font-weight: 700;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+}
+
+.modal-body input, 
+.modal-body select, 
+.modal-body textarea {
+    width: 100%;
+    padding: 10px 14px;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    color: #f8fafc;
+    margin-bottom: 12px;
+    outline: none;
+}
+
+textarea { min-height: 80px; resize: vertical; }
+
+/* Close Button (X) Styling */
 .modal-top-bar button {
-    background: none;
+    background: rgba(255, 255, 255, 0.1);
     border: none;
     color: white;
     cursor: pointer;
-    font-size: 20px;
+    font-size: 22px;
+    font-weight: 300;
+    line-height: 1;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+.modal-top-bar button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: rotate(90deg);
+    color: #ffd000;
+}
+
+/* =========================
+    8. ACTION BUTTONS
+========================= */
+.primary-btn {
+    background: #d49006;
+    color: white;
+    padding: 10px 22px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.btn-edit { background: #0ea5e9 !important; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: 700; font-size: 11px; cursor: pointer; text-transform: uppercase; }
+.btn-delete { background: #ef4444 !important; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: 700; font-size: 11px; cursor: pointer; text-transform: uppercase; }
+
+.modal-footer {
+    padding: 15px 24px;
+    background: #161e2e;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* =========================
+    9. STATUS TAGS
+========================= */
+.status-tag {
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+.status-tag.active { background: #dcfce7; color: #166534; }
+.status-tag.inactive { background: #fee2e2; color: #991b1b; }
+.status-tag.moved-out { background: #475569; color: #cbd5e1; }
+
+/* =========================
+    10. MAP PINS
+========================= */
+.custom-pin .pin {
+    display: block;
+    width: 20px;
+    height: 20px;
+    background-color: #f97316; /* DEFAULT: Vacant (Orange) */
+    border: 3px solid #000;
+    border-radius: 50%;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+/* Green for Active */
+.custom-pin.active-resident .pin { 
+    background-color: #22c55e !important; 
+}
+
+/* Red for Inactive */
+.custom-pin.inactive-resident .pin { 
+    background-color: #ef4444 !important; 
+}
+
+/* Explicit Orange for Vacant (Matches map.js logic) */
+.custom-pin.vacant-lot .pin { 
+    background-color: #f97316 !important; 
+}
+
+/* =========================
+    11. SLEEK PROPERTY MODAL (MARKER CONTENT)
+========================= */
+#markerModalContent {
+    position: relative;
+    color: white;
 }
 
 .accent-bar {
     position: absolute;
     left: 0;
-    top: 60px;
+    top: 0;
     bottom: 0;
     width: 6px;
     background: linear-gradient(180deg, #d4941f 0%, #c88419 100%);
-    z-index: 5;
 }
 
-.form-section {
-    padding: 24px 24px 24px 36px;
-    display: flex;
-    flex-direction: column;
-}
-
-.form-section label {
-    display: block;
-    color: #d1d5db;
-    font-size: 13px;
-    font-weight: 600;
-    margin-bottom: 8px;
-    text-transform: uppercase;
-}
-
-.form-section input, 
-.form-section select {
-    width: 100%;
-    padding: 12px;
-    background: #0f172a;
-    border: 1px solid #334155;
-    border-radius: 8px;
-    color: #f8fafc;
-    margin-bottom: 20px;
-    outline: none;
-    transition: border-color 0.2s;
-}
-
-.form-section input:focus, 
-.form-section select:focus {
-    border-color: #d4941f;
-}
-
-.modal-footer {
-    padding: 16px 24px;
-    background: #161e2e;
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    border-top: 1px solid #334155;
-}
-
-
-
-/* =========================
-    TABLE & MODAL ACTION BUTTONS
-========================= */
-
-/* Edit Button: Sky Blue */
-.btn-edit, .edit-btn {
-    background: #0ea5e9 !important; /* Sky Blue */
-    color: white !important;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-weight: 700;
-    font-size: 12px;
-    cursor: pointer;
-    text-transform: uppercase;
-    transition: all 0.2s;
-}
-
-.btn-edit:hover, .edit-btn:hover {
-    background: #0284c7 !important;
-    transform: translateY(-1px);
-}
-
-/* Delete Button: Red */
-.btn-delete, .delete-btn {
-    background: #ef4444 !important; /* Red */
-    color: white !important;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-weight: 700;
-    font-size: 12px;
-    cursor: pointer;
-    text-transform: uppercase;
-    transition: all 0.2s;
-}
-
-.btn-delete:hover, .delete-btn:hover {
-    background: #dc2626 !important;
-    transform: translateY(-1px);
-}
-
-/* Cancel Button: Slate Gray (Specific to Modal Footer) */
-.modal-footer .btn-delete, 
-.modal-footer .cancel-btn {
-    background: #334155 !important; /* Slate Gray */
-    color: #f8fafc !important;
-    padding: 10px 20px;
-}
-
-.modal-footer .btn-delete:hover {
-    background: #475569 !important;
-}
-
-/* Primary Modal Button (Save/Update) */
-.modal-footer .primary-btn {
-    background: linear-gradient(135deg, #d4941f 0%, #c88419 100%);
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-}
-/* =========================
-    10. CUSTOM MAP PINS (FIXED)
-========================= */
-/* 1. The Base Pin Style */
-.custom-pin .pin {
-    display: block;
-    width: 20px; /* Matched to your JS iconSize */
-    height: 20px;
-    background-color: #d49006; /* Default Gold (Vacant) */
-    border: 3px solid #000000;
-    border-radius: 50%;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    transition: all 0.2s ease;
-}
-
-/* 2. Status: ACTIVE (GREEN) */
-/* This specific combo ensures the color changes */
-.custom-pin.active-resident .pin { 
-    background-color: #22c55e !important; 
-}
-
-/* 3. Status: INACTIVE (RED) */
-.custom-pin.inactive-resident .pin { 
-    background-color: #ef4444 !important; 
-}
-
-/* 4. Status: NO RESIDENT (STAYS GOLD/ORANGE) */
-.custom-pin.no-resident .pin { 
-    background-color: #d49006 !important; 
-}
-
-/* 5. Hover Effect */
-.custom-pin:hover .pin {
-    transform: scale(1.4);
-    cursor: pointer;
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
-    z-index: 999;
-}
-
-/* Final cleanup */
-.leaflet-control-attribution { display: none !important; }
-
-/* =========================
-    11. MARKER MODAL DETAILS
-========================= */
-
-/* The Main Details Container */
 .details-section {
-    padding: 24px; /* Reduced padding since gold bar is gone */
-    position: relative;
-    background: #1e293b;
+    padding: 24px 24px 24px 36px;
 }
 
-/* Individual Data Rows */
 .detail-row {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    margin-bottom: 20px;
 }
 
 .detail-label {
-    color: #94a3b8; /* Muted Slate */
-    font-size: 13px;
     font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    color: #d1d5db;
+    min-width: 100px;
+    font-size: 14px;
 }
 
 .detail-value {
     color: #f8fafc;
     font-size: 14px;
-    font-weight: 500;
 }
 
-/* Status Badge Styles */
-.detail-value.status-active {
-    color: #22c55e; /* Green */
-    background: rgba(34, 197, 94, 0.1);
-    padding: 4px 10px;
-    border-radius: 4px;
-    font-weight: 700;
+.status-active-value {
+    color: #34d399;
+    font-weight: 600;
 }
 
-.detail-value.status-inactive {
-    color: #ef4444; /* Red */
-    background: rgba(239, 68, 68, 0.1);
-    padding: 4px 10px;
-    border-radius: 4px;
-    font-weight: 700;
-}
-
-/* Billing Section Box */
 .billing-section {
-    margin-top: 20px;
-    background: #0f172a; /* Darker navy background */
-    padding: 15px;
-    border-radius: 8px;
-    border: 1px solid #334155;
+    margin-top: 28px;
+    border-top: 1px solid #334155;
+    padding-top: 20px;
 }
 
 .billing-title {
-    color: #d4941f; /* Gold theme color */
     font-size: 14px;
-    font-weight: 700;
-    margin-bottom: 12px;
+    font-weight: 600;
+    color: #d4941f;
+    margin-bottom: 16px;
     text-transform: uppercase;
-    border-bottom: 1px solid #d4941f;
-    padding-bottom: 5px;
-    display: inline-block;
 }
 
 .billing-row {
     display: flex;
     justify-content: space-between;
-    padding: 6px 0;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+}
+
+.billing-row:last-child {
+    border-bottom: none;
 }
 
 .billing-label {
-    color: #cbd5e1;
-    font-size: 13px;
+    color: #9ca3af;
+    font-size: 14px;
 }
 
 .billing-amount {
-    color: #f8fafc;
-    font-family: 'Courier New', monospace;
-    font-weight: 700;
+    color: #d1d5db;
+    font-size: 14px;
+    font-weight: 500;
 }
-
-/* REMOVED .accent-bar styles from here */
