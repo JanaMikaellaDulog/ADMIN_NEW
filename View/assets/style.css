@@ -509,3 +509,212 @@ textarea { min-height: 80px; resize: vertical; }
     font-size: 14px;
     font-weight: 500;
 }
+
+/* =========================
+    12. REPORTS & AUDIT LOG (DARK SLATE THEME)
+========================= */
+#section-reports { 
+    background: #0f172a; 
+    color: #e2e8f0; 
+}
+
+/* Wrapper to handle scrolling for long logs */
+.audit-table-wrapper {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    overflow: hidden;
+    max-height: calc(100vh - 250px);
+    overflow-y: auto;
+    margin-top: 10px;
+}
+
+.audit-log-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 1px;
+}
+
+/* Sticky Header so you don't lose track when scrolling */
+.audit-log-table th {
+    padding: 15px;
+    background: #0f172a;
+    text-align: left;
+    color: #94a3b8;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 2px solid #334155;
+}
+
+.audit-log-table td {
+    padding: 12px 15px;
+    background: #1e293b;
+    font-size: 13px;
+    color: #e2e8f0;
+    border-bottom: 1px solid rgba(255,255,255,0.02);
+}
+
+.audit-log-table tr:hover td {
+    background: #243146; /* Subtle highlight on hover */
+}
+
+/* Admin ID Badge Style */
+.admin-badge {
+    background: #0f172a;
+    color: #ffd000;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-weight: 700;
+    font-size: 11px;
+    border: 1px solid #334155;
+}
+
+/* Action Tags (Matches your Status Tag style) */
+.action-tag {
+    padding: 4px 12px;
+    border-radius: 5px;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    display: inline-block;
+}
+
+/* Audit Specific Colors */
+.action-tag.create { background: #064e3b; color: #34d399; } /* Deep Green */
+.action-tag.update { background: #1e3a8a; color: #60a5fa; } /* Deep Blue */
+.action-tag.delete { background: #7f1d1d; color: #f87171; } /* Deep Red */
+.action-tag.login  { background: #334155; color: #cbd5e1; } /* Gray */
+
+.time-cell {
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Custom Scrollbar for that Sleek Look */
+.audit-table-wrapper::-webkit-scrollbar {
+    width: 6px;
+}
+.audit-table-wrapper::-webkit-scrollbar-track {
+    background: #0f172a;
+}
+.audit-table-wrapper::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 10px;
+}
+
+
+/* =========================
+    13. SECURITY MODAL DESIGN (ALPHANUMERIC VERSION)
+========================= */
+.security-overlay {
+    z-index: 2000 !important;
+}
+
+.security-modal {
+    max-width: 360px !important; /* Slightly wider for text keys */
+    border: 1px solid #7f1d1d;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.4);
+    border-radius: 12px;
+}
+
+.security-header {
+    background: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%) !important;
+    padding: 12px 20px !important;
+}
+
+.security-header span {
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-size: 10px;
+    color: white;
+}
+
+.security-body {
+    padding: 25px 25px !important;
+    text-align: center;
+}
+
+.security-info h4 {
+    color: #f8fafc;
+    font-size: 16px;
+    margin-bottom: 5px;
+    font-weight: 700;
+}
+
+.security-info p {
+    color: #94a3b8;
+    font-size: 12px;
+    line-height: 1.4;
+    margin-bottom: 20px;
+}
+
+/* PIN Input Styling - Adjusted for Alphanumeric Keys */
+.pin-container label {
+    display: block;
+    color: #ef4444;
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin-bottom: 10px;
+}
+
+#adminPinInput {
+    text-align: center;
+    font-size: 18px !important; /* Smaller than digits, better for text */
+    letter-spacing: 2px; /* Reduced spacing so words are readable */
+    padding: 12px !important;
+    width: 100%;
+    border-radius: 8px;
+    background: #0f172a;
+    color: #f87171;
+    border: 2px solid #334155;
+    transition: all 0.2s ease;
+}
+
+#adminPinInput::placeholder {
+    letter-spacing: normal;
+    font-size: 13px;
+    color: #475569;
+}
+
+#adminPinInput:focus {
+    border-color: #ef4444;
+    outline: none;
+}
+
+/* Button Refinement */
+.security-footer {
+    background: #161e2e !important;
+    padding: 15px !important;
+    justify-content: center !important;
+    gap: 10px;
+    border-top: 1px solid #334155;
+}
+
+.btn-cancel-security, .btn-confirm-delete {
+    padding: 10px 20px !important;
+    font-size: 11px !important;
+    border-radius: 6px !important;
+    cursor: pointer;
+    font-weight: 700;
+    text-transform: uppercase;
+    border: none !important;
+}
+
+.btn-cancel-security {
+    background: #d49006 !important;
+    color: white !important;
+}
+
+.btn-confirm-delete {
+    background: #ef4444 !important;
+    color: white !important;
+}

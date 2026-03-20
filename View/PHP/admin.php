@@ -42,6 +42,29 @@ if ($resQuery) {
         $residentsArray[] = $row; 
     }
 }
+
+// 4. Fetch Admin Logs joined with Admin names
+$audit_logs = $conn->query("
+    SELECT 
+        l.log_id, l.admin_id, l.action_type, l.details, l.timestamp, 
+        a.admin_name 
+    FROM admin_logs l
+    LEFT JOIN admins a ON l.admin_id = a.admin_id 
+    ORDER BY l.timestamp DESC 
+    LIMIT 100
+");
+
+/**
+ * Helper function to record system actions
+ * Usage: insert_audit_log($conn, 'Admin', 'UPDATE', 'Residents', 'Updated Resident ID 105');
+ */
+function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
+    $ip = $_SERVER['REMOTE_ADDR'];
+    $stmt = $conn->prepare("INSERT INTO audit_logs (admin_name, action_type, module, action_details, ip_address) VALUES (?, ?, ?, ?, ?)");
+    $stmt->bind_param("sssss", $admin_name, $action_type, $module, $details, $ip);
+    return $stmt->execute();
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -134,16 +157,6 @@ if ($resQuery) {
                 </table>
             </div>
         </section>
-
-        <section id="section-analytics" class="app-page">
-            <div class="page-header"><h2>Analytics</h2></div>
-        </section>
-
-        <section id="section-reports" class="app-page">
-            <div class="page-header"><h2>Reports</h2></div>
-        </section>
-
-    </main>
 
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal-container" style="max-width: 650px;">
@@ -343,6 +356,75 @@ if ($resQuery) {
             </div>
         </div>
     </div>
+
+        <section id="section-reports" class="app-page">
+            <div class="page-header" style="margin-bottom: 25px;">
+                <h2 style="color: #d49006;">System Audit Log</h2>
+            </div>
+
+            <div class="audit-table-wrapper">
+                <table class="audit-log-table" id="auditLogTable">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Admin Name</th>
+                            <th>Action</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php 
+                        if ($audit_logs && $audit_logs->num_rows > 0):
+                            $audit_logs->data_seek(0); 
+                            while($log = $audit_logs->fetch_assoc()): 
+                                // Map database action to your CSS: create, update, delete
+                                $actionClass = strtolower($log['action_type']);
+                        ?>
+                            <tr>
+                                <td class="time-cell">
+                                    <?php echo date('M d, Y | h:i A', strtotime($log['timestamp'])); ?>
+                                </td>
+                                <td>
+                                    <div style="display: flex; flex-direction: column; gap: 2px;">
+                                        <strong style="color: #f8fafc; font-size: 13px;">
+                                            <?php echo htmlspecialchars($log['admin_name'] ?? 'System / Deleted Admin'); ?>
+                                        </strong>
+                                        <span class="admin-badge" style="width: fit-content; padding: 2px 6px; font-size: 9px;">
+                                            ID: <?php echo $log['admin_id']; ?>
+                                        </span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="action-tag <?php echo $actionClass; ?>">
+                                        <?php echo htmlspecialchars($log['action_type']); ?>
+                                    </span>
+                                </td>
+                                <td class="details-cell" style="max-width: 300px; color: #cbd5e1; font-size: 13px;">
+                                    <?php echo htmlspecialchars($log['details']); ?>
+                                </td>
+                            </tr>
+                        <?php 
+                            endwhile; 
+                        else: 
+                        ?>
+                            <tr>
+                                <td colspan="4" style="text-align: center; padding: 60px; color: #64748b;">
+                                    No activity logs recorded yet.
+                                </td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    <section id="section-analytics" class="app-page">
+                <div class="page-header"><h2>Analytics</h2></div>
+            </section>
+
+    </main>
+
+
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

@@ -13,8 +13,10 @@
     const data = window.residents || [];
     
     const totalResidents = data.length;
-    const activeLots = data.filter(r => String(r.status).toLowerCase() === 'active').length;
-    const totalMoney = data.reduce((sum, r) => sum + (Number(r.electricity) || 0) + (Number(r.water) || 0), 0);
+    // MATCHED TO DB: resident_status
+    const activeLots = data.filter(r => String(r.resident_status).toLowerCase() === 'active').length;
+    // MATCHED TO DB: total_bill
+    const totalMoney = data.reduce((sum, r) => sum + (Number(r.total_bill) || 0), 0);
 
     const resEl = document.getElementById('stat-total-residents');
     const actEl = document.getElementById('stat-active-lots');
@@ -31,7 +33,7 @@
   window.updateProjectCharts = function (projectKey) {
     const data = window.residents || [];
     
-    // Filter data: if 'All Projects', use everything; otherwise, filter by key
+    // Filter data: if 'All Projects', use everything; otherwise, filter by project name
     const isGlobal = !projectKey || projectKey === 'All Projects';
     const projectData = isGlobal 
         ? data 
@@ -42,18 +44,24 @@
     
     if (!analyticsBox) return;
     
-    // Always keep visible now
     analyticsBox.style.display = 'block';
     if (analyticsTitle) {
         analyticsTitle.innerText = isGlobal ? `Global Analytics Overview` : `${projectKey} - Analytics Overview`;
     }
 
     // --- Data Calculations ---
-    const activeCount = projectData.filter(r => String(r.status).toLowerCase() === 'active').length;
+    // MATCHED TO DB: resident_status
+    const activeCount = projectData.filter(r => String(r.resident_status).toLowerCase() === 'active').length;
     const inactiveCount = projectData.length - activeCount;
     
-    const totalElectric = projectData.reduce((sum, r) => sum + (Number(r.electricity) || 0), 0);
-    const totalWater = projectData.reduce((sum, r) => sum + (Number(r.water) || 0), 0);
+    // Logic: Compare Paid vs Unpaid collections for the Bar Chart
+    const paidTotal = projectData
+        .filter(r => r.bill_status === 'Paid')
+        .reduce((sum, r) => sum + (Number(r.total_bill) || 0), 0);
+        
+    const unpaidTotal = projectData
+        .filter(r => r.bill_status !== 'Paid')
+        .reduce((sum, r) => sum + (Number(r.total_bill) || 0), 0);
 
     // --- Chart Cleanup ---
     if (popChartInstance) popChartInstance.destroy();
@@ -71,7 +79,7 @@
             labels: ['Active', 'Inactive/Vacant'],
             datasets: [{
               data: [activeCount, inactiveCount],
-              backgroundColor: ['#22c55e', '#ef4444'], // Matched to your new button colors
+              backgroundColor: ['#22c55e', '#ef4444'], 
               borderColor: '#1e293b',
               borderWidth: 2
             }]
@@ -81,14 +89,14 @@
             maintainAspectRatio: false,
             plugins: {
               legend: { position: 'bottom', labels: { color: '#f8fafc' } },
-              title: { display: true, text: 'Resident Population', color: '#f8fafc' }
+              title: { display: true, text: 'Resident Status Distribution', color: '#f8fafc' }
             }
           }
         });
     }
 
     // ==========================================
-    // BILLING BAR CHART
+    // BILLING BAR CHART (Collection Status)
     // ==========================================
     const billCanvas = document.getElementById('billingChart');
     if (billCanvas) {
@@ -96,11 +104,11 @@
         billChartInstance = new Chart(ctxBill, {
           type: 'bar',
           data: {
-            labels: ['Electricity', 'Water'],
+            labels: ['Paid Collections', 'Balance/Unpaid'],
             datasets: [{
-              label: 'Total Collected (₱)',
-              data: [totalElectric, totalWater],
-              backgroundColor: ['#0ea5e9', '#007bff'], // Sky blue for electricity
+              label: 'Total (₱)',
+              data: [paidTotal, unpaidTotal],
+              backgroundColor: ['#d49006', '#334155'], // Brand Orange vs Muted Slate
               borderRadius: 8
             }]
           },
@@ -109,7 +117,7 @@
             maintainAspectRatio: false,
             plugins: {
               legend: { display: false },
-              title: { display: true, text: 'Total Billing Comparison', color: '#f8fafc' }
+              title: { display: true, text: 'Revenue Collection Overview', color: '#f8fafc' }
             },
             scales: {
               y: { 
@@ -120,9 +128,7 @@
                     callback: (val) => '₱' + val.toLocaleString() 
                 }
               },
-              x: {
-                ticks: { color: '#94a3b8' }
-              }
+              x: { ticks: { color: '#94a3b8' } }
             }
           }
         });
@@ -130,21 +136,18 @@
   };
 
   // ==========================================
-  // INITIALIZATION LOGIC
+  // INITIALIZATION
   // ==========================================
   document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => {
-        // 1. Update the top ribbon stats
         window.updateGlobalRibbon();
 
-        // 2. Check the dropdown for a value to load charts immediately
         const locationSelect = document.getElementById('locationSelect');
         if (locationSelect && locationSelect.value) {
             window.updateProjectCharts(locationSelect.value);
         } else {
-            // Default to Global view if nothing is selected
             window.updateProjectCharts('All Projects');
         }
-    }, 200); // Small delay to ensure database records are in window.residents
+    }, 200); 
   });
 })();
