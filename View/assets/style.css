@@ -155,6 +155,33 @@ html, body {
     border-radius: 0 4px 4px 0;
 }
 
+/* Update your sidebar container */
+.left-menu {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;           /* Full screen height */
+    position: fixed;         /* Keeps it on the left while scrolling */
+    left: 0;
+    top: 0;
+    padding-bottom: 20px;    /* Gap at the very bottom */
+}
+
+/* Update your navigation list to take up all available space */
+.left-menu-nav {
+    display: flex;
+    flex-direction: column;
+    flex: 1;                 /* THIS is what creates the gap */
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* This pushes the Logout button away from the other items */
+.logout-item {
+    margin-top: auto;        /* Pushes it to the bottom of the flex:1 area */
+    color: #f87171;          /* Keeps it red */
+}
+
 /* =========================
     5. QUICK STAT RIBBON
 ========================= */

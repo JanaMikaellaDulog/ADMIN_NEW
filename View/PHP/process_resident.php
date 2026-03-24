@@ -1,142 +1,115 @@
 <?php
+// 1. PRODUCTION ERROR HANDLING & BUFFERING
+error_reporting(E_ALL);
+ini_set('display_errors', 0); // Hide from browser to keep JSON clean
+ob_start();
+
 include('db_connect.php');
 
-// process_resident.php
-// 1. Get data from the JavaScript Fetch
-$data = json_decode(file_get_contents("php://input"), true);
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-// Header for JSON response
-header('Content-Type: application/json');
+/**
+ * record_audit: Logs administrative actions into the database.
+ * INTEGRATED: Now uses $_SESSION['admin_id'] from your login system.
+ */
+function record_audit($conn, $admin_name, $action_type, $details) {
+    // 1. Get the REAL ID from your new login session. 
+    // Fallback to 1 ensures the script doesn't crash if the session is empty.
+    $admin_id = $_SESSION['admin_id'] ?? 1; 
+
+    // FIXED: Uses 'admin_logs' table (plural)
+    $stmt = $conn->prepare("INSERT INTO admin_logs (admin_id, action_type, details) VALUES (?, ?, ?)");
+    
+    if (!$stmt) {
+        error_log("Audit Prepare Failed: " . $conn->error);
+        return false;
+    }
+
+    $stmt->bind_param("iss", $admin_id, $action_type, $details);
+    
+    $success = $stmt->execute();
+    $stmt->close();
+    return $success;
+}
+
+$data = json_decode(file_get_contents("php://input"), true);
+$output = ["success" => false, "message" => "Server processed nothing"];
 
 if ($data) {
     $action = $data['action'] ?? '';
+    // Pulls the logged-in name from your session
+    $current_admin = $_SESSION['admin_name'] ?? 'System';
 
-    // ==========================================
-    // ACTION: ADD RESIDENT (17 FIELDS)
-    // ==========================================
-    if ($action === 'add') {
-        $sub_id          = $data['subdivision_id'] ?? null;
-        $tct_no          = $data['tct_no'] ?? '';
-        $phase           = $data['phase'] ?? '';
-        $block           = $data['block_no'] ?? '';
-        $lot             = $data['lot_no'] ?? '';
-        $buyer_name      = $data['buyer_name'] ?? '';
-        $new_buyer       = $data['new_buyer_assumed'] ?? '';
-        $rep             = $data['buyer_representative'] ?? '';
-        $contact         = $data['contact_no'] ?? '';
-        $email           = $data['email_address'] ?? '';
-        $social          = $data['social_media'] ?? '';
-        $acc_no          = $data['account_number'] ?? '';
-        $acc_addr        = $data['account_address'] ?? '';
-        $status          = $data['resident_status'] ?? 'Active';
-        $remarks         = $data['remarks'] ?? '';
-        $created_at      = !empty($data['created_at']) ? $data['created_at'] : date('Y-m-d');
-
-        $sql = "INSERT INTO residents (
-                    subdivision_id, tct_no, phase, block_no, lot_no, 
-                    buyer_name, new_buyer_assumed, buyer_representative, 
-                    contact_no, email_address, social_media, 
-                    account_number, account_address, resident_status, 
-                    remarks, created_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
+    // ACTION: EDIT
+    if ($action === 'edit' && isset($data['id'])) {
+        $sql = "UPDATE residents SET subdivision_id=?, tct_no=?, phase=?, block_no=?, lot_no=?, buyer_name=?, account_number=?, contact_no=?, email_address=?, resident_status=?, remarks=? WHERE resident_id=?";
         $stmt = $conn->prepare($sql);
-        // 16 placeholders: "isssssssssssssss"
-        $stmt->bind_param("isssssssssssssss", 
-            $sub_id, $tct_no, $phase, $block, $lot, 
-            $buyer_name, $new_buyer, $rep, 
-            $contact, $email, $social, 
-            $acc_no, $acc_addr, $status, 
-            $remarks, $created_at
-        );
-
-        if ($stmt->execute()) {
-            echo json_encode(["success" => true]);
-        } else {
-            echo json_encode(["success" => false, "message" => "Add failed: " . $stmt->error]);
-        }
-        $stmt->close();
-    }
-
-    // ==========================================
-    // ACTION: EDIT/UPDATE RESIDENT (ENHANCED FOR ALL FIELDS)
-    // ==========================================
-    else if ($action === 'edit') {
-        $id              = $data['id'] ?? null; 
-        $sub_id          = $data['subdivision_id'] ?? null;
-        $tct_no          = $data['tct_no'] ?? '';
-        $phase           = $data['phase'] ?? '';
-        $block           = $data['block_no'] ?? '';
-        $lot             = $data['lot_no'] ?? '';
-        $buyer_name      = $data['buyer_name'] ?? '';
-        $new_buyer       = $data['new_buyer_assumed'] ?? '';
-        $rep             = $data['buyer_representative'] ?? '';
-        $contact         = $data['contact_no'] ?? '';
-        $email           = $data['email_address'] ?? '';
-        $social          = $data['social_media'] ?? '';
-        $acc_no          = $data['account_number'] ?? '';
-        $acc_addr        = $data['account_address'] ?? '';
-        $status          = $data['resident_status'] ?? 'Active';
-        $remarks         = $data['remarks'] ?? '';
-
-        $sql = "UPDATE residents SET 
-                subdivision_id=?, tct_no=?, phase=?, block_no=?, lot_no=?, 
-                buyer_name=?, new_buyer_assumed=?, buyer_representative=?, 
-                contact_no=?, email_address=?, social_media=?, 
-                account_number=?, account_address=?, resident_status=?, 
-                remarks=? 
-                WHERE resident_id=?";
-
-        $stmt = $conn->prepare($sql);
-        // 1 integer (sub_id), 14 strings, 1 integer (ID) -> "issssssssssssssi"
-        $stmt->bind_param("issssssssssssssi", 
-            $sub_id, $tct_no, $phase, $block, $lot, 
-            $buyer_name, $new_buyer, $rep, 
-            $contact, $email, $social, 
-            $acc_no, $acc_addr, $status, 
-            $remarks, $id
-        );
-
-        if ($stmt->execute()) {
-            echo json_encode(["success" => true]);
-        } else {
-            echo json_encode(["success" => false, "message" => "Update failed: " . $stmt->error]);
-        }
-        $stmt->close();
-    }
-
-    // ==========================================
-    // ACTION: DELETE RESIDENT
-    // ==========================================
-    else if ($action === 'delete') {
-        $id = $data['id'] ?? null;
-        $inputPin = $data['admin_pin'] ?? ''; 
-
-        $authStmt = $conn->prepare("SELECT admin_name FROM admins WHERE auth_key = ?");
-        $authStmt->bind_param("s", $inputPin);
-        $authStmt->execute();
-        $authResult = $authStmt->get_result();
-
-        if ($authResult->num_rows > 0) {
-            $admin = $authResult->fetch_assoc();
-            
-            $stmt = $conn->prepare("DELETE FROM residents WHERE resident_id=?");
-            $stmt->bind_param("i", $id);
-
+        if ($stmt) {
+            $stmt->bind_param("issssssssssi", 
+                $data['subdivision_id'], $data['tct_no'], $data['phase'], $data['block_no'], $data['lot_no'], 
+                $data['buyer_name'], $data['account_number'], $data['contact_no'], 
+                $data['email_address'], $data['resident_status'], $data['remarks'], $data['id']
+            );
             if ($stmt->execute()) {
-                echo json_encode(["success" => true, "message" => "Deleted by " . $admin['admin_name']]);
+                $output = ["success" => true];
+                record_audit($conn, $current_admin, 'EDIT', "Modified: " . $data['buyer_name']);
             } else {
-                echo json_encode(["success" => false, "message" => "Delete failed: " . $stmt->error]);
+                $output["message"] = $stmt->error;
             }
             $stmt->close();
-        } else {
-            echo json_encode(["success" => false, "message" => "Invalid Admin PIN."]);
         }
-        $authStmt->close();
     }
-} else {
-    echo json_encode(["success" => false, "message" => "No data received."]);
+
+    // ACTION: ADD
+    else if ($action === 'add') {
+        $sql = "INSERT INTO residents (subdivision_id, tct_no, phase, block_no, lot_no, buyer_name, new_buyer_assumed, buyer_representative, contact_no, email_address, social_media, account_number, account_address, resident_status, remarks, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $stmt = $conn->prepare($sql);
+        if ($stmt) {
+            $stmt->bind_param("isssssssssssssss", 
+                $data['subdivision_id'], $data['tct_no'], $data['phase'], $data['block_no'], $data['lot_no'], 
+                $data['buyer_name'], $data['new_buyer_assumed'], $data['buyer_representative'], 
+                $data['contact_no'], $data['email_address'], $data['social_media'], 
+                $data['account_number'], $data['account_address'], $data['resident_status'], 
+                $data['remarks'], $data['created_at']
+            );
+            if ($stmt->execute()) {
+                $output = ["success" => true];
+                record_audit($conn, $current_admin, 'ADD', "Added: " . $data['buyer_name']);
+            } else {
+                $output["message"] = $stmt->error;
+            }
+            $stmt->close();
+        }
+    }
+
+    // ACTION: DELETE
+    else if ($action === 'delete') {
+        // Checking against 'admins' table for the auth_key (PIN)
+        $auth = $conn->prepare("SELECT admin_name FROM admins WHERE auth_key = ?");
+        $auth->bind_param("s", $data['admin_pin']);
+        $auth->execute();
+        $res = $auth->get_result();
+        
+        if ($row = $res->fetch_assoc()) {
+            $del = $conn->prepare("DELETE FROM residents WHERE resident_id = ?");
+            $del->bind_param("i", $data['id']);
+            if ($del->execute()) {
+                $output = ["success" => true];
+                record_audit($conn, $row['admin_name'], 'DELETE', "Deleted ID: " . $data['id']);
+            }
+            $del->close();
+        } else {
+            $output = ["success" => false, "message" => "Invalid PIN"];
+        }
+        $auth->close();
+    }
 }
 
+// FINAL CLEANUP: Flush the buffer to ensure only JSON is sent
+while (ob_get_level()) { ob_end_clean(); }
+header('Content-Type: application/json');
+echo json_encode($output);
 $conn->close();
-?>
+exit;

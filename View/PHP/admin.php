@@ -1,4 +1,24 @@
 <?php
+/**
+ * 1. SECURITY & CACHE CONTROL
+ * This must be the very first thing in the file.
+ */
+session_start();
+
+// Redirect to login if not authenticated
+if (!isset($_SESSION['admin_id'])) {
+    header("Location: login.php");
+    exit();
+}
+
+// Prevent browser from caching this page (Fixes the "Back Button" security risk)
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+
+/**
+ * 2. YOUR ORIGINAL DATABASE LOGIC (UNTOUCHED)
+ */
 include('db_connect.php');
 
 // 1. Fetch Global Stats
@@ -15,7 +35,7 @@ $totalMoney = ($moneyQuery && $row = $moneyQuery->fetch_assoc()) ? ($row['total'
 // 2. Fetch Subdivisions for dropdowns
 $projects = $conn->query("SELECT * FROM subdivisions ORDER BY project_name ASC");
 
-// 3. Fetching all 17 fields + the LATEST utility data (prevents duplicates)
+// 3. Fetching all 17 fields + the LATEST utility data
 $resQuery = $conn->query("
     SELECT 
         r.resident_id, r.subdivision_id, s.project_name as project, 
@@ -28,7 +48,6 @@ $resQuery = $conn->query("
     FROM residents r 
     LEFT JOIN subdivisions s ON r.subdivision_id = s.subdivision_id
     LEFT JOIN (
-        /* This subquery ensures we only get the MOST RECENT bill per resident */
         SELECT * FROM utility_bills WHERE bill_id IN (
             SELECT MAX(bill_id) FROM utility_bills GROUP BY resident_id
         )
@@ -43,7 +62,7 @@ if ($resQuery) {
     }
 }
 
-// 4. Fetch Admin Logs joined with Admin names
+// 4. Fetch Admin Logs (RENAMED TO $audit_logs TO FIX THE ERROR)
 $audit_logs = $conn->query("
     SELECT 
         l.log_id, l.admin_id, l.action_type, l.details, l.timestamp, 
@@ -54,17 +73,24 @@ $audit_logs = $conn->query("
     LIMIT 100
 ");
 
+$auditLogsArray = [];
+if ($audit_logs && $audit_logs->num_rows > 0) {
+    while($row = $audit_logs->fetch_assoc()) {
+        $auditLogsArray[] = $row;
+    }
+    // RESET THE POINTER so the HTML table at line 399 can start from the first row
+    $audit_logs->data_seek(0);
+}
+
 /**
  * Helper function to record system actions
- * Usage: insert_audit_log($conn, 'Admin', 'UPDATE', 'Residents', 'Updated Resident ID 105');
  */
 function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
     $ip = $_SERVER['REMOTE_ADDR'];
-    $stmt = $conn->prepare("INSERT INTO audit_logs (admin_name, action_type, module, action_details, ip_address) VALUES (?, ?, ?, ?, ?)");
-    $stmt->bind_param("sssss", $admin_name, $action_type, $module, $details, $ip);
+    $stmt = $conn->prepare("INSERT INTO admin_logs (admin_id, action_type, details) VALUES ((SELECT admin_id FROM admins WHERE admin_name = ? LIMIT 1), ?, ?)");
+    $stmt->bind_param("sss", $admin_name, $action_type, $details);
     return $stmt->execute();
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -79,12 +105,17 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
 <body>
 
     <div id="leftMenu" class="left-menu">
-        <div class="left-menu-header"><div class="left-menu-title">Navigation</div></div>
+        <div class="left-menu-header">
+            <div class="left-menu-title">Navigation</div>
+        </div>
+
         <ul class="left-menu-nav">
             <li class="left-menu-item active" data-page="dashboard">DASHBOARD</li>
             <li class="left-menu-item" data-page="residents">RESIDENTS</li>
-            <li class="left-menu-item" data-page="analytics">ANALYTICS</li>
+            <li class="left-menu-item" data-page="analytics">ADMIN MANAGEMENT</li>
             <li class="left-menu-item" data-page="reports">REPORT</li>
+
+            <li class="left-menu-item logout-item" onclick="window.location.href='logout.php'">LOG OUT</li>
         </ul>
     </div>
 
@@ -110,16 +141,19 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
             <div class="location-selector-section">
                 <h2 class="section-title">Project Selection</h2>
                 <div class="selector-wrapper" style="display: flex; gap: 15px; margin-top: 15px;">
-                    <select id="locationSelect" class="clean-dropdown" style="flex: 1;">
-                        <option value="" disabled selected>— Choose a Project Location —</option>
-                        <?php
-                        $projects->data_seek(0);
-                        while($row = $projects->fetch_assoc()) {
-                            echo "<option value='".htmlspecialchars($row['subdivision_id'])."'>".$row['project_name']."</option>";
-                        }
-                        ?>
+                    <select id="locationSelect" class="header-select">
+                        <option value="">-- Select Project --</option>
+                        <?php 
+                        $projects->data_seek(0); 
+                        while($p = $projects->fetch_assoc()): ?>
+                            <option value="<?php echo $p['subdivision_id']; ?>" 
+                                    data-name="<?php echo htmlspecialchars($p['project_name']); ?>">
+                                <?php echo htmlspecialchars($p['project_name']); ?>
+                            </option>
+                        <?php endwhile; ?>
                     </select>
-                    <button class="primary-btn load-btn" onclick="handleLocationChange()">Load Project</button>
+
+                    <button onclick="handleLocationChange()" class="btn-load">Load Project</button>
                 </div>
             </div>
 
@@ -358,65 +392,89 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
     </div>
 
         <section id="section-reports" class="app-page">
-            <div class="page-header" style="margin-bottom: 25px;">
-                <h2 style="color: #d49006;">System Audit Log</h2>
-            </div>
+    <div class="page-header" style="margin-bottom: 25px; display: flex; justify-content: space-between; align-items: flex-end;">
+        <div>
+            <h2 style="color: #d49006; margin-bottom: 5px;">System Audit Log</h2>
+            <p style="color: #64748b; font-size: 13px; margin: 0;">Track all administrative changes and system activities.</p>
+        </div>
+        
+        <div style="display: flex; gap: 10px;">
+            <input type="text" 
+                   onkeyup="filterAuditLog(this.value)" 
+                   placeholder="Search logs..." 
+                   style="padding: 10px 15px; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: #f8fafc; font-size: 13px; width: 220px; outline: none;">
+            
+            <button onclick="exportAuditLog()" 
+                    style="padding: 10px 18px; background: #d49006; color: #0f172a; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 13px; transition: 0.2s;">
+                Export CSV
+            </button>
+        </div>
+    </div>
 
-            <div class="audit-table-wrapper">
-                <table class="audit-log-table" id="auditLogTable">
-                    <thead>
-                        <tr>
-                            <th>Timestamp</th>
-                            <th>Admin Name</th>
-                            <th>Action</th>
-                            <th>Details</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php 
-                        if ($audit_logs && $audit_logs->num_rows > 0):
-                            $audit_logs->data_seek(0); 
-                            while($log = $audit_logs->fetch_assoc()): 
-                                // Map database action to your CSS: create, update, delete
-                                $actionClass = strtolower($log['action_type']);
-                        ?>
-                            <tr>
-                                <td class="time-cell">
-                                    <?php echo date('M d, Y | h:i A', strtotime($log['timestamp'])); ?>
-                                </td>
-                                <td>
-                                    <div style="display: flex; flex-direction: column; gap: 2px;">
-                                        <strong style="color: #f8fafc; font-size: 13px;">
-                                            <?php echo htmlspecialchars($log['admin_name'] ?? 'System / Deleted Admin'); ?>
-                                        </strong>
-                                        <span class="admin-badge" style="width: fit-content; padding: 2px 6px; font-size: 9px;">
-                                            ID: <?php echo $log['admin_id']; ?>
-                                        </span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="action-tag <?php echo $actionClass; ?>">
-                                        <?php echo htmlspecialchars($log['action_type']); ?>
-                                    </span>
-                                </td>
-                                <td class="details-cell" style="max-width: 300px; color: #cbd5e1; font-size: 13px;">
-                                    <?php echo htmlspecialchars($log['details']); ?>
-                                </td>
-                            </tr>
-                        <?php 
-                            endwhile; 
-                        else: 
-                        ?>
-                            <tr>
-                                <td colspan="4" style="text-align: center; padding: 60px; color: #64748b;">
-                                    No activity logs recorded yet.
-                                </td>
-                            </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
-        </section>
+    <div class="audit-table-wrapper">
+        <table class="audit-log-table" id="auditLogTable">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Admin Name</th>
+                    <th>Action</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody id="auditLogBody">
+                <?php 
+                if ($audit_logs && $audit_logs->num_rows > 0):
+                    $audit_logs->data_seek(0); 
+                    while($log = $audit_logs->fetch_assoc()): 
+                        // MAPPING DATABASE ACTIONS TO YOUR CSS CLASSES
+                        $rawAction = strtoupper($log['action_type']);
+                        $classMap = [
+                            'ADD'    => 'create',
+                            'INSERT' => 'create',
+                            'EDIT'   => 'update',
+                            'UPDATE' => 'update',
+                            'DELETE' => 'delete',
+                            'REMOVE' => 'delete',
+                            'LOGIN'  => 'login'
+                        ];
+                        $actionClass = $classMap[$rawAction] ?? 'login';
+                ?>
+                    <tr>
+                        <td class="time-cell">
+                            <?php echo date('M d, Y | h:i A', strtotime($log['timestamp'])); ?>
+                        </td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span class="admin-badge">ID: <?php echo $log['admin_id']; ?></span>
+                                <strong style="color: #f8fafc; font-size: 13px;">
+                                    <?php echo htmlspecialchars($log['admin_name'] ?? 'System'); ?>
+                                </strong>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="action-tag <?php echo $actionClass; ?>">
+                                <?php echo $rawAction; ?>
+                            </span>
+                        </td>
+                        <td class="details-cell" style="max-width: 400px; color: #cbd5e1; line-height: 1.5;">
+                            <?php echo htmlspecialchars($log['details']); ?>
+                        </td>
+                    </tr>
+                <?php 
+                    endwhile; 
+                else: 
+                ?>
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 80px; color: #64748b;">
+                            <div style="font-size: 24px; margin-bottom: 10px;">📋</div>
+                            No activity logs found in the database.
+                        </td>
+                    </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+</section>
 
     <section id="section-analytics" class="app-page">
                 <div class="page-header"><h2>Analytics</h2></div>
@@ -426,15 +484,28 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
 
 
 
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>window.residents = <?php echo json_encode($residentsArray); ?>;</script>
-    <script src="get_maps_data.php"></script>      
-    <script src="../javascript/marker.js"></script>
-    <script src="../javascript/mapModal.js"></script>
-    <script src="../javascript/residentsManagement.js"></script>
-    <script src="../javascript/projectAnalytics.js"></script>
-    <script src="../javascript/menu.js"></script> 
-    <script src="../javascript/map.js"></script>
+    <script>
+    // Residents Data
+    window.residents = <?php echo json_encode($residentsArray); ?>;
+    
+    // Audit Logs Data for Reports
+    window.auditLogs = <?php echo json_encode($auditLogsArray); ?>;
+    
+    console.log("System Ready: " + window.residents.length + " residents and " + window.auditLogs.length + " logs loaded.");
+</script>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script src="get_maps_data.php"></script> 
+
+<script src="../javascript/marker.js"></script>
+<script src="../javascript/mapModal.js"></script>
+<script src="../javascript/residentsManagement.js"></script>
+<script src="../javascript/auditReports.js"></script>
+<script src="../javascript/projectAnalytics.js"></script>
+<script src="../javascript/menu.js"></script> 
+<script src="../javascript/map.js"></script>
+
 </body>
 </html>
