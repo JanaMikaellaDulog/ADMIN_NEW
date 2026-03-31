@@ -4,7 +4,7 @@
 
     document.addEventListener("DOMContentLoaded", () => {
         markerModal = document.getElementById("modalOverlay");
-        markerContent = document.getElementById("modalContent");
+        markerContent = document.getElementById("markerModalContent") || document.getElementById("modalContent");
         markerTitle = document.getElementById("modalTitle");
 
         if (!markerModal || !markerContent) {
@@ -195,13 +195,23 @@
                     <p style="font-size: 12px; color: #475569; margin: 5px 0;">${resident.remarks || "No additional remarks."}</p>
                 </div>
 
-                <button class="primary-btn" style="width: 100%; height: 45px; font-weight: 700;" id="btn-edit-redirect">
-                    GO TO FULL MANAGEMENT PAGE
-                </button>
+                <div class="property-modal-actions">
+                    <button class="primary-btn connovate-btn" style="width: 100%; height: 45px; font-weight: 700;" id="btn-connovate-open">
+                        CONNOVATE
+                    </button>
+                    <button class="primary-btn" style="width: 100%; height: 45px; font-weight: 700;" id="btn-edit-redirect">
+                        GO TO FULL MANAGEMENT PAGE
+                    </button>
+                </div>
             </div>
         `;
 
         document.getElementById('btn-edit-redirect').onclick = () => window.jumpToManagement(resident);
+        document.getElementById('btn-connovate-open').onclick = () => {
+            if (typeof window.openConnovateModal === "function") {
+                window.openConnovateModal(resident, { project, block, lot });
+            }
+        };
 
         } else {
             // VACANT STATE
