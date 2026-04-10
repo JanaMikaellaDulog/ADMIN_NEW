@@ -494,13 +494,25 @@ textarea { min-height: 80px; resize: vertical; }
     box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
 }
 
-.connovate-modal-container {
-    max-width: 720px;
+#connovateModal {
+    align-items: center;
 }
 
-.connovate-modal-body {
+#connovateModal .connovate-modal-container {
+    width: 96vw !important;
+    max-width: 1400px !important;
+    height: 92vh;
+    display: flex;
+    flex-direction: column;
+    border-radius: 16px;
+}
+
+#connovateModal .connovate-modal-body {
     background: #1e293b;
     color: #f8fafc;
+    flex: 1;
+    max-height: none;
+    padding: 18px 22px;
 }
 
 .connovate-hero {
@@ -576,13 +588,19 @@ textarea { min-height: 80px; resize: vertical; }
     line-height: 1.5;
 }
 
-.connovate-modal-footer {
+#connovateModal .connovate-modal-footer {
     justify-content: space-between;
+    padding: 16px 22px;
+}
+
+#connovateModal .modal-top-bar {
+    padding: 16px 26px;
 }
 
 .connovate-floor-panel {
     margin-top: 0;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
+    padding: 12px;
 }
 
 .connovate-svg-frame {
@@ -598,6 +616,18 @@ textarea { min-height: 80px; resize: vertical; }
     height: auto;
 }
 
+#connovateModal .connovate-hero {
+    margin-bottom: 14px;
+    padding: 16px 18px;
+}
+
+@media (min-width: 1200px) {
+    #connovateModal .connovate-floor-image {
+        min-height: 520px;
+        object-fit: contain;
+    }
+}
+
 @media (max-width: 640px) {
     .property-modal-actions,
     .connovate-grid,
@@ -605,6 +635,15 @@ textarea { min-height: 80px; resize: vertical; }
     .connovate-hero {
         grid-template-columns: 1fr;
         flex-direction: column;
+    }
+
+    #connovateModal .connovate-modal-container {
+        width: 98vw !important;
+        height: 94vh;
+    }
+
+    #connovateModal .connovate-modal-body {
+        padding: 14px;
     }
 }
 
@@ -1221,3 +1260,40 @@ textarea { min-height: 80px; resize: vertical; }
 
 .btn-save-admin:hover { background: #b57a05; }
 .btn-cancel:hover { background: #334155; color: #f8fafc; }
+
+.connovate-select {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #475569;
+    background: #0f172a;
+    color: #f8fafc;
+}
+
+.connovate-svg-stage {
+    position: relative;
+    background: #fff;
+    min-height: 520px;
+}
+
+.connovate-floor-object {
+    display: block;
+    width: 100%;
+    min-height: 520px;
+}
+
+.connovate-hotspot-overlay {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.connovate-hotspot-overlay rect {
+    transition: fill-opacity 0.15s ease, stroke 0.15s ease, stroke-width 0.15s ease;
+}
+
+.connovate-panel-modal-container {
+    max-width: 520px;
+}

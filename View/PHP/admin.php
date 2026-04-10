@@ -710,10 +710,10 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
 
 <script src="get_maps_data.php"></script> 
 
-<script src="../javascript/marker.js"></script>
+<script src="../javascript/marker.js?v=<?php echo filemtime(__DIR__ . '/../javascript/marker.js'); ?>"></script>
 <script src="../javascript/ui_utils.js"></script>
-<script src="../javascript/mapModal.js"></script>
-<script src="../javascript/connovateModal.js"></script>
+<script src="../javascript/mapModal.js?v=<?php echo filemtime(__DIR__ . '/../javascript/mapModal.js'); ?>"></script>
+<script src="../javascript/connovateModal.js?v=<?php echo filemtime(__DIR__ . '/../javascript/connovateModal.js'); ?>"></script>
 <script src="../javascript/residentsManagement.js"></script>
 <script src="../javascript/adminManagement.js"></script>
 <script src="../javascript/auditReports.js"></script>
@@ -725,3 +725,4 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
 
 </body>
 </html>
+

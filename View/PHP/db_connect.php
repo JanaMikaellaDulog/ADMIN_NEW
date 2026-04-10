@@ -1,5 +1,5 @@
 <?php
-$host = "127.0.0.1"; // Change from 'localhost' to this
+$host = "localhost"; // Change from 'localhost' to this
 $user = "root";
 $pass = ""; 
 $dbname = "subdivision_management";
