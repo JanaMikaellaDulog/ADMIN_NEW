@@ -10,6 +10,48 @@ document.addEventListener("DOMContentLoaded", () => {
     const addForm = document.getElementById("addResidentForm");
     const editForm = document.getElementById("editResidentForm");
 
+    function getSelectedProjectDetails(selectId) {
+        const select = document.getElementById(selectId);
+        if (!select) return { id: "", name: "" };
+
+        const option = select.options[select.selectedIndex];
+        return {
+            id: String(select.value || "").trim(),
+            name: String(option?.text || "").trim()
+        };
+    }
+
+    function openConnovateFromForm(config) {
+        if (typeof window.openConnovateModal !== "function") return;
+
+        const project = getSelectedProjectDetails(config.projectId);
+        const block = String(document.getElementById(config.blockId)?.value || "").trim();
+        const lot = String(document.getElementById(config.lotId)?.value || "").trim();
+
+        if (!project.id || !project.name || !block || !lot) {
+            alert("Please complete the project, block number, and lot number first.");
+            return;
+        }
+
+        window.openConnovateModal(
+            {
+                resident_id: String(document.getElementById(config.residentId || "")?.value || "").trim(),
+                buyer_name: String(document.getElementById(config.nameId)?.value || "").trim(),
+                resident_status: String(document.getElementById(config.statusId)?.value || "Active").trim(),
+                phase: String(document.getElementById(config.phaseId)?.value || "").trim(),
+                subdivision_id: project.id,
+                block_no: block,
+                lot_no: lot,
+                project: project.name
+            },
+            {
+                project: project.name,
+                block,
+                lot
+            }
+        );
+    }
+
         // ==========================================
         // 1. Render Table Logic (WITH PAGINATION)
         // ==========================================
@@ -435,6 +477,29 @@ document.addEventListener("DOMContentLoaded", () => {
                 window.currentInfoResidentContext || {}
             );
         }
+    };
+
+    window.openConnovateFromAddForm = function() {
+        openConnovateFromForm({
+            projectId: "addProject",
+            blockId: "addBlock",
+            lotId: "addLot",
+            nameId: "addName",
+            statusId: "addStatus",
+            phaseId: "addPhase"
+        });
+    };
+
+    window.openConnovateFromEditForm = function() {
+        openConnovateFromForm({
+            residentId: "editResidentId",
+            projectId: "editProject",
+            blockId: "editBlock",
+            lotId: "editLot",
+            nameId: "editName",
+            statusId: "editStatus",
+            phaseId: "editPhase"
+        });
     };
 
     // ==========================================
