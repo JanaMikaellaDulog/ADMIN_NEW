@@ -52,7 +52,7 @@
                             data="../assets/svg/GroundFloor.svg"
                             aria-label="Connovate floor plan">
                         </object>
-                        <svg id="connovateHotspotOverlay" class="connovate-hotspot-overlay" viewBox="0 0 850 680" preserveAspectRatio="xMidYMid meet"></svg>
+                        <svg id="connovateHotspotOverlay" class="connovate-hotspot-overlay" viewBox="0 0 1191 842" preserveAspectRatio="xMidYMid meet"></svg>
                     </div>
                 </div>
                 <p>Click a highlighted panel section to assign its control number and quantity.</p>

@@ -72,6 +72,26 @@ if ($resQuery) {
     }
 }
 
+$connovateQuery = $conn->query("
+    SELECT
+        id,
+        project_name,
+        floor_name,
+        connovate_part,
+        quantity,
+        created_at AS started_at,
+        completed_at
+    FROM connovate_panels
+    ORDER BY id DESC
+");
+
+$connovatePanelsArray = [];
+if ($connovateQuery) {
+    while ($row = $connovateQuery->fetch_assoc()) {
+        $connovatePanelsArray[] = $row;
+    }
+}
+
 /**
  * 5. SYSTEM LOGS & ADMINISTRATIVE DATA
  */
@@ -127,6 +147,7 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
         <ul class="left-menu-nav">
             <li class="left-menu-item active" data-page="dashboard">DASHBOARD</li>
             <li class="left-menu-item" data-page="residents">RESIDENTS</li>
+            <li class="left-menu-item" data-page="connovate">CONNOVATE</li>
             <li class="left-menu-item" data-page="admins">ADMIN MANAGEMENT</li>
             <li class="left-menu-item" data-page="reports">REPORT</li>
 
@@ -206,6 +227,69 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
                 </table>
             </div>
         </section>
+
+<section id="section-connovate" class="app-page">
+            <div class="page-header" style="margin-bottom: 25px;"><h2>Connovate</h2></div>
+            <div class="connovate-toolbar location-selector-section">
+                <h2 class="section-title">Project Selection</h2>
+                <div class="selector-wrapper connovate-selector-wrapper">
+                    <select id="connovateProjectSelect" class="header-select">
+                        <option value="">-- Select Project --</option>
+                    </select>
+                    <button type="button" id="connovateLoadProjectBtn" class="btn-load">Load Project</button>
+                </div>
+            </div>
+            <div class="connovate-chart-wrapper">
+                <div class="connovate-chart-card connovate-board-card">
+                    <div class="connovate-chart-header">
+                        <div>
+                            <h3 id="connovateBoardTitle">Connovate Panel Board</h3>
+                            <p id="connovateBoardSubtitle">Select a project to view Ground Floor and Second Floor totals.</p>
+                        </div>
+                    </div>
+                    <div class="connovate-board-stage" id="connovateBoardStage">
+                        <div class="connovate-board-strip">
+                            <span class="board-box-label">Project Summary</span>
+                            <strong id="connovateBoardProjectTotal">0</strong>
+                            <small id="connovateBoardProjectMeta">0 records | 0 completed</small>
+                        </div>
+
+                        <div class="connovate-board-main connovate-board-chart-block">
+                            <div class="connovate-chart-frame">
+                                <canvas id="connovateFloorChart"></canvas>
+                            </div>
+                            <div class="connovate-floor-meta">
+                                <span>Ground Floor Panels: <strong id="connovateGroundFloorPanels">0</strong></span>
+                                <span>Ground Floor Done: <strong id="connovateGroundFloorDone">0</strong></span>
+                                <span>Second Floor Panels: <strong id="connovateSecondFloorPanels">0</strong></span>
+                                <span>Second Floor Done: <strong id="connovateSecondFloorDone">0</strong></span>
+                            </div>
+                        </div>
+
+                        <div class="connovate-board-strip connovate-board-strip-bottom">
+                            <span class="board-box-label">Remaining Summary</span>
+                            <strong id="connovateBoardRemainingQuantity">0</strong>
+                            <small id="connovateBoardRemainingMeta">Pending quantity</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="connovate-panel-toolbar" style="display: flex; justify-content: space-between; align-items: center; margin-top: 30px; margin-bottom: 20px;">
+                <h3 style="color: #f8fafc; margin: 0; font-size: 16px; font-weight: 600;">Connovate Parts List</h3>
+                <div id="connovateFilterContainer" style="display: flex; gap: 10px; align-items: center;"></div>
+            </div>
+            <div class="connovate-table-wrapper">
+                <table class="connovate-table">
+                    <thead>
+                        <tr>
+                            <th>Connovate Part</th><th>Quantity</th>
+                        </tr>
+                    </thead>
+                    <tbody id="connovateTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
 
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal-container" style="max-width: 650px;">
@@ -726,9 +810,10 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
 </div>
 
 
-    <script>
+<script>
     // Residents Data (Fail-safe: defaults to empty array if null)
     window.residents = <?php echo json_encode($residentsArray ?? []); ?>;
+    window.connovatePanels = <?php echo json_encode($connovatePanelsArray ?? []); ?>;
     
     // Audit Logs Data (Using the processed array from your PHP update)
     window.auditLogs = <?php echo json_encode($auditLogsArray ?? []); ?>;
@@ -750,6 +835,7 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
 <script src="../javascript/mapModal.js?v=<?php echo filemtime(__DIR__ . '/../javascript/mapModal.js'); ?>"></script>
 <script src="../javascript/connovateModal.js?v=<?php echo filemtime(__DIR__ . '/../javascript/connovateModal.js'); ?>"></script>
 <script src="../javascript/residentsManagement.js"></script>
+<script src="../javascript/connovateManagement.js?v=<?php echo filemtime(__DIR__ . '/../javascript/connovateManagement.js'); ?>"></script>
 <script src="../javascript/adminManagement.js"></script>
 <script src="../javascript/auditReports.js"></script>
 <script src="../javascript/projectAnalytics.js"></script>

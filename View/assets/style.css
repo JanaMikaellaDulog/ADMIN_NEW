@@ -77,6 +77,7 @@ html, body {
 
 #section-dashboard { background: #f4f6f9; }
 #section-residents { background: #0f172a; color: #e2e8f0; }
+#section-connovate { background: #0f172a; color: #e2e8f0; }
 /* Add this to Section 3 where the other section backgrounds are */
 #section-admins { background: #0f172a; color: #e2e8f0; }
 
@@ -345,6 +346,34 @@ html, body {
     color: #d49006;
     text-transform: uppercase;
     margin-bottom: 4px;
+}
+
+.connovate-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 2px; /* Tighter for detail rows */
+}
+
+.connovate-table th {
+    padding: 15px;
+    text-align: left;
+    color: #94a3b8;
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+.connovate-table td {
+    padding: 12px 15px;
+    background: #1e293b;
+    font-size: 14px;
+    color: #e2e8f0;
+}
+
+.connovate-panel-toolbar {
+    background: #1e293b;
+    padding: 15px 20px;
+    border-radius: 10px;
+    border: 1px solid #334155;
 }
 
 /* =========================
@@ -864,6 +893,240 @@ textarea { min-height: 80px; resize: vertical; }
 .audit-table-wrapper::-webkit-scrollbar-thumb {
     background: #334155;
     border-radius: 10px;
+}
+
+.connovate-chart-wrapper {
+    margin-top: 10px;
+}
+
+.connovate-toolbar.location-selector-section {
+    margin-bottom: 20px;
+}
+
+.connovate-selector-wrapper {
+    display: flex;
+    gap: 15px;
+    margin-top: 15px;
+    width: 100%;
+    align-items: center;
+}
+
+.connovate-selector-wrapper .header-select {
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+}
+
+.connovate-selector-wrapper .btn-load {
+    flex: 0 0 auto;
+}
+
+.connovate-chart-card {
+    background: linear-gradient(180deg, #1e293b 0%, #172033 100%);
+    border: 1px solid #334155;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.28);
+}
+
+.connovate-chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.connovate-chart-header h3 {
+    margin: 0;
+    color: #f8fafc;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.connovate-chart-header p {
+    margin: 6px 0 0;
+    color: #94a3b8;
+    font-size: 13px;
+}
+
+.connovate-board-stage {
+    display: grid;
+    gap: 16px;
+}
+
+.connovate-board-strip {
+    background: #f8fafc;
+    border: 5px solid #111111;
+    color: #0f172a;
+    border-radius: 0;
+    padding: 14px 18px;
+}
+
+.connovate-board-strip strong {
+    display: block;
+    margin-top: 8px;
+    font-size: 28px;
+    line-height: 1;
+    font-weight: 800;
+}
+
+.board-box-label {
+    display: block;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #475569;
+    font-weight: 800;
+}
+
+.connovate-board-strip {
+    min-height: 28px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.connovate-board-strip small {
+    margin-top: 6px;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.connovate-board-main {
+    display: grid;
+    gap: 12px;
+}
+
+.connovate-board-chart-block {
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.82) 0%, rgba(17, 24, 39, 0.92) 100%);
+    border: 1px solid rgba(71, 85, 105, 0.75);
+    border-radius: 14px;
+    padding: 18px 18px 12px;
+}
+
+.connovate-chart-frame {
+    position: relative;
+    min-height: 440px;
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.78) 0%, rgba(17, 24, 39, 0.94) 100%);
+    border-radius: 8px;
+    padding: 14px 14px 4px;
+    border: 1px solid rgba(71, 85, 105, 0.55);
+}
+
+.connovate-floor-meta {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    font-size: 14px;
+    color: #e2e8f0;
+    font-weight: 700;
+    margin-top: 10px;
+    border-top: 1px solid #334155;
+    padding-top: 12px;
+}
+
+.connovate-chart-stage {
+    position: relative;
+    min-height: 360px;
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.82) 0%, rgba(17, 24, 39, 0.92) 100%);
+    border: 1px solid rgba(71, 85, 105, 0.75);
+    border-radius: 14px;
+    padding: 16px;
+}
+
+.connovate-chart-stage.is-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#connovateTimelineChart {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 320px;
+}
+
+.connovate-chart-empty {
+    color: #94a3b8;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.connovate-chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 14px;
+    color: #cbd5e1;
+    font-size: 12px;
+}
+
+.connovate-chart-legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.legend-swatch {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+}
+
+.legend-swatch.done {
+    background: #8bbdf0;
+}
+
+.legend-swatch.pending {
+    background: #f4a261;
+}
+
+.legend-swatch.finished {
+    width: 10px;
+    height: 10px;
+    background: #111827;
+    transform: rotate(45deg);
+    border-radius: 1px;
+}
+
+.legend-swatch.unfinished {
+    width: 10px;
+    height: 10px;
+    background: #ffffff;
+    border: 1px solid #7c2d12;
+    transform: rotate(45deg);
+    border-radius: 1px;
+}
+
+.legend-swatch.today {
+    width: 2px;
+    height: 14px;
+    background: #75b84b;
+    border-radius: 999px;
+    box-shadow: 0 0 0 2px rgba(117, 184, 75, 0.15);
+}
+
+@media (max-width: 768px) {
+    .connovate-selector-wrapper {
+        flex-direction: column;
+    }
+
+    .connovate-selector-wrapper .btn-load {
+        width: 100%;
+    }
+
+    .connovate-board-main {
+        grid-template-columns: 1fr;
+    }
+
+    .connovate-floor-meta {
+        grid-template-columns: 1fr 1fr;
+    }
 }
 
 

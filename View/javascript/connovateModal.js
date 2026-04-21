@@ -29,6 +29,16 @@
         "SECOND FLOOR": "../assets/svg/SecondFloor.svg"
     };
 
+    const CONNOVATE_BASE_COORDINATES = {
+        width: 850,
+        height: 680
+    };
+
+    const CONNOVATE_RENDER_COORDINATES = {
+        width: 1191,
+        height: 842
+    };
+
     const CONNOVATE_HOTSPOTS = {
         "GROUND FLOOR": [
             { id: "gf-top-beam", x: 330, y: 40, width: 355, height: 22 },
@@ -221,6 +231,18 @@
         element.style.fillOpacity = isDone ? "0.35" : "0.001";
     }
 
+    function scaleHotspotRect(hotspot) {
+        const scaleX = CONNOVATE_RENDER_COORDINATES.width / CONNOVATE_BASE_COORDINATES.width;
+        const scaleY = CONNOVATE_RENDER_COORDINATES.height / CONNOVATE_BASE_COORDINATES.height;
+
+        return {
+            x: hotspot.x * scaleX,
+            y: hotspot.y * scaleY,
+            width: hotspot.width * scaleX,
+            height: hotspot.height * scaleY
+        };
+    }
+
     function renderHotspots() {
         if (!connovateHotspotOverlay) return;
         const floor = getFloorKey();
@@ -231,11 +253,12 @@
         clearSelectedPanel();
 
         hotspots.forEach((hotspot) => {
+            const scaledRect = scaleHotspotRect(hotspot);
             const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-            rect.setAttribute("x", String(hotspot.x));
-            rect.setAttribute("y", String(hotspot.y));
-            rect.setAttribute("width", String(hotspot.width));
-            rect.setAttribute("height", String(hotspot.height));
+            rect.setAttribute("x", String(scaledRect.x));
+            rect.setAttribute("y", String(scaledRect.y));
+            rect.setAttribute("width", String(scaledRect.width));
+            rect.setAttribute("height", String(scaledRect.height));
             rect.setAttribute("rx", "2");
             rect.setAttribute("ry", "2");
             rect.dataset.hotspotId = hotspot.id;

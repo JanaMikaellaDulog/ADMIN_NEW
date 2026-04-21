@@ -15,7 +15,7 @@ if ($project === '' || $block === '' || $lot === '') {
     exit;
 }
 
-$sql = "SELECT floor_name, panel_key, control_number, quantity, status, completed_by_id, completed_by, completed_at
+$sql = "SELECT floor_name, panel_key, control_number, quantity, status, completed_by_id, completed_by, created_at AS started_at, completed_at
         FROM connovate_panels
         WHERE project_name = ?
           AND block_no = ?
@@ -46,6 +46,7 @@ while ($row = $result->fetch_assoc()) {
         'status' => trim($row['status'] ?? 'done'),
         'completedById' => isset($row['completed_by_id']) ? (int)$row['completed_by_id'] : null,
         'completedBy' => trim($row['completed_by'] ?? ''),
+        'startedAt' => trim($row['started_at'] ?? ''),
         'completedAt' => trim($row['completed_at'] ?? '')
     ];
 }
