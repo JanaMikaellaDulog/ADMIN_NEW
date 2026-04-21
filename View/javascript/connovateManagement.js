@@ -3,10 +3,38 @@ document.addEventListener("DOMContentLoaded", () => {
         window.connovatePanels = [];
     }
 
+    const ALLOWED_CONNOVATE_PARTS = [
+        "TDX-001A",
+        "TDX-002A",
+        "TDX-003A",
+        "TDX-004A",
+        "TIR-214A",
+        "TDX-206A",
+        "TDX-205A",
+        "TDX-220A",
+        "TDX-219A",
+        "TDX-201A",
+        "TIR-201A",
+        "TIR-207A",
+        "TDX-204A",
+        "TDX-203A",
+        "TDX-216A",
+        "TDX-215A",
+        "TDX-213A",
+        "TDX-212A",
+        "TIR-209A",
+        "TIR-208A",
+        "TDX-208A",
+        "TDX-211A",
+        "TDX-210A",
+        "TDX-218A",
+        "TDX-217A"
+    ];
+    const allowedPartSet = new Set(ALLOWED_CONNOVATE_PARTS);
+
     const connovateSection = document.getElementById("section-connovate");
     const toolbar = document.querySelector(".connovate-toolbar");
     const projectSelect = document.getElementById("connovateProjectSelect");
-    const loadProjectButton = document.getElementById("connovateLoadProjectBtn");
     const boardTitle = document.getElementById("connovateBoardTitle");
     const boardSubtitle = document.getElementById("connovateBoardSubtitle");
     const boardEmpty = document.getElementById("connovateChartEmpty");
@@ -41,6 +69,31 @@ document.addEventListener("DOMContentLoaded", () => {
         return Number.isFinite(numeric) ? numeric : 0;
     }
 
+    function normalizePart(value) {
+        return normalize(value).toUpperCase();
+    }
+
+    function getAggregatedParts(rows, floorFilter = "") {
+        const totals = new Map();
+
+        rows.forEach((panel) => {
+            const panelFloor = normalize(panel.floor_name).toUpperCase();
+            const partName = normalizePart(panel.connovate_part);
+
+            if (floorFilter && panelFloor !== floorFilter) return;
+            if (!allowedPartSet.has(partName)) return;
+
+            totals.set(partName, (totals.get(partName) || 0) + toNumber(panel.quantity));
+        });
+
+        return ALLOWED_CONNOVATE_PARTS
+            .filter((partName) => totals.has(partName))
+            .map((partName) => ({
+                connovate_part: partName,
+                quantity: totals.get(partName) || 0
+            }));
+    }
+
     function ensureStatsCards() {
         if (!connovateSection || !toolbar) return null;
 
@@ -52,12 +105,12 @@ document.addEventListener("DOMContentLoaded", () => {
         ribbon.className = "stats-ribbon";
         ribbon.innerHTML = `
             <div class="stat-card">
-                <div class="stat-label">Total Records</div>
-                <div class="stat-value" id="connovateTotalRecords">0</div>
+                <div class="stat-label">Finished</div>
+                <div class="stat-value" id="connovateFinishedProjects">0</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Active Projects</div>
-                <div class="stat-value" id="connovateActiveProjects">0</div>
+                <div class="stat-label">Unfinished House</div>
+                <div class="stat-value" id="connovateInProgressProjects">0</div>
             </div>
             <div class="stat-card">
                 <div class="stat-label">Total Quantity</div>
@@ -74,38 +127,104 @@ document.addEventListener("DOMContentLoaded", () => {
         if (element) element.textContent = String(value);
     }
 
+    function isPanelDone(panel) {
+        const status = normalize(panel.status).toLowerCase();
+        return status === "done" || Boolean(normalize(panel.completed_at));
+    }
+
+    function getFilteredHouses(projectFilter = "") {
+        const selectedProject = normalize(projectFilter).toLowerCase();
+        const houses = new Map();
+
+        (Array.isArray(window.residents) ? window.residents : []).forEach((resident) => {
+            const projectName = normalize(resident.project);
+            const blockNo = normalize(resident.block_no);
+            const lotNo = normalize(resident.lot_no);
+            const mapKey = [projectName, blockNo, lotNo].join("|");
+
+            if (!projectName || !blockNo || !lotNo) return;
+            if (selectedProject && projectName.toLowerCase() !== selectedProject) return;
+
+            if (!houses.has(mapKey)) {
+                houses.set(mapKey, {
+                    projectName,
+                    blockNo,
+                    lotNo
+                });
+            }
+        });
+
+        return houses;
+    }
+
     function updateStatsCards(rows) {
         ensureStatsCards();
 
-        const totalRecordsEl = document.getElementById("connovateTotalRecords");
-        const activeProjectsEl = document.getElementById("connovateActiveProjects");
+        const finishedProjectsEl = document.getElementById("connovateFinishedProjects");
+        const inProgressProjectsEl = document.getElementById("connovateInProgressProjects");
         const totalQuantityEl = document.getElementById("connovateTotalQuantity");
 
-        const uniqueProjects = new Set();
+        const houses = getFilteredHouses(projectSelect?.value || "");
+        const mapProgress = new Map();
         let totalQuantity = 0;
 
         rows.forEach((panel) => {
             const projectName = normalize(panel.project_name);
-            if (projectName) uniqueProjects.add(projectName);
+            const blockNo = normalize(panel.block_no);
+            const lotNo = normalize(panel.lot_no);
+            const floorName = normalize(panel.floor_name).toUpperCase();
+            const mapKey = [projectName, blockNo, lotNo].join("|");
+
             totalQuantity += toNumber(panel.quantity);
+
+            if (!projectName || !blockNo || !lotNo || !floorName) return;
+            if (!isPanelDone(panel)) return;
+
+            if (!mapProgress.has(mapKey)) {
+                mapProgress.set(mapKey, {
+                    groundDone: false,
+                    secondDone: false
+                });
+            }
+
+            const progress = mapProgress.get(mapKey);
+            if (floorName === "GROUND FLOOR") {
+                progress.groundDone = true;
+            }
+            if (floorName === "SECOND FLOOR") {
+                progress.secondDone = true;
+            }
         });
 
-        if (totalRecordsEl) totalRecordsEl.textContent = String(rows.length);
-        if (activeProjectsEl) activeProjectsEl.textContent = String(uniqueProjects.size);
+        let finishedProjects = 0;
+        houses.forEach((house, mapKey) => {
+            const progress = mapProgress.get(mapKey) || {
+                groundDone: false,
+                secondDone: false
+            };
+
+            if (progress.groundDone && progress.secondDone) {
+                finishedProjects += 1;
+            }
+        });
+        const inProgressProjects = Math.max(houses.size - finishedProjects, 0);
+
+        if (finishedProjectsEl) finishedProjectsEl.textContent = String(finishedProjects);
+        if (inProgressProjectsEl) inProgressProjectsEl.textContent = String(inProgressProjects);
         if (totalQuantityEl) totalQuantityEl.textContent = String(totalQuantity);
     }
 
     function populateConnovateTable(floorFilter = "") {
         const rows = getFilteredRows(projectSelect?.value || "");
-        const filteredRows = rows.filter(panel => !floorFilter || normalize(panel.floor_name).toUpperCase() === floorFilter);
+        const aggregatedRows = getAggregatedParts(rows, floorFilter);
 
         const tableBody = document.getElementById("connovateTableBody");
         if (tableBody) {
             tableBody.innerHTML = "";
-            filteredRows.forEach((panel) => {
+            aggregatedRows.forEach((panel) => {
                 const row = document.createElement("tr");
                 const partCell = document.createElement("td");
-                partCell.textContent = normalize(panel.connovate_part);
+                partCell.textContent = panel.connovate_part;
                 const quantityCell = document.createElement("td");
                 quantityCell.textContent = toNumber(panel.quantity);
                 row.appendChild(partCell);
@@ -211,8 +330,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     {
                         label: "Completed Panels",
                         data: [ground.donePanels, second.donePanels],
-                        backgroundColor: "#475569",
-                        borderColor: "#475569",
+                        backgroundColor: "#16a34a",
+                        borderColor: "#16a34a",
                         borderWidth: 1,
                         stack: "panels",
                         categoryPercentage: 0.58,
@@ -224,8 +343,8 @@ document.addEventListener("DOMContentLoaded", () => {
                             Math.max(ground.panelCount - ground.donePanels, 0),
                             Math.max(second.panelCount - second.donePanels, 0)
                         ],
-                        backgroundColor: "#f59e0b",
-                        borderColor: "#f59e0b",
+                        backgroundColor: "#475569",
+                        borderColor: "#475569",
                         borderWidth: 1,
                         stack: "panels",
                         categoryPercentage: 0.58,
@@ -343,12 +462,6 @@ document.addEventListener("DOMContentLoaded", () => {
     populateProjectOptions();
     ensureStatsCards();
     renderConnovateBoard("");
-
-    if (loadProjectButton) {
-        loadProjectButton.addEventListener("click", () => {
-            renderConnovateBoard(projectSelect?.value || "");
-        });
-    }
 
     if (projectSelect) {
         projectSelect.addEventListener("change", () => {

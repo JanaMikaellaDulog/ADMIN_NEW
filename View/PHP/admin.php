@@ -76,9 +76,13 @@ $connovateQuery = $conn->query("
     SELECT
         id,
         project_name,
+        block_no,
+        lot_no,
         floor_name,
+        panel_key,
         connovate_part,
         quantity,
+        status,
         created_at AS started_at,
         completed_at
     FROM connovate_panels
@@ -236,7 +240,6 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
                     <select id="connovateProjectSelect" class="header-select">
                         <option value="">-- Select Project --</option>
                     </select>
-                    <button type="button" id="connovateLoadProjectBtn" class="btn-load">Load Project</button>
                 </div>
             </div>
             <div class="connovate-chart-wrapper">
