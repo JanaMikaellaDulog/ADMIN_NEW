@@ -73,6 +73,10 @@ document.addEventListener("DOMContentLoaded", () => {
         return normalize(value).toUpperCase();
     }
 
+    function normalizeFloor(value) {
+        return normalize(value).toUpperCase();
+    }
+
     function getAggregatedParts(rows, floorFilter = "") {
         const totals = new Map();
 
@@ -113,7 +117,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div class="stat-value" id="connovateInProgressProjects">0</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Total Quantity</div>
+                <div class="stat-label">Total Connovate</div>
                 <div class="stat-value" id="connovateTotalQuantity">0</div>
             </div>
         `;
@@ -132,25 +136,55 @@ document.addEventListener("DOMContentLoaded", () => {
         return status === "done" || Boolean(normalize(panel.completed_at));
     }
 
-    function getFilteredHouses(projectFilter = "") {
-        const selectedProject = normalize(projectFilter).toLowerCase();
+    function createFloorSummary() {
+        return {
+            hasRecords: false,
+            totalQuantity: 0,
+            doneQuantity: 0,
+            remainingQuantity: 0,
+            allDone: true
+        };
+    }
+
+    function getHouseProgress(rows) {
         const houses = new Map();
 
-        (Array.isArray(window.residents) ? window.residents : []).forEach((resident) => {
-            const projectName = normalize(resident.project);
-            const blockNo = normalize(resident.block_no);
-            const lotNo = normalize(resident.lot_no);
+        rows.forEach((panel) => {
+            const projectName = normalize(panel.project_name);
+            const blockNo = normalize(panel.block_no);
+            const lotNo = normalize(panel.lot_no);
+            const floorName = normalizeFloor(panel.floor_name);
+            const quantity = toNumber(panel.quantity);
+
+            if (!projectName || !blockNo || !lotNo || !floorName) return;
+
             const mapKey = [projectName, blockNo, lotNo].join("|");
-
-            if (!projectName || !blockNo || !lotNo) return;
-            if (selectedProject && projectName.toLowerCase() !== selectedProject) return;
-
             if (!houses.has(mapKey)) {
                 houses.set(mapKey, {
                     projectName,
                     blockNo,
-                    lotNo
+                    lotNo,
+                    floors: {
+                        "GROUND FLOOR": createFloorSummary(),
+                        "SECOND FLOOR": createFloorSummary()
+                    }
                 });
+            }
+
+            const house = houses.get(mapKey);
+            if (!house.floors[floorName]) {
+                house.floors[floorName] = createFloorSummary();
+            }
+
+            const floor = house.floors[floorName];
+            floor.hasRecords = true;
+            floor.totalQuantity += quantity;
+
+            if (isPanelDone(panel)) {
+                floor.doneQuantity += quantity;
+            } else {
+                floor.remainingQuantity += quantity;
+                floor.allDone = false;
             }
         });
 
@@ -163,55 +197,26 @@ document.addEventListener("DOMContentLoaded", () => {
         const finishedProjectsEl = document.getElementById("connovateFinishedProjects");
         const inProgressProjectsEl = document.getElementById("connovateInProgressProjects");
         const totalQuantityEl = document.getElementById("connovateTotalQuantity");
-
-        const houses = getFilteredHouses(projectSelect?.value || "");
-        const mapProgress = new Map();
-        let totalQuantity = 0;
-
-        rows.forEach((panel) => {
-            const projectName = normalize(panel.project_name);
-            const blockNo = normalize(panel.block_no);
-            const lotNo = normalize(panel.lot_no);
-            const floorName = normalize(panel.floor_name).toUpperCase();
-            const mapKey = [projectName, blockNo, lotNo].join("|");
-
-            totalQuantity += toNumber(panel.quantity);
-
-            if (!projectName || !blockNo || !lotNo || !floorName) return;
-            if (!isPanelDone(panel)) return;
-
-            if (!mapProgress.has(mapKey)) {
-                mapProgress.set(mapKey, {
-                    groundDone: false,
-                    secondDone: false
-                });
-            }
-
-            const progress = mapProgress.get(mapKey);
-            if (floorName === "GROUND FLOOR") {
-                progress.groundDone = true;
-            }
-            if (floorName === "SECOND FLOOR") {
-                progress.secondDone = true;
-            }
-        });
+        const houses = getHouseProgress(rows);
 
         let finishedProjects = 0;
-        houses.forEach((house, mapKey) => {
-            const progress = mapProgress.get(mapKey) || {
-                groundDone: false,
-                secondDone: false
-            };
+        let inProgressProjects = 0;
 
-            if (progress.groundDone && progress.secondDone) {
+        houses.forEach((house) => {
+            const ground = house.floors["GROUND FLOOR"] || createFloorSummary();
+            const second = house.floors["SECOND FLOOR"] || createFloorSummary();
+            const isFinished = ground.hasRecords && second.hasRecords && ground.allDone && second.allDone;
+
+            if (isFinished) {
                 finishedProjects += 1;
+            } else {
+                inProgressProjects += 1;
             }
         });
-        const inProgressProjects = Math.max(houses.size - finishedProjects, 0);
 
         if (finishedProjectsEl) finishedProjectsEl.textContent = String(finishedProjects);
         if (inProgressProjectsEl) inProgressProjectsEl.textContent = String(inProgressProjects);
-        if (totalQuantityEl) totalQuantityEl.textContent = String(totalQuantity);
+        if (totalQuantityEl) totalQuantityEl.textContent = String(houses.size);
     }
 
     function populateConnovateTable(floorFilter = "") {
@@ -268,19 +273,27 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function summarizeFloor(rows, floorName) {
-        const floorRows = rows.filter((panel) => normalize(panel.floor_name).toUpperCase() === floorName);
+        const floorRows = rows.filter((panel) => normalizeFloor(panel.floor_name) === floorName);
         let totalQuantity = 0;
-        let donePanels = 0;
+        let doneQuantity = 0;
+        let remainingQuantity = 0;
 
         floorRows.forEach((panel) => {
-            totalQuantity += toNumber(panel.quantity);
-            if (normalize(panel.completed_at)) donePanels += 1;
+            const quantity = toNumber(panel.quantity);
+            totalQuantity += quantity;
+
+            if (isPanelDone(panel)) {
+                doneQuantity += quantity;
+            } else {
+                remainingQuantity += quantity;
+            }
         });
 
         return {
-            panelCount: floorRows.length,
+            recordCount: floorRows.length,
             totalQuantity,
-            donePanels
+            doneQuantity,
+            remainingQuantity
         };
     }
 
@@ -302,8 +315,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 const { ctx, scales } = chart;
                 const meta = chart.getDatasetMeta(1);
                 const totals = [
-                    ground.donePanels + Math.max(ground.panelCount - ground.donePanels, 0),
-                    second.donePanels + Math.max(second.panelCount - second.donePanels, 0)
+                    ground.totalQuantity,
+                    second.totalQuantity
                 ];
 
                 ctx.save();
@@ -328,8 +341,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 labels: ["Ground Floor", "Second Floor"],
                 datasets: [
                     {
-                        label: "Completed Panels",
-                        data: [ground.donePanels, second.donePanels],
+                        label: "Produced Parts",
+                        data: [ground.doneQuantity, second.doneQuantity],
                         backgroundColor: "#16a34a",
                         borderColor: "#16a34a",
                         borderWidth: 1,
@@ -338,10 +351,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         barPercentage: 0.82
                     },
                     {
-                        label: "Remaining Panels",
+                        label: "Remaining Parts",
                         data: [
-                            Math.max(ground.panelCount - ground.donePanels, 0),
-                            Math.max(second.panelCount - second.donePanels, 0)
+                            ground.remainingQuantity,
+                            second.remainingQuantity
                         ],
                         backgroundColor: "#475569",
                         borderColor: "#475569",
@@ -432,7 +445,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (boardTitle) boardTitle.textContent = `${projectName} Connovate Board`;
         if (boardSubtitle) {
             boardSubtitle.textContent = rows.length
-                ? "Ground Floor and Second Floor panel progress in stacked bar format."
+                ? "Ground Floor and Second Floor produced vs remaining parts."
                 : "Select a project to view Ground Floor and Second Floor totals.";
         }
 
@@ -440,21 +453,21 @@ document.addEventListener("DOMContentLoaded", () => {
         const second = summarizeFloor(rows, "SECOND FLOOR");
         const totalQuantity = ground.totalQuantity + second.totalQuantity;
         const totalRecords = rows.length;
-        const completedRecords = rows.filter((panel) => normalize(panel.completed_at)).length;
-        const remainingQuantity = Math.max(totalRecords - completedRecords, 0);
+        const completedQuantity = ground.doneQuantity + second.doneQuantity;
+        const remainingQuantity = ground.remainingQuantity + second.remainingQuantity;
         const projectMeta = document.getElementById("connovateBoardProjectMeta");
         const remainingMeta = document.getElementById("connovateBoardRemainingMeta");
 
         setText("connovateBoardProjectTotal", totalQuantity);
-        setText("connovateGroundFloorPanels", ground.panelCount);
-        setText("connovateGroundFloorDone", ground.donePanels);
-        setText("connovateSecondFloorPanels", second.panelCount);
-        setText("connovateSecondFloorDone", second.donePanels);
+        setText("connovateGroundFloorPanels", ground.totalQuantity);
+        setText("connovateGroundFloorDone", ground.doneQuantity);
+        setText("connovateSecondFloorPanels", second.totalQuantity);
+        setText("connovateSecondFloorDone", second.doneQuantity);
         setText("connovateBoardRemainingQuantity", remainingQuantity);
         renderFloorChart(ground, second);
 
-        if (projectMeta) projectMeta.textContent = `${totalRecords} records | ${completedRecords} completed`;
-        if (remainingMeta) remainingMeta.textContent = `${remainingQuantity} panel records still pending`;
+        if (projectMeta) projectMeta.textContent = `${totalRecords} records | ${completedQuantity} produced parts`;
+        if (remainingMeta) remainingMeta.textContent = `${remainingQuantity} remaining parts`;
 
         populateConnovateTable(currentFloorFilter);
     }

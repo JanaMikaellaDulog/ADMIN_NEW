@@ -262,10 +262,10 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
                                 <canvas id="connovateFloorChart"></canvas>
                             </div>
                             <div class="connovate-floor-meta">
-                                <span>Ground Floor Panels: <strong id="connovateGroundFloorPanels">0</strong></span>
-                                <span>Ground Floor Done: <strong id="connovateGroundFloorDone">0</strong></span>
-                                <span>Second Floor Panels: <strong id="connovateSecondFloorPanels">0</strong></span>
-                                <span>Second Floor Done: <strong id="connovateSecondFloorDone">0</strong></span>
+                                <span>Ground Floor Parts: <strong id="connovateGroundFloorPanels">0</strong></span>
+                                <span>Ground Floor Produced: <strong id="connovateGroundFloorDone">0</strong></span>
+                                <span>Second Floor Parts: <strong id="connovateSecondFloorPanels">0</strong></span>
+                                <span>Second Floor Produced: <strong id="connovateSecondFloorDone">0</strong></span>
                             </div>
                         </div>
 
