@@ -152,8 +152,10 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
             <li class="left-menu-item active" data-page="dashboard">DASHBOARD</li>
             <li class="left-menu-item" data-page="residents">RESIDENTS</li>
             <li class="left-menu-item" data-page="connovate">CONNOVATE</li>
+            <li class="left-menu-item" data-page="solar">SOLAR PANELS</li>
             <li class="left-menu-item" data-page="admins">ADMIN MANAGEMENT</li>
             <li class="left-menu-item" data-page="reports">REPORT</li>
+
 
             <li class="left-menu-item logout-item" onclick="confirmLogout(event)">LOG OUT</li>
         </ul>
@@ -532,6 +534,7 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
     </div>
 
 <?php include('connovate.php'); ?>
+<?php include('solar_panels.php'); ?>
 
         <section id="section-reports" class="app-page">
     <div class="page-header" style="margin-bottom: 25px; display: flex; justify-content: space-between; align-items: flex-end;">
