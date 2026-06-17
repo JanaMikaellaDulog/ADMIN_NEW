@@ -820,6 +820,7 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
     // Residents Data (Fail-safe: defaults to empty array if null)
     window.residents = <?php echo json_encode($residentsArray ?? []); ?>;
     window.connovatePanels = <?php echo json_encode($connovatePanelsArray ?? []); ?>;
+
     
     // Audit Logs Data (Using the processed array from your PHP update)
     window.auditLogs = <?php echo json_encode($auditLogsArray ?? []); ?>;
@@ -847,7 +848,9 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
 <script src="../javascript/projectAnalytics.js"></script>
 <script src="../javascript/menu.js"></script> 
 <script src="../javascript/map.js"></script>
-<script src="../javascript/logOut.js"></script>
+<script src="../javascript/logOut.js"></script>`
+<script src="../javascript/solarPanels.js"></script>
+
 
 
 </body>
