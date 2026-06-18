@@ -3,34 +3,96 @@
     let currentResident = null;
     let currentContext = null;
     let currentProofFile = "";
+    let solarChart = null;
 
     const ENDPOINTS = {
-        load: "../PHP/get_solar_panels.php",
-        save: "../PHP/save_solar_panel.php",
-        upload: "../PHP/upload_solar_proof.php"
+        load: "get_solar_panels.php",
+        save: "save_solar_panel.php",
+        upload: "upload_solar_proof.php"
     };
 
 
+function renderSolarAnalytics(rows = []) {
+    rows = Array.isArray(rows) ? rows : [];
 
-    function renderSolarTab() {
+    const installed = rows.filter(row => String(row.solar_status || "").toLowerCase() === "installed").length;
+    const notInstalled = rows.length - installed;
+
+    const installedEl = document.getElementById("solarBoardInstalled");
+    const notInstalledEl = document.getElementById("solarBoardNotInstalled");
+    const completionEl = document.getElementById("solarCompletionRate");
+    const remainingEl = document.getElementById("solarBoardRemaining");
+    const metaEl = document.getElementById("solarBoardMeta");
+
+    const total = rows.length;
+
+    const completionRate = total > 0
+        ? Math.round((installed / total) * 100)
+        : 0;
+
+    if (installedEl) installedEl.textContent = installed;
+    if (notInstalledEl) notInstalledEl.textContent = notInstalled;
+
+    if (completionEl) {
+        completionEl.textContent = completionRate + "%";
+    }
+
+    if (remainingEl) {
+        remainingEl.textContent = notInstalled;
+    }
+
+    if (metaEl) {
+        metaEl.textContent = `${installed} of ${total} houses installed`;
+    }
+    const canvas = document.getElementById("solarStatusChart");
+    if (!canvas || typeof Chart === "undefined") return;
+
+    if (solarChart) solarChart.destroy();
+
+    solarChart = new Chart(canvas.getContext("2d"), {
+        type: "bar",
+        data: {
+            labels: ["Installed", "Not Installed"],
+            datasets: [{
+                label: "Solar Status",
+                data: [installed, notInstalled],
+                backgroundColor: ["#16a34a", "#475569"],
+                borderColor: ["#16a34a", "#475569"],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+}
+
+
+function renderSolarTab() {
     if (!Array.isArray(window.solarPanels)) {
         window.solarPanels = [];
     }
 
+    const rows = window.solarPanels;
+
     populateSolarProjects();
-    updateSolarStats(window.solarPanels);
-    renderSolarTable(window.solarPanels);
+    updateSolarStats(rows);
+    renderSolarTable(rows);
+    renderSolarAnalytics(rows);
 
     const projectSelect = document.getElementById("solarProjectSelect");
     if (projectSelect) {
         projectSelect.addEventListener("change", () => {
             const selectedProject = projectSelect.value;
+
             const filtered = selectedProject
                 ? window.solarPanels.filter(row => String(row.project_name || "") === selectedProject)
                 : window.solarPanels;
 
             updateSolarStats(filtered);
             renderSolarTable(filtered);
+            renderSolarAnalytics(filtered);
         });
     }
 }
@@ -241,7 +303,7 @@ function populateSolarProjects() {
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-        solarModal = document.getElementById("solarModal");
+        solarModal = document.getElementById("solarEditModal")
         renderSolarTab();
 
         const form = document.getElementById("solarPanelForm");
@@ -257,7 +319,7 @@ function populateSolarProjects() {
     });
 
     window.openSolarModal = function (resident = {}, context = {}) {
-        if (!solarModal) solarModal = document.getElementById("solarModal");
+        if (!solarModal) solarModal = document.getElementById("solarEditModal")
         if (!solarModal) return;
 
         currentResident = resident;
@@ -288,7 +350,7 @@ function populateSolarProjects() {
     };
 
     window.closeSolarModal = function () {
-        if (!solarModal) solarModal = document.getElementById("solarModal");
+        if (!solarModal) solarModal = document.getElementById("solarEditModal")
         if (!solarModal) return;
         solarModal.classList.remove("show");
     };
@@ -301,4 +363,49 @@ function populateSolarProjects() {
             );
         }
     };
+
+    window.openSolarFromAddForm = function () {
+        const projectSelect = document.getElementById("addProject");
+        const option = projectSelect?.options[projectSelect.selectedIndex];
+
+        const resident = {
+            resident_id: "",
+            buyer_name: document.getElementById("addName")?.value || "New Resident",
+            project: option?.text || "",
+            subdivision_id: projectSelect?.value || "",
+            block_no: document.getElementById("addBlock")?.value || "",
+            lot_no: document.getElementById("addLot")?.value || "",
+            phase: document.getElementById("addPhase")?.value || "",
+            resident_status: document.getElementById("addStatus")?.value || "Active"
+        };
+
+        window.openSolarModal(resident, {
+            project: resident.project,
+            block: resident.block_no,
+            lot: resident.lot_no
+        });
+    };
+
+    window.openSolarFromEditForm = function () {
+        const projectSelect = document.getElementById("editProject");
+        const option = projectSelect?.options[projectSelect.selectedIndex];
+
+        const resident = {
+            resident_id: document.getElementById("editResidentId")?.value || "",
+            buyer_name: document.getElementById("editName")?.value || "Resident",
+            project: option?.text || "",
+            subdivision_id: projectSelect?.value || "",
+            block_no: document.getElementById("editBlock")?.value || "",
+            lot_no: document.getElementById("editLot")?.value || "",
+            phase: document.getElementById("editPhase")?.value || "",
+            resident_status: document.getElementById("editStatus")?.value || "Active"
+        };
+
+        window.openSolarModal(resident, {
+            project: resident.project,
+            block: resident.block_no,
+            lot: resident.lot_no
+        });
+    };
+
 })();

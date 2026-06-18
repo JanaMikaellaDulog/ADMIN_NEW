@@ -96,6 +96,37 @@ if ($connovateQuery) {
     }
 }
 
+$solarPanelsArray = [];
+
+$solarCheck = $conn->query("SHOW TABLES LIKE 'solar_panels'");
+
+if ($solarCheck && $solarCheck->num_rows > 0) {
+    $solarQuery = $conn->query("
+        SELECT
+            id,
+            resident_id,
+            project_name,
+            block_no,
+            lot_no,
+            solar_status,
+            installation_date,
+            provider,
+            capacity_details,
+            proof_file,
+            remarks,
+            created_at,
+            updated_at
+        FROM solar_panels
+        ORDER BY id DESC
+    ");
+
+    if ($solarQuery) {
+        while ($row = $solarQuery->fetch_assoc()) {
+            $solarPanelsArray[] = $row;
+        }
+    }
+}
+
 /**
  * 5. SYSTEM LOGS & ADMINISTRATIVE DATA
  */
@@ -346,6 +377,9 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
 
                     <div class="property-modal-actions">
                         <button id="infoConnovateBtn" class="primary-btn connovate-btn" style="width: 100%; padding: 12px; font-weight: bold;" onclick="window.openConnovateFromInfo && window.openConnovateFromInfo()">Connovate</button>
+
+                        <button id="infoSolarBtn" class="primary-btn solar-btn" style="width: 100%; padding: 12px; font-weight: bold;" onclick="window.openSolarFromInfo && window.openSolarFromInfo()">Solar Panels</button>
+
                         <button id="infoEditBtn" class="primary-btn" style="width: 100%; padding: 12px; font-weight: bold;">Go to Management Profile</button>
                     </div>
                 </div>
@@ -425,6 +459,7 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="primary-btn connovate-btn" onclick="openConnovateFromAddForm()">Connovate</button>
+                    <button type="button" class="primary-btn solar-btn" onclick="openSolarFromAddForm()">Solar Panels</button>
                     <button type="button" class="btn-delete" onclick="closeAddModal()">Cancel</button>
                     <button type="submit" class="primary-btn">Register Resident</button>
                 </div>
@@ -510,6 +545,7 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
                     <button type="button" class="danger-btn" onclick="openDeleteConfirmation()" style="background: #991b1b; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer;">Delete Resident</button>
                     <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end;">
                         <button type="button" class="primary-btn connovate-btn" onclick="openConnovateFromEditForm()">Connovate</button>
+                        <button type="button" class="primary-btn solar-btn" onclick="openSolarFromEditForm()">Solar Panels</button>
                         <button type="button" class="btn-delete" onclick="closeEditModal()" style="background: #475569;">Cancel</button>
                         <button type="submit" class="primary-btn">Save Changes</button>
                     </div>
@@ -820,6 +856,7 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
     // Residents Data (Fail-safe: defaults to empty array if null)
     window.residents = <?php echo json_encode($residentsArray ?? []); ?>;
     window.connovatePanels = <?php echo json_encode($connovatePanelsArray ?? []); ?>;
+    window.solarPanels = <?php echo json_encode($solarPanelsArray ?? []); ?>;
 
     
     // Audit Logs Data (Using the processed array from your PHP update)
@@ -848,7 +885,7 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
 <script src="../javascript/projectAnalytics.js"></script>
 <script src="../javascript/menu.js"></script> 
 <script src="../javascript/map.js"></script>
-<script src="../javascript/logOut.js"></script>`
+<script src="../javascript/logOut.js"></script>
 <script src="../javascript/solarPanels.js"></script>
 
 

@@ -199,6 +199,9 @@
                     <button class="primary-btn connovate-btn" style="width: 100%; height: 45px; font-weight: 700;" id="btn-connovate-open">
                         CONNOVATE
                     </button>
+                    <button class="primary-btn solar-btn" style="width: 100%; height: 45px; font-weight: 700;" id="btn-solar-open">
+                        SOLAR PANELS
+                    </button>
                     <button class="primary-btn" style="width: 100%; height: 45px; font-weight: 700;" id="btn-edit-redirect">
                         GO TO FULL MANAGEMENT PAGE
                     </button>
@@ -210,6 +213,13 @@
         document.getElementById('btn-connovate-open').onclick = () => {
             if (typeof window.openConnovateModal === "function") {
                 window.openConnovateModal(resident, { project, block, lot });
+            }
+        };
+        document.getElementById('btn-solar-open').onclick = () => {
+            if (typeof window.openSolarModal === "function") {
+                window.openSolarModal(resident, { project, block, lot });
+            } else {
+                alert("Solar module is not loaded.");
             }
         };
 
