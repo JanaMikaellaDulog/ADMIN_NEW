@@ -260,6 +260,60 @@ html, body {
     border-color: #d49006;
 }
 
+.custom-dropdown {
+    position: relative;
+    flex: 1;
+}
+
+.dropdown-selected {
+    background: #0f172a;
+    color: #f8fafc;
+    border: 1px solid #334155;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: border-color 0.2s;
+}
+
+.dropdown-selected:focus {
+    border-color: #d49006;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    font-size: 14px;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+
+    max-height: 200px;
+    overflow-y: auto;
+
+    display: none;
+    z-index: 999;
+}
+
+.dropdown-item {
+    padding: 10px 16px;
+    color: #f8fafc;
+    cursor: pointer;
+}
+
+.dropdown-item:hover {
+    background: #1e293b;
+}
+
+.custom-dropdown.open .dropdown-menu {
+    display: block;
+}
+
 /* Load Project Button */
 .btn-load {
     background: #d49006;
