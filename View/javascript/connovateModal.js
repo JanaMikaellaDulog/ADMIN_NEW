@@ -163,13 +163,16 @@
         const doneEl = document.getElementById("connovateDoneCount");
         const remainingEl = document.getElementById("connovateRemainingCount");
         const finishedEl = document.getElementById("connovateFinishedCount");
+
         const floor = getFloorKey();
         const required = (CONNOVATE_HOTSPOTS[floor] || []).length;
-        const done = Object.values(panelEntries).filter((entry) => entry.floor === floor).length;
-        const remaining = Math.max(required - done, 0);
-        const finished = required > 0 && remaining === 0 ? "YES" : "NO";
 
-        if (doneEl) doneEl.textContent = String(done);
+        const finished = Object.values(panelEntries)
+            .filter(entry => entry.floor === floor && entry.status === "finished").length;
+
+        const remaining = Math.max(required - finished, 0);
+
+        if (doneEl) doneEl.textContent = String(finished);
         if (remainingEl) remainingEl.textContent = String(remaining);
         if (finishedEl) finishedEl.textContent = String(finished);
     }
@@ -494,6 +497,7 @@
                         panelId: panelIdentity.panelId,
                         controlNumber,
                         quantity,
+                        status: "finished",
                         completedById: data.completedById ?? null,
                         completedBy: data.completedBy || "",
                         completedAt: data.completedAt || ""

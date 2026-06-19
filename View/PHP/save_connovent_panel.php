@@ -12,6 +12,7 @@ $floor = strtoupper(trim($payload['floor'] ?? ''));
 $panelId = trim($payload['panelId'] ?? '');
 $controlNumber = trim($payload['controlNumber'] ?? '');
 $quantity = (int) ($payload['quantity'] ?? 0);
+
 $completedById = isset($_SESSION['admin_id']) ? (int)$_SESSION['admin_id'] : null;
 $completedBy = trim($_SESSION['admin_name'] ?? 'System');
 
@@ -19,12 +20,63 @@ if ($project === '' || $block === '' || $lot === '' || $floor === '' || $panelId
     http_response_code(400);
     echo json_encode([
         'success' => false,
-        'message' => 'Project, block, lot, floor, panel, control number, and quantity are required.'
+        'message' => 'Missing required fields'
     ]);
     exit;
 }
 
-$sql = "INSERT INTO connovate_panels (
+//
+// CHECK EXISTING
+//
+$check = $conn->prepare("
+    SELECT id
+    FROM connovate_panels
+    WHERE project_name = ?
+      AND block_no = ?
+      AND lot_no = ?
+      AND floor_name = ?
+      AND panel_key = ?
+    LIMIT 1
+");
+
+$check->bind_param("sssss", $project, $block, $lot, $floor, $panelId);
+$check->execute();
+$result = $check->get_result();
+$existing = $result->fetch_assoc();
+
+//
+// UPDATE
+//
+if ($existing) {
+
+    $stmt = $conn->prepare("
+        UPDATE connovate_panels
+        SET control_number = ?,
+            quantity = ?,
+            status = 'finished',
+            completed_by_id = ?,
+            completed_by = ?,
+            completed_at = NOW(),
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+    ");
+
+    $stmt->bind_param(
+        "sissi",
+        $controlNumber,
+        $quantity,
+        $completedById,
+        $completedBy,
+        $existing['id']
+    );
+
+//
+// INSERT
+//
+} else {
+
+    $stmt = $conn->prepare("
+        INSERT INTO connovate_panels (
             project_name,
             block_no,
             lot_no,
@@ -36,41 +88,40 @@ $sql = "INSERT INTO connovate_panels (
             completed_by_id,
             completed_by,
             completed_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, 'done', ?, ?, NOW())
-        ON DUPLICATE KEY UPDATE
-            control_number = VALUES(control_number),
-            quantity = VALUES(quantity),
-            status = 'done',
-            completed_by_id = VALUES(completed_by_id),
-            completed_by = VALUES(completed_by),
-            completed_at = NOW(),
-            updated_at = CURRENT_TIMESTAMP";
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, 'finished', ?, ?, NOW())
+    ");
 
-$stmt = $conn->prepare($sql);
-if (!$stmt) {
-    http_response_code(500);
-    echo json_encode([
-        'success' => false,
-        'message' => 'Unable to prepare panel save.'
-    ]);
-    exit;
+    $stmt->bind_param(
+        "ssssssiss",
+        $project,
+        $block,
+        $lot,
+        $floor,
+        $panelId,
+        $controlNumber,
+        $quantity,
+        $completedById,
+        $completedBy
+    );
 }
 
-$stmt->bind_param('ssssssiis', $project, $block, $lot, $floor, $panelId, $controlNumber, $quantity, $completedById, $completedBy);
-
+//
+// EXECUTE
+//
 if (!$stmt->execute()) {
     http_response_code(500);
     echo json_encode([
         'success' => false,
-        'message' => 'Unable to save Connovate panel.'
+        'message' => 'Failed to save Connovate panel',
+        'error' => $stmt->error
     ]);
     exit;
 }
 
 echo json_encode([
     'success' => true,
+    'message' => $existing ? 'Panel updated (FINISHED)' : 'Panel inserted (FINISHED)',
+    'status' => 'finished',
     'completedBy' => $completedBy,
-    'completedById' => $completedById,
     'completedAt' => date('Y-m-d H:i:s')
 ]);
-

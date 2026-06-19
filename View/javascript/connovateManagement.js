@@ -194,29 +194,35 @@ document.addEventListener("DOMContentLoaded", () => {
     function updateStatsCards(rows) {
         ensureStatsCards();
 
-        const finishedProjectsEl = document.getElementById("connovateFinishedProjects");
-        const inProgressProjectsEl = document.getElementById("connovateInProgressProjects");
-        const totalQuantityEl = document.getElementById("connovateTotalQuantity");
+        const finishedEl = document.getElementById("connovateFinishedProjects");
+        const inProgressEl = document.getElementById("connovateInProgressProjects");
+        const totalEl = document.getElementById("connovateTotalQuantity");
+
+        let totalFinished = 0;
+
         const houses = getHouseProgress(rows);
 
-        let finishedProjects = 0;
-        let inProgressProjects = 0;
-
         houses.forEach((house) => {
-            const ground = house.floors["GROUND FLOOR"] || createFloorSummary();
-            const second = house.floors["SECOND FLOOR"] || createFloorSummary();
-            const isFinished = ground.hasRecords && second.hasRecords && ground.allDone && second.allDone;
+            const g = house.floors["GROUND FLOOR"] || createFloorSummary();
+            const s = house.floors["SECOND FLOOR"] || createFloorSummary();
 
-            if (isFinished) {
-                finishedProjects += 1;
-            } else {
-                inProgressProjects += 1;
-            }
+            totalFinished += g.doneQuantity + s.doneQuantity;
         });
 
-        if (finishedProjectsEl) finishedProjectsEl.textContent = String(finishedProjects);
-        if (inProgressProjectsEl) inProgressProjectsEl.textContent = String(inProgressProjects);
-        if (totalQuantityEl) totalQuantityEl.textContent = String(houses.size);
+        // 🟢 Finished = ALL SAVED QUANTITY
+        if (finishedEl) {
+            finishedEl.textContent = String(totalFinished);
+        }
+
+        // 🟡 Unfinished = REMOVE OR FORCE 0 (since you don't want it anymore)
+        if (inProgressEl) {
+            inProgressEl.textContent = "0";
+        }
+
+        // 🔵 Total Connovate = SAME AS FINISHED (since everything saved is finished)
+        if (totalEl) {
+            totalEl.textContent = String(totalFinished);
+        }
     }
 
     function populateConnovateTable(floorFilter = "") {

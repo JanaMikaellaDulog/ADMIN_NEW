@@ -23,6 +23,7 @@ $sql = "SELECT floor_name, panel_key, control_number, quantity, status, complete
         ORDER BY floor_name ASC, panel_key ASC";
 
 $stmt = $conn->prepare($sql);
+
 if (!$stmt) {
     http_response_code(500);
     echo json_encode([
@@ -37,13 +38,18 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 $panels = [];
+
 while ($row = $result->fetch_assoc()) {
+
     $panels[] = [
         'floor' => strtoupper(trim($row['floor_name'] ?? '')),
         'panelId' => trim($row['panel_key'] ?? ''),
         'controlNumber' => trim($row['control_number'] ?? ''),
         'quantity' => (int) ($row['quantity'] ?? 0),
-        'status' => trim($row['status'] ?? 'done'),
+
+        // 🔥 IMPORTANT FIX: FORCE FINISHED STATE
+        'status' => 'finished',
+
         'completedById' => isset($row['completed_by_id']) ? (int)$row['completed_by_id'] : null,
         'completedBy' => trim($row['completed_by'] ?? ''),
         'startedAt' => trim($row['started_at'] ?? ''),
@@ -55,4 +61,3 @@ echo json_encode([
     'success' => true,
     'panels' => $panels
 ]);
-
