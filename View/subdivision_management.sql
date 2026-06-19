@@ -2,8 +2,8 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1:3306
--- Generation Time: Apr 21, 2026 at 03:28 PM
+-- Host: 127.0.0.1
+-- Generation Time: Jun 19, 2026 at 03:01 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -45,7 +45,9 @@ INSERT INTO `admins` (`admin_id`, `admin_name`, `authority_level`, `auth_key`, `
 (1, 'Kervie Balolong', 'Master', 'delete123', '2026-03-25 03:16:22', '$2y$10$dxpLXcfRT5xro2lScRogUu5S4OBfLHp/4xkntzyTTocuv/8ThYMEO', 'active'),
 (2, 'MasterAdmin', 'Master', 'admin123', '2026-04-21 01:22:27', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'active'),
 (3, 'William Reynold', 'Staff', 'william123', '2026-03-29 11:41:54', '$2y$10$IdRFDkeJ02430e7Oy0X6t.JHRIRORQ.2pCne7Yk8of4TlCWENcnai', 'active'),
-(4, 'CVSU ADMIN', 'Master', 'admincvsu', '2026-03-29 11:41:54', '$2y$12$/R2nD6jUk9jKLwM21UO9XO/JJbwXWOdptQGz5dVOedTTngfYSY.HO', 'active');
+(4, 'Leyn', 'Master', 'leyn123', '2026-06-18 19:12:43', '$2b$12$mFmOGp8YTIR8hnMKLSCmBO7NWJBS9.M.WfAMxxZ9mny4VVD6SVE.W', 'active'),
+(5, 'Catherine', 'Master', 'cath123', '2026-06-17 07:49:02', '$2b$12$EvBy28xjbS.f6WU9.e2FYu3QD8iXP6Dq.7y2Sixl6f33n/qhkwPjq', 'active'),
+(6, 'hellnah', 'Master', '12345', '2026-06-19 00:30:38', '$2y$10$B4rS11up9hEOmvHGbYXsy.4KVsyCv0TjqACkKZwKq.QB5FwbScKNy', 'active');
 
 -- --------------------------------------------------------
 
@@ -83,7 +85,8 @@ INSERT INTO `admin_logs` (`log_id`, `admin_id`, `action_type`, `details`, `times
 (15, 2, 'DELETED', 'Deleted Resident: John Doe (ID: 17)', '2026-03-25 12:03:34'),
 (16, 2, 'UPDATED', 'Updated admin: MasterAdmin', '2026-03-29 19:36:31'),
 (17, 2, 'UPDATED', 'Updated admin: MasterAdmin', '2026-03-29 19:39:25'),
-(18, 2, 'CREATED', 'Added: Franz Matthew', '2026-03-29 21:03:37');
+(18, 2, 'CREATED', 'Added: Franz Matthew', '2026-03-29 21:03:37'),
+(19, 4, 'CREATED', 'Added admin: hellnah as Master', '2026-06-19 08:30:38');
 
 -- --------------------------------------------------------
 
@@ -754,6 +757,35 @@ INSERT INTO `residents` (`resident_id`, `subdivision_id`, `phase`, `block_no`, `
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `solar_panels`
+--
+
+CREATE TABLE `solar_panels` (
+  `id` int(11) NOT NULL,
+  `resident_id` int(11) DEFAULT NULL,
+  `project_name` varchar(100) DEFAULT NULL,
+  `block_no` varchar(50) DEFAULT NULL,
+  `lot_no` varchar(50) DEFAULT NULL,
+  `solar_status` varchar(30) DEFAULT 'Not Installed',
+  `installation_date` date DEFAULT NULL,
+  `provider` varchar(150) DEFAULT NULL,
+  `capacity_details` varchar(255) DEFAULT NULL,
+  `proof_file` varchar(255) DEFAULT NULL,
+  `remarks` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `solar_panels`
+--
+
+INSERT INTO `solar_panels` (`id`, `resident_id`, `project_name`, `block_no`, `lot_no`, `solar_status`, `installation_date`, `provider`, `capacity_details`, `proof_file`, `remarks`, `created_at`, `updated_at`) VALUES
+(4, 0, 'PADRE GARCIA', '5', '2', 'Not Installed', '2026-06-19', '', '', '', '', '2026-06-18 18:23:01', '2026-06-18 18:23:47');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `subdivisions`
 --
 
@@ -854,6 +886,12 @@ ALTER TABLE `residents`
   ADD PRIMARY KEY (`resident_id`);
 
 --
+-- Indexes for table `solar_panels`
+--
+ALTER TABLE `solar_panels`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `subdivisions`
 --
 ALTER TABLE `subdivisions`
@@ -875,13 +913,13 @@ ALTER TABLE `utility_bills`
 -- AUTO_INCREMENT for table `admins`
 --
 ALTER TABLE `admins`
-  MODIFY `admin_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `admin_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `admin_logs`
 --
 ALTER TABLE `admin_logs`
-  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT for table `connovate_panels`
@@ -894,6 +932,12 @@ ALTER TABLE `connovate_panels`
 --
 ALTER TABLE `residents`
   MODIFY `resident_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+
+--
+-- AUTO_INCREMENT for table `solar_panels`
+--
+ALTER TABLE `solar_panels`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `subdivisions`
