@@ -25,6 +25,10 @@
             <select id="solarProjectSelect" class="header-select">
                 <option value="">-- All Projects --</option>
             </select>
+
+            <button type="button" class="btn-load" onclick="window.loadSolarProject && window.loadSolarProject()">
+                Load Project
+            </button>
         </div>
     </div>
 

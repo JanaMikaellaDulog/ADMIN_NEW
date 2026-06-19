@@ -68,32 +68,126 @@ function renderSolarAnalytics(rows = []) {
     });
 }
 
+function findProjectNameById(projectId) {
+    const select = document.getElementById("locationSelect");
+    const option = select
+        ? [...select.options].find(opt => String(opt.value) === String(projectId))
+        : null;
+
+    return option?.dataset?.name || "";
+}
+
+// Normalizes a project/block/lot combo into one lookup key.
+function makeLotKey(project, block, lot) {
+    return [
+        String(project || "").trim().toLowerCase(),
+        String(block || "").trim().toLowerCase(),
+        String(lot || "").trim().toLowerCase()
+    ].join("|");
+}
+
+// Builds {project|block|lot -> resident} and {project|block|lot -> solarRecord}
+// ONE time per render, so we never re-scan the full residents/solarPanels
+// arrays inside a loop. This is what was freezing/crashing the tab when a
+// project with a lot of lots was selected.
+function buildSolarLookups() {
+    const residents = Array.isArray(window.residents) ? window.residents : [];
+    const solarPanels = Array.isArray(window.solarPanels) ? window.solarPanels : [];
+
+    const residentMap = new Map();
+    residents.forEach(resident => {
+        const projectName = resident.project || findProjectNameById(resident.subdivision_id) || "";
+        const k = makeLotKey(projectName, resident.block_no, resident.lot_no);
+        // Keep first match if duplicates exist
+        if (!residentMap.has(k)) residentMap.set(k, resident);
+    });
+
+    const solarMap = new Map();
+    solarPanels.forEach(panel => {
+        const k = makeLotKey(panel.project_name, panel.block_no, panel.lot_no);
+        solarMap.set(k, panel); // last one wins (most recently saved record)
+    });
+
+    return { residentMap, solarMap, residents };
+}
+
+function solarFieldsFor(solar) {
+    return {
+        solar_status: solar ? (solar.solar_status || "Not Installed") : "Not Installed",
+        provider: solar ? (solar.provider || "-") : "-",
+        installation_date: solar ? (solar.installation_date || "-") : "-",
+        proof_file: solar ? (solar.proof_file || "") : ""
+    };
+}
+
+function buildSolarDashboardRows(selectedProject = "") {
+    const projectMarkers = window.PROJECT_MARKERS || {};
+    const { residentMap, solarMap, residents } = buildSolarLookups();
+
+    // All Projects = registered residents only (keeps this view light)
+    if (!selectedProject) {
+        return residents.map(resident => {
+            const projectName = resident.project || findProjectNameById(resident.subdivision_id) || "-";
+            const k = makeLotKey(projectName, resident.block_no, resident.lot_no);
+            const solar = solarMap.get(k);
+
+            return {
+                resident_id: resident.resident_id || "-",
+                project_name: projectName,
+                block_no: resident.block_no || "-",
+                lot_no: resident.lot_no || "-",
+                ...solarFieldsFor(solar)
+            };
+        });
+    }
+
+    // Selected Project = include vacant pins too, but use O(1) map lookups
+    // instead of .find() over the whole residents/solarPanels arrays.
+    const markers = projectMarkers[selectedProject] || [];
+
+    return markers.map(marker => {
+        const block = String(marker.block || "").trim();
+        const lot = String(marker.lot || "").trim();
+        const k = makeLotKey(selectedProject, block, lot);
+
+        const resident = residentMap.get(k);
+        const solar = solarMap.get(k);
+
+        return {
+            resident_id: resident ? resident.resident_id : "Vacant",
+            project_name: selectedProject,
+            block_no: block,
+            lot_no: lot,
+            ...solarFieldsFor(solar)
+        };
+    });
+}
+
+// Stats/board use every house (installed + not installed) so totals and
+// completion % stay accurate. The Solar Installation Records table only
+// needs to show houses that actually have solar installed.
+function installedOnly(rows) {
+    return rows.filter(row => String(row.solar_status || "").toLowerCase() === "installed");
+}
 
 function renderSolarTab() {
     if (!Array.isArray(window.solarPanels)) {
         window.solarPanels = [];
     }
 
-    const rows = window.solarPanels;
+    const rows = buildSolarDashboardRows("");
 
     populateSolarProjects();
     updateSolarStats(rows);
-    renderSolarTable(rows);
+    renderSolarTable(installedOnly(rows));
     renderSolarAnalytics(rows);
 
     const projectSelect = document.getElementById("solarProjectSelect");
-    if (projectSelect) {
-        projectSelect.addEventListener("change", () => {
-            const selectedProject = projectSelect.value;
 
-            const filtered = selectedProject
-                ? window.solarPanels.filter(row => String(row.project_name || "") === selectedProject)
-                : window.solarPanels;
+    if (projectSelect && !projectSelect.dataset.bound) {
+        projectSelect.dataset.bound = "true";
 
-            updateSolarStats(filtered);
-            renderSolarTable(filtered);
-            renderSolarAnalytics(filtered);
-        });
+
     }
 }
 
@@ -101,11 +195,8 @@ function populateSolarProjects() {
     const select = document.getElementById("solarProjectSelect");
     if (!select) return;
 
-    const projects = [...new Set(
-        window.solarPanels
-            .map(row => String(row.project_name || "").trim())
-            .filter(Boolean)
-    )].sort();
+    const projectMarkers = window.PROJECT_MARKERS || {};
+    const projects = Object.keys(projectMarkers).sort();
 
     select.innerHTML = '<option value="">-- All Projects --</option>';
 
@@ -130,25 +221,26 @@ function populateSolarProjects() {
         const tbody = document.getElementById("solarTableBody");
         if (!tbody) return;
 
-        tbody.innerHTML = "";
-
         if (!rows.length) {
             tbody.innerHTML = `
                 <tr>
                     <td colspan="8" style="text-align:center; padding:40px; color:#94a3b8;">
-                        No solar panel records found.
+                        No installed solar panels found for this selection.
                     </td>
                 </tr>
             `;
             return;
         }
 
-        rows.forEach(row => {
+        // Build the whole table body as one string and write it once.
+        // (Looping tbody.innerHTML += ... re-parses the accumulated HTML
+        // on every iteration, which gets very slow for large row counts.)
+        const html = rows.map(row => {
             const proof = row.proof_file
                 ? `<a href="../../${row.proof_file}" target="_blank">Open File</a>`
                 : "No file";
 
-            tbody.innerHTML += `
+            return `
                 <tr>
                     <td>${row.resident_id || "-"}</td>
                     <td>${row.project_name || "-"}</td>
@@ -160,7 +252,9 @@ function populateSolarProjects() {
                     <td>${proof}</td>
                 </tr>
             `;
-        });
+        }).join("");
+
+        tbody.innerHTML = html;
     }
 
     function text(value, fallback = "---") {
@@ -296,6 +390,43 @@ function populateSolarProjects() {
             alert("Solar information saved.");
             updateProofLink(uploadedFile);
             setText("solarStatusBadge", document.getElementById("solarStatus")?.value || "Not Installed");
+
+            // Keep window.solarPanels in sync so re-rendering the table/board
+            // after closing the modal reflects the change immediately,
+            // without needing a full page reload.
+            if (!Array.isArray(window.solarPanels)) window.solarPanels = [];
+            const idx = window.solarPanels.findIndex(p =>
+                makeLotKey(p.project_name, p.block_no, p.lot_no) ===
+                makeLotKey(
+                    document.getElementById("solarProjectName")?.value,
+                    document.getElementById("solarBlockNo")?.value,
+                    document.getElementById("solarLotNo")?.value
+                )
+            );
+            const updatedRecord = {
+                project_name: document.getElementById("solarProjectName")?.value || "",
+                block_no: document.getElementById("solarBlockNo")?.value || "",
+                lot_no: document.getElementById("solarLotNo")?.value || "",
+                solar_status: document.getElementById("solarStatus")?.value || "Not Installed",
+                installation_date: document.getElementById("solarInstallationDate")?.value || "",
+                provider: document.getElementById("solarProvider")?.value || "",
+                capacity_details: document.getElementById("solarCapacity")?.value || "",
+                proof_file: uploadedFile || "",
+                remarks: document.getElementById("solarRemarks")?.value || ""
+            };
+            if (idx >= 0) {
+                window.solarPanels[idx] = { ...window.solarPanels[idx], ...updatedRecord };
+            } else {
+                window.solarPanels.push(updatedRecord);
+            }
+
+            // Refresh whichever view is currently active
+            const projectSelect = document.getElementById("solarProjectSelect");
+            const selectedProject = projectSelect ? projectSelect.value : "";
+            const rows = buildSolarDashboardRows(selectedProject);
+            updateSolarStats(rows);
+            renderSolarTable(installedOnly(rows));
+            renderSolarAnalytics(rows);
         } catch (error) {
             alert(error.message || "Unable to save solar information.");
             console.warn(error);
@@ -406,6 +537,19 @@ function populateSolarProjects() {
             block: resident.block_no,
             lot: resident.lot_no
         });
+    };
+
+
+
+    window.loadSolarProject = function () {
+        const projectSelect = document.getElementById("solarProjectSelect");
+        const selectedProject = projectSelect ? projectSelect.value : "";
+
+        const rows = buildSolarDashboardRows(selectedProject);
+
+        updateSolarStats(rows);
+        renderSolarTable(installedOnly(rows));
+        renderSolarAnalytics(rows);
     };
 
 })();
