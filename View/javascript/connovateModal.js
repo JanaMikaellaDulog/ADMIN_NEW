@@ -41,7 +41,7 @@
 
     const CONNOVATE_HOTSPOTS = {
         "GROUND FLOOR": [
-            { id: "gf-top-beam", x: 330, y: 40, width: 355, height: 22 },
+            { id: "gf-top-beam", x: 163, y: 95, width: 156, height: 10 },
             { id: "gf-left-top-green", x: 98, y: 160, width: 22, height: 65 },
             { id: "gf-left-red-1", x: 98, y: 220, width: 22, height: 72 },
             { id: "gf-left-red-2", x: 98, y: 286, width: 22, height: 72 },
@@ -264,8 +264,8 @@
             rect.dataset.hotspotId = hotspot.id;
             rect.style.cursor = "pointer";
             rect.style.pointerEvents = "all";
-            rect.style.stroke = "none";
-            rect.style.strokeWidth = "0";
+            rect.style.stroke = "#f59e0b";  //temp border color change back to "none" afterwards
+            rect.style.strokeWidth = "2"; //temp stroke, change back to "0"
             applyHotspotStatus(rect, Boolean(savedStatuses[hotspot.id]));
 
             rect.addEventListener("click", (event) => {
