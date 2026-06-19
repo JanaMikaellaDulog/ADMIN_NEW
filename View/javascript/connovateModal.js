@@ -86,6 +86,21 @@
         ]
     };
 
+    // Expose required panel counts per floor so connovateManagement.js can
+    // compute "remaining"/"finished" for every house without duplicating
+    // the hotspot layout.
+    //
+    // NOTE: this is intentionally hardcoded to 19, not derived from the
+    // hotspot arrays above (which currently have 20 entries each). 19 is
+    // the real max panel slots per floor; counting against the raw
+    // hotspot array length let stale/renamed rows in the DB inflate
+    // "done" past the actual number of fillable slots.
+    const REQUIRED_PANELS_PER_FLOOR = 19;
+    window.CONNOVATE_FLOOR_REQUIRED = {
+        "GROUND FLOOR": REQUIRED_PANELS_PER_FLOOR,
+        "SECOND FLOOR": REQUIRED_PANELS_PER_FLOOR
+    };
+
     function textOrFallback(value, fallback = "---") {
         const normalized = value === null || value === undefined ? "" : String(value).trim();
         return normalized || fallback;
@@ -141,16 +156,44 @@
         const finishedEl = document.getElementById("connovateFinishedCount");
 
         const floor = getFloorKey();
-        const required = (CONNOVATE_HOTSPOTS[floor] || []).length;
+        const required = REQUIRED_PANELS_PER_FLOOR;
 
-        const finished = Object.values(panelEntries)
-            .filter(entry => entry.floor === floor && entry.status === "finished").length;
+        // Only count entries whose panelId matches a hotspot that actually
+        // exists on this floor right now. Rows saved under an old/renamed
+        // hotspot id are otherwise still counted as "done" forever, which
+        // let Done exceed the real number of slots (e.g. 22 done on a
+        // floor that only has 19-20 fillable spots).
+        const validIdsByFloor = {};
+        Object.keys(CONNOVATE_HOTSPOTS).forEach((floorKey) => {
+            validIdsByFloor[floorKey] = new Set(CONNOVATE_HOTSPOTS[floorKey].map(h => h.id));
+        });
 
-        const remaining = Math.max(required - finished, 0);
+        function countValidDone(floorKey) {
+            const validIds = validIdsByFloor[floorKey] || new Set();
+            return Object.values(panelEntries)
+                .filter(entry => entry.floor === floorKey && validIds.has(entry.panelId))
+                .reduce((sum, entry) => sum + (Number(entry.quantity) || 0), 0);
+        }
 
-        if (doneEl) doneEl.textContent = String(finished);
-        if (remainingEl) remainingEl.textContent = String(remaining);
-        if (finishedEl) finishedEl.textContent = String(finished);
+        const rawDoneForFloor = countValidDone(floor);
+        const doneForFloor = Math.min(rawDoneForFloor, required);
+        const remainingForFloor = Math.max(required - rawDoneForFloor, 0);
+
+        if (doneEl) doneEl.textContent = String(doneForFloor);
+        if (remainingEl) remainingEl.textContent = String(remainingForFloor);
+
+        // "Finished" = Yes/No for the WHOLE HOUSE (both floors), not just the
+        // floor currently being viewed. It only flips to Yes once produced
+        // quantity meets or exceeds the required total on BOTH Ground Floor
+        // AND Second Floor (capped per floor so over-entry on one floor
+        // can't make the house look "more finished" than it is).
+        const totalRequired = Object.keys(CONNOVATE_HOTSPOTS)
+            .reduce((sum) => sum + REQUIRED_PANELS_PER_FLOOR, 0);
+        const totalDone = Object.keys(CONNOVATE_HOTSPOTS)
+            .reduce((sum, floorKey) => sum + Math.min(countValidDone(floorKey), REQUIRED_PANELS_PER_FLOOR), 0);
+        const isHouseFinished = totalRequired > 0 && totalDone >= totalRequired;
+
+        if (finishedEl) finishedEl.textContent = isHouseFinished ? "Yes" : "No";
     }
 
     function updateLotContext() {
@@ -374,6 +417,16 @@
             renderHotspots();
             updatePanelRecordInfo(null);
             window.closeConnovatePanelModal();
+
+            if (typeof window.removeConnovatePanelCache === "function") {
+                window.removeConnovatePanelCache({
+                    project_name: selectedLot.project,
+                    block_no: selectedLot.block,
+                    lot_no: selectedLot.lot,
+                    floor_name: panelIdentity.floor,
+                    panel_key: panelIdentity.panelId
+                });
+            }
         } catch (error) {
             console.warn("Unable to remove Connovate panel.", error);
             window.alert(error.message || "Unable to remove panel.");
@@ -482,6 +535,23 @@
                     renderHotspots();
                     updatePanelRecordInfo(panelEntries[panelIdentity.key]);
                     window.closeConnovatePanelModal();
+
+                    // Keep the Connovate Management board + Parts List in
+                    // sync immediately, without needing a full page reload.
+                    if (typeof window.upsertConnovatePanelCache === "function") {
+                        window.upsertConnovatePanelCache({
+                            project_name: selectedLot.project,
+                            block_no: selectedLot.block,
+                            lot_no: selectedLot.lot,
+                            floor_name: panelIdentity.floor,
+                            panel_key: panelIdentity.panelId,
+                            connovate_part: (data.connovatePart || controlNumber || "").toUpperCase(),
+                            control_number: controlNumber,
+                            quantity,
+                            status: "finished",
+                            completed_at: data.completedAt || ""
+                        });
+                    }
                 } catch (error) {
                     console.warn("Unable to save Connovate panel.", error);
                     window.alert(error.message || "Unable to save panel.");
@@ -532,4 +602,3 @@
         if (connovatePanelModal) connovatePanelModal.classList.remove("show");
     };
 })();
-

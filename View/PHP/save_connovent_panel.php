@@ -52,6 +52,7 @@ if ($existing) {
     $stmt = $conn->prepare("
         UPDATE connovate_panels
         SET control_number = ?,
+            connovate_part = ?,
             quantity = ?,
             status = 'finished',
             completed_by_id = ?,
@@ -62,7 +63,8 @@ if ($existing) {
     ");
 
     $stmt->bind_param(
-        "sissi",
+        "ssissi",
+        $controlNumber,
         $controlNumber,
         $quantity,
         $completedById,
@@ -83,21 +85,23 @@ if ($existing) {
             floor_name,
             panel_key,
             control_number,
+            connovate_part,
             quantity,
             status,
             completed_by_id,
             completed_by,
             completed_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, 'finished', ?, ?, NOW())
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'finished', ?, ?, NOW())
     ");
 
     $stmt->bind_param(
-        "ssssssiss",
+        "sssssssiss",
         $project,
         $block,
         $lot,
         $floor,
         $panelId,
+        $controlNumber,
         $controlNumber,
         $quantity,
         $completedById,
@@ -122,6 +126,14 @@ echo json_encode([
     'success' => true,
     'message' => $existing ? 'Panel updated (FINISHED)' : 'Panel inserted (FINISHED)',
     'status' => 'finished',
+    'project' => $project,
+    'block' => $block,
+    'lot' => $lot,
+    'floor' => $floor,
+    'panelId' => $panelId,
+    'controlNumber' => $controlNumber,
+    'connovatePart' => $controlNumber,
+    'quantity' => $quantity,
     'completedBy' => $completedBy,
     'completedAt' => date('Y-m-d H:i:s')
 ]);

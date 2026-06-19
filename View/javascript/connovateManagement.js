@@ -98,6 +98,114 @@ document.addEventListener("DOMContentLoaded", () => {
             }));
     }
 
+    function getRequiredCounts() {
+        return window.CONNOVATE_FLOOR_REQUIRED || {
+            "GROUND FLOOR": 20,
+            "SECOND FLOOR": 20
+        };
+    }
+
+    function createFloorSlot(required) {
+        return { required, done: 0 };
+    }
+
+    // Build the master list of houses straight from window.PROJECT_MARKERS
+    // (marker.js) — the REAL source of truth for "what houses/lots exist" in
+    // each subdivision (this is the same data that draws the pins on the
+    // map). window.residents is NOT used here because it only contains lots
+    // that already have a buyer/resident encoded — most lots won't have one
+    // yet, but they still need to be counted as a house with connovate work
+    // to do.
+    function buildHouseScaffold(projectFilter = "") {
+        const houses = new Map();
+        const selectedProject = normalize(projectFilter).toLowerCase();
+        const required = getRequiredCounts();
+        const allMarkers = window.PROJECT_MARKERS || {};
+
+        Object.keys(allMarkers).forEach((projectName) => {
+            const normalizedProjectName = normalize(projectName);
+            if (!normalizedProjectName) return;
+            if (selectedProject && normalizedProjectName.toLowerCase() !== selectedProject) return;
+
+            (allMarkers[projectName] || []).forEach((marker) => {
+                const blockNo = normalize(marker.block);
+                const lotNo = normalize(marker.lot);
+                if (!blockNo || !lotNo) return;
+
+                const mapKey = [normalizedProjectName.toLowerCase(), blockNo.toLowerCase(), lotNo.toLowerCase()].join("|");
+                if (houses.has(mapKey)) return;
+
+                houses.set(mapKey, {
+                    projectName: normalizedProjectName,
+                    blockNo,
+                    lotNo,
+                    floors: {
+                        "GROUND FLOOR": createFloorSlot(required["GROUND FLOOR"] || 0),
+                        "SECOND FLOOR": createFloorSlot(required["SECOND FLOOR"] || 0)
+                    }
+                });
+            });
+        });
+
+        return houses;
+    }
+
+    // Overlay the saved connovate_panels rows onto the house scaffold. Every
+    // row that exists in the DB = one done panel slot (there is no "no"
+    // status stored — a row simply doesn't exist until it's saved).
+    function applyPanelsToHouses(houses, rows) {
+        const required = getRequiredCounts();
+
+        rows.forEach((panel) => {
+            const projectName = normalize(panel.project_name);
+            const blockNo = normalize(panel.block_no);
+            const lotNo = normalize(panel.lot_no);
+            const floorName = normalizeFloor(panel.floor_name);
+            if (!projectName || !blockNo || !lotNo || !floorName) return;
+
+            const mapKey = [projectName.toLowerCase(), blockNo.toLowerCase(), lotNo.toLowerCase()].join("|");
+            let house = houses.get(mapKey);
+
+            // Orphan record: a saved panel exists for a lot that isn't in
+            // window.residents (e.g. residents row was deleted/edited later).
+            // Still count it so totals stay accurate.
+            if (!house) {
+                house = {
+                    projectName,
+                    blockNo,
+                    lotNo,
+                    floors: {
+                        "GROUND FLOOR": createFloorSlot(required["GROUND FLOOR"] || 0),
+                        "SECOND FLOOR": createFloorSlot(required["SECOND FLOOR"] || 0)
+                    }
+                };
+                houses.set(mapKey, house);
+            }
+
+            if (!house.floors[floorName]) {
+                house.floors[floorName] = createFloorSlot(0);
+            }
+
+            house.floors[floorName].done += toNumber(panel.quantity);
+        });
+
+        return houses;
+    }
+
+    function getHouseSummaries(projectFilter = "") {
+        const houses = buildHouseScaffold(projectFilter);
+        applyPanelsToHouses(houses, getFilteredRows(projectFilter));
+        return houses;
+    }
+
+    function isHouseFinished(house) {
+        const g = house.floors["GROUND FLOOR"] || createFloorSlot(0);
+        const s = house.floors["SECOND FLOOR"] || createFloorSlot(0);
+        const totalRequired = g.required + s.required;
+        const totalDone = g.done + s.done;
+        return totalRequired > 0 && totalDone >= totalRequired;
+    }
+
     function ensureStatsCards() {
         if (!connovateSection || !toolbar) return null;
 
@@ -109,11 +217,11 @@ document.addEventListener("DOMContentLoaded", () => {
         ribbon.className = "stats-ribbon";
         ribbon.innerHTML = `
             <div class="stat-card">
-                <div class="stat-label">Finished</div>
+                <div class="stat-label">Finished Houses</div>
                 <div class="stat-value" id="connovateFinishedProjects">0</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Unfinished House</div>
+                <div class="stat-label">Unfinished Houses</div>
                 <div class="stat-value" id="connovateInProgressProjects">0</div>
             </div>
             <div class="stat-card">
@@ -131,98 +239,38 @@ document.addEventListener("DOMContentLoaded", () => {
         if (element) element.textContent = String(value);
     }
 
-    function isPanelDone(panel) {
-        const status = normalize(panel.status).toLowerCase();
-        return status === "done" || Boolean(normalize(panel.completed_at));
-    }
-
-    function createFloorSummary() {
-        return {
-            hasRecords: false,
-            totalQuantity: 0,
-            doneQuantity: 0,
-            remainingQuantity: 0,
-            allDone: true
-        };
-    }
-
-    function getHouseProgress(rows) {
-        const houses = new Map();
-
-        rows.forEach((panel) => {
-            const projectName = normalize(panel.project_name);
-            const blockNo = normalize(panel.block_no);
-            const lotNo = normalize(panel.lot_no);
-            const floorName = normalizeFloor(panel.floor_name);
-            const quantity = toNumber(panel.quantity);
-
-            if (!projectName || !blockNo || !lotNo || !floorName) return;
-
-            const mapKey = [projectName, blockNo, lotNo].join("|");
-            if (!houses.has(mapKey)) {
-                houses.set(mapKey, {
-                    projectName,
-                    blockNo,
-                    lotNo,
-                    floors: {
-                        "GROUND FLOOR": createFloorSummary(),
-                        "SECOND FLOOR": createFloorSummary()
-                    }
-                });
-            }
-
-            const house = houses.get(mapKey);
-            if (!house.floors[floorName]) {
-                house.floors[floorName] = createFloorSummary();
-            }
-
-            const floor = house.floors[floorName];
-            floor.hasRecords = true;
-            floor.totalQuantity += quantity;
-
-            if (isPanelDone(panel)) {
-                floor.doneQuantity += quantity;
-            } else {
-                floor.remainingQuantity += quantity;
-                floor.allDone = false;
-            }
-        });
-
-        return houses;
-    }
-
-    function updateStatsCards(rows) {
+    function updateStatsCards(projectFilter = "") {
         ensureStatsCards();
 
         const finishedEl = document.getElementById("connovateFinishedProjects");
         const inProgressEl = document.getElementById("connovateInProgressProjects");
         const totalEl = document.getElementById("connovateTotalQuantity");
 
-        let totalFinished = 0;
+        const houses = getHouseSummaries(projectFilter);
+        const rows = getFilteredRows(projectFilter);
 
-        const houses = getHouseProgress(rows);
+        let finishedHouses = 0;
+        let unfinishedHouses = 0;
 
         houses.forEach((house) => {
-            const g = house.floors["GROUND FLOOR"] || createFloorSummary();
-            const s = house.floors["SECOND FLOOR"] || createFloorSummary();
-
-            totalFinished += g.doneQuantity + s.doneQuantity;
+            if (isHouseFinished(house)) {
+                finishedHouses += 1;
+            } else {
+                unfinishedHouses += 1;
+            }
         });
 
-        // 🟢 Finished = ALL SAVED QUANTITY
-        if (finishedEl) {
-            finishedEl.textContent = String(totalFinished);
-        }
+        // 🟢 Finished Houses = houses with ZERO remaining panels (Yes)
+        if (finishedEl) finishedEl.textContent = String(finishedHouses);
 
-        // 🟡 Unfinished = REMOVE OR FORCE 0 (since you don't want it anymore)
-        if (inProgressEl) {
-            inProgressEl.textContent = "0";
-        }
+        // 🟡 Unfinished Houses = houses that still have remaining panels (No),
+        // including houses with zero saved panels at all.
+        if (inProgressEl) inProgressEl.textContent = String(unfinishedHouses);
 
-        // 🔵 Total Connovate = SAME AS FINISHED (since everything saved is finished)
-        if (totalEl) {
-            totalEl.textContent = String(totalFinished);
-        }
+        // 🔵 Total Connovate = total produced parts (sum of quantity) actually
+        // saved in the DB, scoped to the current project filter ("" = all projects).
+        const totalProducedQuantity = rows.reduce((sum, panel) => sum + toNumber(panel.quantity), 0);
+        if (totalEl) totalEl.textContent = String(totalProducedQuantity);
     }
 
     function populateConnovateTable(floorFilter = "") {
@@ -258,11 +306,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!projectSelect) return;
 
         const previousValue = projectSelect.value;
-        const projectNames = [...new Set(
-            window.connovatePanels
-                .map((panel) => normalize(panel.project_name))
-                .filter(Boolean)
-        )].sort((a, b) => a.localeCompare(b));
+        const markerProjectNames = Object.keys(window.PROJECT_MARKERS || {}).map(normalize).filter(Boolean);
+        const panelProjectNames = window.connovatePanels.map((panel) => normalize(panel.project_name)).filter(Boolean);
+        const projectNames = [...new Set([...markerProjectNames, ...panelProjectNames])]
+            .sort((a, b) => a.localeCompare(b));
 
         projectSelect.innerHTML = '<option value="">-- Select Project --</option>';
 
@@ -278,21 +325,26 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    function summarizeFloor(rows, floorName) {
+    function summarizeFloor(rows, floorName, houses) {
         const floorRows = rows.filter((panel) => normalizeFloor(panel.floor_name) === floorName);
+
+        // totalQuantity / doneQuantity = produced PARTS (sum of `quantity`,
+        // since one panel slot can hold more than 1 part). Every saved row
+        // is, by definition, done.
         let totalQuantity = 0;
-        let doneQuantity = 0;
-        let remainingQuantity = 0;
-
         floorRows.forEach((panel) => {
-            const quantity = toNumber(panel.quantity);
-            totalQuantity += quantity;
+            totalQuantity += toNumber(panel.quantity);
+        });
+        const doneQuantity = totalQuantity;
 
-            if (isPanelDone(panel)) {
-                doneQuantity += quantity;
-            } else {
-                remainingQuantity += quantity;
-            }
+        // remainingQuantity = remaining PANEL SLOTS (not parts) — i.e. how
+        // many hotspots across all houses in scope still have no saved
+        // record. We don't know how many parts an unfilled slot will need,
+        // so this counts slots, not quantity.
+        let remainingQuantity = 0;
+        houses.forEach((house) => {
+            const floor = house.floors[floorName] || createFloorSlot(0);
+            remainingQuantity += Math.max(floor.required - floor.done, 0);
         });
 
         return {
@@ -443,7 +495,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function renderConnovateBoard(projectFilter = "") {
         const rows = getFilteredRows(projectFilter);
-        updateStatsCards(rows);
+        const houses = getHouseSummaries(projectFilter);
+        updateStatsCards(projectFilter);
 
         if (boardEmpty) boardEmpty.hidden = rows.length > 0;
 
@@ -455,8 +508,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 : "Select a project to view Ground Floor and Second Floor totals.";
         }
 
-        const ground = summarizeFloor(rows, "GROUND FLOOR");
-        const second = summarizeFloor(rows, "SECOND FLOOR");
+        const ground = summarizeFloor(rows, "GROUND FLOOR", houses);
+        const second = summarizeFloor(rows, "SECOND FLOOR", houses);
         const totalQuantity = ground.totalQuantity + second.totalQuantity;
         const totalRecords = rows.length;
         const completedQuantity = ground.doneQuantity + second.doneQuantity;
@@ -473,7 +526,7 @@ document.addEventListener("DOMContentLoaded", () => {
         renderFloorChart(ground, second);
 
         if (projectMeta) projectMeta.textContent = `${totalRecords} records | ${completedQuantity} produced parts`;
-        if (remainingMeta) remainingMeta.textContent = `${remainingQuantity} remaining parts`;
+        if (remainingMeta) remainingMeta.textContent = `${remainingQuantity} remaining panels`;
 
         populateConnovateTable(currentFloorFilter);
     }
@@ -481,6 +534,59 @@ document.addEventListener("DOMContentLoaded", () => {
     populateProjectOptions();
     ensureStatsCards();
     renderConnovateBoard("");
+
+    // ==========================================
+    // LIVE REFRESH HOOK (called by connovateModal.js
+    // right after a panel save/delete succeeds, so the
+    // board + parts list update without a full page reload)
+    // ==========================================
+    window.refreshConnovateBoard = function () {
+        populateProjectOptions();
+        renderConnovateBoard(projectSelect?.value || "");
+    };
+
+    // Upserts/removes a single row in the in-memory window.connovatePanels
+    // cache (the array admin.php injects once on page load) so it reflects
+    // what was just saved/removed via AJAX, without needing a refresh.
+    window.upsertConnovatePanelCache = function (panel) {
+        if (!Array.isArray(window.connovatePanels)) window.connovatePanels = [];
+
+        const matchesPanel = (row) =>
+            normalize(row.project_name).toLowerCase() === normalize(panel.project_name).toLowerCase() &&
+            normalize(row.block_no).toLowerCase() === normalize(panel.block_no).toLowerCase() &&
+            normalize(row.lot_no).toLowerCase() === normalize(panel.lot_no).toLowerCase() &&
+            normalizeFloor(row.floor_name) === normalizeFloor(panel.floor_name) &&
+            normalize(row.panel_key) === normalize(panel.panel_key);
+
+        const existingIndex = window.connovatePanels.findIndex(matchesPanel);
+
+        if (existingIndex !== -1) {
+            window.connovatePanels[existingIndex] = {
+                ...window.connovatePanels[existingIndex],
+                ...panel
+            };
+        } else {
+            window.connovatePanels.push(panel);
+        }
+
+        window.refreshConnovateBoard();
+    };
+
+    window.removeConnovatePanelCache = function (panel) {
+        if (!Array.isArray(window.connovatePanels)) return;
+
+        window.connovatePanels = window.connovatePanels.filter((row) => {
+            return !(
+                normalize(row.project_name).toLowerCase() === normalize(panel.project_name).toLowerCase() &&
+                normalize(row.block_no).toLowerCase() === normalize(panel.block_no).toLowerCase() &&
+                normalize(row.lot_no).toLowerCase() === normalize(panel.lot_no).toLowerCase() &&
+                normalizeFloor(row.floor_name) === normalizeFloor(panel.floor_name) &&
+                normalize(row.panel_key) === normalize(panel.panel_key)
+            );
+        });
+
+        window.refreshConnovateBoard();
+    };
 
     if (projectSelect) {
         projectSelect.addEventListener("change", () => {
