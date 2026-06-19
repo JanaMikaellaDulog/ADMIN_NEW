@@ -16,7 +16,20 @@ function renderSolarAnalytics(rows = []) {
     rows = Array.isArray(rows) ? rows : [];
 
     const installed = rows.filter(row => String(row.solar_status || "").toLowerCase() === "installed").length;
-    const notInstalled = rows.length - installed;
+
+    const projectSelect = document.getElementById("solarProjectSelect");
+    const selectedProject = projectSelect ? projectSelect.value : "";
+
+    let total = 0;
+
+    if (selectedProject) {
+        total = (window.PROJECT_MARKERS?.[selectedProject] || []).length;
+    } else {
+        total = Object.values(window.PROJECT_MARKERS || {})
+            .reduce((sum, lots) => sum + lots.length, 0);
+    }
+
+    const notInstalled = total - installed;
 
     const installedEl = document.getElementById("solarBoardInstalled");
     const notInstalledEl = document.getElementById("solarBoardNotInstalled");
@@ -24,7 +37,7 @@ function renderSolarAnalytics(rows = []) {
     const remainingEl = document.getElementById("solarBoardRemaining");
     const metaEl = document.getElementById("solarBoardMeta");
 
-    const total = rows.length;
+
 
     const completionRate = total > 0
         ? Math.round((installed / total) * 100)
@@ -175,14 +188,15 @@ function renderSolarTab() {
         window.solarPanels = [];
     }
 
-    const rows = buildSolarDashboardRows("");
+    const projectSelect = document.getElementById("solarProjectSelect");
+    const selectedProject = projectSelect ? projectSelect.value : "";
+    const rows = buildSolarDashboardRows(selectedProject);
 
     populateSolarProjects();
     updateSolarStats(rows);
     renderSolarTable(installedOnly(rows));
     renderSolarAnalytics(rows);
 
-    const projectSelect = document.getElementById("solarProjectSelect");
 
     if (projectSelect && !projectSelect.dataset.bound) {
         projectSelect.dataset.bound = "true";
@@ -209,12 +223,28 @@ function populateSolarProjects() {
 }
 
     function updateSolarStats(rows) {
-        const installed = rows.filter(row => String(row.solar_status).toLowerCase() === "installed").length;
-        const notInstalled = rows.filter(row => String(row.solar_status).toLowerCase() !== "installed").length;
+
+        const projectSelect = document.getElementById("solarProjectSelect");
+        const selectedProject = projectSelect ? projectSelect.value : "";
+
+        let totalLots = 0;
+
+        if (selectedProject) {
+            totalLots = (window.PROJECT_MARKERS?.[selectedProject] || []).length;
+        } else {
+            totalLots = Object.values(window.PROJECT_MARKERS || {})
+                .reduce((sum, lots) => sum + lots.length, 0);
+        }
+
+        const installed = rows.filter(
+            row => String(row.solar_status).toLowerCase() === "installed"
+        ).length;
+
+        const notInstalled = totalLots - installed;
 
         document.getElementById("solarInstalledCount").textContent = installed;
         document.getElementById("solarNotInstalledCount").textContent = notInstalled;
-        document.getElementById("solarTotalCount").textContent = rows.length;
+        document.getElementById("solarTotalCount").textContent = totalLots;
     }
 
     function renderSolarTable(rows) {
