@@ -192,7 +192,7 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
         </ul>
     </div>
 
-    <header class="topbar"><div class="topbar-title">IMPERIAL HOMES CORPORATION</div></header>
+    <header class="topbar"><div class="topbar-title"><img src="../assets/img/logo/imperialhouse_logo.png?v=20260618" alt="Imperial Homes" class="topbar-logo">IMPERIAL HOMES CORPORATION</div></header>
 
     <main class="main-content">
         <section id="section-dashboard" class="app-page active">

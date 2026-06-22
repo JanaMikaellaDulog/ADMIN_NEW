@@ -68,7 +68,7 @@
     </div>
 
     <div style="margin-top: 30px;">
-        <h3 style="color: #f8fafc; margin-bottom: 15px;">Solar Installation Records</h3>
+        <h3 style="color: #1a1a1a; margin-bottom: 15px;">Solar Installation Records</h3>
 
         <div class="residents-table-wrapper">
             <table class="residents-table">

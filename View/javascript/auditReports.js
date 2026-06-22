@@ -43,7 +43,7 @@ function renderAuditTableWithData(dataList) {
     tbody.innerHTML = "";
 
     if (paginatedLogs.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 40px; color: #94a3b8;">No matching logs found.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 40px; color: #6b6b6b;">No matching logs found.</td></tr>`;
         if (typeof renderAuditPagination === "function") renderAuditPagination(0, 0);
         return;
     }
@@ -70,11 +70,11 @@ function renderAuditTableWithData(dataList) {
             <td>
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <span class="admin-badge">ID: ${log.admin_id}</span>
-                    <strong style="color: #f8fafc; font-size: 13px;">${log.display_name || 'System'}</strong>
+                    <strong style="color: #1a1a1a; font-size: 13px;">${log.display_name || 'System'}</strong>
                 </div>
             </td>
             <td><span class="action-tag ${actionClass}">${rawAction}</span></td>
-            <td class="details-cell" style="max-width: 400px; color: #cbd5e1; line-height: 1.5;">${log.details}</td>
+            <td class="details-cell" style="max-width: 400px; color: #1a1a1a; line-height: 1.5;">${log.details}</td>
             <td class="time-cell">${log.timestamp}</td>
         `;
         tbody.appendChild(tr);

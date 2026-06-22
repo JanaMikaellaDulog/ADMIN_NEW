@@ -80,7 +80,7 @@
             datasets: [{
               data: [activeCount, inactiveCount],
               backgroundColor: ['#22c55e', '#ef4444'], 
-              borderColor: '#1e293b',
+              borderColor: '#ffffff',
               borderWidth: 2
             }]
           },
@@ -88,8 +88,8 @@
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-              legend: { position: 'bottom', labels: { color: '#f8fafc' } },
-              title: { display: true, text: 'Resident Status Distribution', color: '#f8fafc' }
+              legend: { position: 'bottom', labels: { color: '#1a1a1a' } },
+              title: { display: true, text: 'Resident Status Distribution', color: '#1a1a1a' }
             }
           }
         });
@@ -108,7 +108,7 @@
             datasets: [{
               label: 'Total (₱)',
               data: [paidTotal, unpaidTotal],
-              backgroundColor: ['#d49006', '#334155'], // Brand Orange vs Muted Slate
+              backgroundColor: ['#f57c1f', '#ffd6b3'],
               borderRadius: 8
             }]
           },
@@ -117,18 +117,18 @@
             maintainAspectRatio: false,
             plugins: {
               legend: { display: false },
-              title: { display: true, text: 'Revenue Collection Overview', color: '#f8fafc' }
+              title: { display: true, text: 'Revenue Collection Overview', color: '#1a1a1a' }
             },
             scales: {
               y: { 
                 beginAtZero: true,
-                grid: { color: 'rgba(255,255,255,0.05)' },
-                ticks: { 
-                    color: '#94a3b8',
+                grid: { color: 'rgba(243,195,151,0.35)' },
+                ticks: {
+                    color: '#1a1a1a',
                     callback: (val) => '₱' + val.toLocaleString() 
                 }
               },
-              x: { ticks: { color: '#94a3b8' } }
+              x: { ticks: { color: '#1a1a1a' } }
             }
           }
         });

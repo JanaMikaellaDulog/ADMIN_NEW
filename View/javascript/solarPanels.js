@@ -69,14 +69,31 @@ function renderSolarAnalytics(rows = []) {
             datasets: [{
                 label: "Solar Status",
                 data: [installed, notInstalled],
-                backgroundColor: ["#16a34a", "#475569"],
-                borderColor: ["#16a34a", "#475569"],
+                backgroundColor: ["#16a34a", "#f57c1f"],
+                borderColor: ["#15803d", "#e06a10"],
                 borderWidth: 1
             }]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: "#1a1a1a"
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { color: "#1a1a1a" },
+                    grid: { color: "rgba(243, 195, 151, 0.35)" }
+                },
+                y: {
+                    ticks: { color: "#1a1a1a", precision: 0 },
+                    grid: { color: "rgba(243, 195, 151, 0.35)" }
+                }
+            }
         }
     });
 }
@@ -254,7 +271,7 @@ function populateSolarProjects() {
         if (!rows.length) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="8" style="text-align:center; padding:40px; color:#94a3b8;">
+                    <td colspan="8" style="text-align:center; padding:40px; color:#6b6b6b;">
                         No installed solar panels found for this selection.
                     </td>
                 </tr>

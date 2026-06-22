@@ -50,8 +50,8 @@ document.addEventListener("DOMContentLoaded", () => {
         filterDiv.className = "connovate-filter";
         filterDiv.style.cssText = "display: flex; gap: 8px; align-items: center;";
         filterDiv.innerHTML = `
-            <label style="color: #94a3b8; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Floor:</label>
-            <select id="connovateFloorFilter" style="padding: 8px 12px; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #f8fafc; font-size: 13px; min-width: 140px; cursor: pointer; outline: none;">
+            <label style="color: #6b6b6b; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Floor:</label>
+            <select id="connovateFloorFilter" style="padding: 8px 12px; background: #ffffff; border: 1px solid #f3c397; border-radius: 6px; color: #1a1a1a; font-size: 13px; min-width: 140px; cursor: pointer; outline: none;">
                 <option value="">All Floors</option>
                 <option value="GROUND FLOOR">Ground Floor</option>
                 <option value="SECOND FLOOR">Second Floor</option>
@@ -414,8 +414,8 @@ document.addEventListener("DOMContentLoaded", () => {
                             ground.remainingQuantity,
                             second.remainingQuantity
                         ],
-                        backgroundColor: "#475569",
-                        borderColor: "#475569",
+                        backgroundColor: "#ffd6b3",
+                        borderColor: "#f57c1f",
                         borderWidth: 1,
                         stack: "panels",
                         categoryPercentage: 0.58,
@@ -440,7 +440,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     legend: {
                         position: "bottom",
                         labels: {
-                            color: "#cbd5e1",
+                            color: "#1a1a1a",
                             boxWidth: 14,
                             boxHeight: 14,
                             font: {
@@ -449,18 +449,18 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                     },
                     tooltip: {
-                        backgroundColor: "rgba(15, 23, 42, 0.96)",
-                        borderColor: "#475569",
+                        backgroundColor: "rgba(255, 255, 255, 0.96)",
+                        borderColor: "#f3c397",
                         borderWidth: 1,
-                        titleColor: "#f8fafc",
-                        bodyColor: "#e2e8f0"
+                        titleColor: "#1a1a1a",
+                        bodyColor: "#1a1a1a"
                     }
                 },
                 scales: {
                     x: {
                         stacked: true,
                         ticks: {
-                            color: "#f8fafc",
+                            color: "#1a1a1a",
                             font: {
                                 size: 14,
                                 weight: "700"
@@ -476,14 +476,14 @@ document.addEventListener("DOMContentLoaded", () => {
                         beginAtZero: true,
                         ticks: {
                             precision: 0,
-                            color: "#cbd5e1",
+                            color: "#1a1a1a",
                             stepSize: 1,
                             font: {
                                 size: 13
                             }
                         },
                         grid: {
-                            color: "rgba(71, 85, 105, 0.35)",
+                            color: "rgba(243, 195, 151, 0.35)",
                             drawBorder: false
                         }
                     }

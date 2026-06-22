@@ -17,7 +17,7 @@ function showSystemLoader(message = "Processing...") {
         Object.assign(overlay.style, {
             position: 'fixed',
             inset: '0',
-            background: 'rgba(15, 23, 42, 0.95)',
+            background: 'rgba(255, 250, 245, 0.95)',
             display: 'none',
             flexDirection: 'column',
             justifyContent: 'center',
@@ -33,7 +33,7 @@ function showSystemLoader(message = "Processing...") {
                 @keyframes spinGold { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
                 .loader-spinner {
                     width: 50px; height: 50px;
-                    border: 5px solid #1e293b;
+                    border: 5px solid #fff4ea;
                     border-bottom-color: #d49006;
                     border-radius: 50%;
                     animation: spinGold 1s linear infinite;
@@ -77,8 +77,8 @@ function showToast(message, type = 'success') {
         position: 'fixed',
         top: '30px',
         right: '30px',
-        background: type === 'success' ? '#1e293b' : '#450a0a',
-        color: type === 'success' ? '#d49006' : '#f87171',
+        background: type === 'success' ? '#ffffff' : '#fff1f0',
+        color: type === 'success' ? '#f57c1f' : '#c0392b',
         padding: '15px 30px',
         borderRadius: '10px',
         borderLeft: `5px solid ${type === 'success' ? '#d49006' : '#ef4444'}`,

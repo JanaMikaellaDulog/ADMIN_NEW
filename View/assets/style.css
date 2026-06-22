@@ -1560,3 +1560,341 @@ textarea { min-height: 80px; resize: vertical; }
 .connovate-panel-modal-container {
     max-width: 520px;
 }
+
+/* =========================
+    16. CLEAN WHITE THEME OVERRIDES
+========================= */
+:root {
+    --orange: #f57c1f;
+    --orange-hover: #e06a10;
+    --orange-soft: #fff4ea;
+    --ink: #1a1a1a;
+    --muted: #6b6b6b;
+    --border: #f3c397;
+    --panel: #ffffff;
+    --page: #fffaf5;
+    --soft-panel: #fff7ef;
+}
+
+html,
+body,
+.main-content,
+.app-page,
+#section-dashboard,
+#section-residents,
+#section-connovate,
+#section-solar,
+#section-admins,
+#section-reports {
+    background: linear-gradient(180deg, #fffaf5 0%, #ffffff 48%, #fff7ef 100%) !important;
+    color: var(--ink) !important;
+}
+
+.topbar {
+    background: var(--panel) !important;
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 6px 20px rgba(98, 54, 16, 0.08);
+}
+
+.topbar-title {
+    color: var(--ink) !important;
+    text-shadow: none !important;
+    gap: 12px;
+}
+
+.topbar-logo {
+    width: 38px;
+    height: 38px;
+    object-fit: contain;
+    padding: 4px;
+    background: var(--orange-soft);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+}
+
+.left-menu {
+    background: var(--panel) !important;
+    color: var(--ink) !important;
+    border-right: 1px solid var(--border) !important;
+    box-shadow: 5px 0 24px rgba(98, 54, 16, 0.08) !important;
+}
+
+.left-menu-title,
+.location-selector-section .section-title,
+.modal-section-title,
+.connovate-eyebrow,
+.billing-title,
+#section-admins .page-header h2,
+.admin-modal-header h3 {
+    color: var(--orange) !important;
+}
+
+.left-menu-item {
+    color: #333333 !important;
+}
+
+.left-menu-item:hover {
+    background: var(--orange-soft) !important;
+    color: var(--ink) !important;
+}
+
+.left-menu-item.active {
+    background: var(--orange) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 15px rgba(245, 124, 31, 0.22) !important;
+}
+
+.left-menu-item.active::before {
+    background: #ffffff !important;
+}
+
+.logout-item {
+    color: #c0392b !important;
+}
+
+.stat-card,
+.location-selector-section,
+.residents-table-wrapper,
+.connovate-table-wrapper,
+.connovate-panel-toolbar,
+.audit-table-wrapper,
+.admin-list-wrapper,
+#section-admins .admin-list-wrapper,
+.modal-container,
+.admin-modal-content,
+.connovate-chart-card,
+.connovate-board-chart-block,
+.connovate-chart-frame,
+.connovate-chart-stage,
+.connovate-card,
+.connovate-panel,
+#connovateModal .connovate-modal-body,
+#project-analytics-box,
+.audit-toolbar,
+#markerModalContent {
+    background: var(--panel) !important;
+    color: var(--ink) !important;
+    border-color: var(--border) !important;
+    box-shadow: 0 12px 30px rgba(98, 54, 16, 0.08) !important;
+}
+
+.connovate-hero {
+    background: var(--orange-soft) !important;
+    border-color: var(--border) !important;
+}
+
+.connovate-board-strip {
+    background: var(--soft-panel) !important;
+    border-color: var(--border) !important;
+    color: var(--ink) !important;
+}
+
+.search-input,
+.header-select,
+.modal-body input,
+.modal-body select,
+.modal-body textarea,
+.admin-form-input,
+.connovate-select,
+#adminPinInput,
+#connovateFloorFilter,
+.audit-toolbar input,
+.audit-toolbar select {
+    background: #ffffff !important;
+    color: var(--ink) !important;
+    border-color: var(--border) !important;
+}
+
+.search-input::placeholder,
+.admin-form-input::placeholder,
+.modal-body input::placeholder,
+.modal-body textarea::placeholder {
+    color: #8a8a8a !important;
+}
+
+.header-select:focus,
+.search-input:focus,
+.modal-body input:focus,
+.modal-body select:focus,
+.modal-body textarea:focus,
+.admin-form-input:focus,
+.connovate-select:focus,
+#adminPinInput:focus {
+    border-color: var(--orange) !important;
+    box-shadow: 0 0 0 3px rgba(245, 124, 31, 0.15) !important;
+}
+
+.residents-table th,
+.connovate-table th,
+.audit-log-table th,
+.admin-list-wrapper th,
+#section-admins th {
+    background: var(--orange-soft) !important;
+    color: var(--orange) !important;
+    border-bottom-color: var(--border) !important;
+}
+
+.residents-table td,
+.connovate-table td,
+.audit-log-table td,
+.admin-list-wrapper td,
+#section-admins td,
+.detail-row td {
+    background: #ffffff !important;
+    color: var(--ink) !important;
+    border-bottom-color: #f6d7bc !important;
+}
+
+.audit-log-table tr:hover td,
+.admin-list-wrapper tr:hover,
+#section-admins tr:hover td {
+    background: #fff7ef !important;
+}
+
+.stat-value,
+.connovate-card span,
+.detail-value,
+.billing-amount,
+.security-info h4,
+.admin-name-cell,
+.connovate-hero h2,
+.connovate-chart-header h3,
+.connovate-panel-toolbar h3,
+#section-admins table,
+.admin-list-wrapper table,
+#infoClient,
+#logoutModal h3 {
+    color: var(--ink) !important;
+}
+
+.stat-label,
+.connovate-card label,
+.connovate-panel label,
+.connovate-hero p,
+.connovate-panel p,
+.connovate-chart-header p,
+.connovate-floor-meta,
+.connovate-chart-legend,
+.board-box-label,
+.connovate-board-strip small,
+.modal-body label,
+.admin-form-group label,
+#section-admins .page-header p,
+.security-info p,
+.billing-label,
+.detail-label,
+#infoRemarks,
+#logoutModal p {
+    color: var(--muted) !important;
+}
+
+.modal-overlay {
+    background: rgba(26, 26, 26, 0.35) !important;
+}
+
+.modal-footer,
+.security-footer {
+    background: var(--soft-panel) !important;
+    border-top: 1px solid var(--border) !important;
+}
+
+.modal-section-title,
+.admin-modal-header,
+#section-admins .page-header,
+.billing-section,
+.connovate-floor-meta {
+    border-color: var(--border) !important;
+}
+
+.primary-btn,
+.btn-load,
+.btn-add-admin,
+.btn-save-admin,
+.btn-cancel-security {
+    background: var(--orange) !important;
+    color: #ffffff !important;
+}
+
+.primary-btn:hover,
+.btn-load:hover,
+.btn-add-admin:hover,
+.btn-save-admin:hover {
+    background: var(--orange-hover) !important;
+}
+
+.btn-cancel,
+.connovate-btn {
+    background: #ffffff !important;
+    border-color: var(--border) !important;
+    color: var(--ink) !important;
+}
+
+.btn-cancel:hover,
+.connovate-btn:hover {
+    background: var(--orange-soft) !important;
+    color: var(--ink) !important;
+}
+
+.admin-badge {
+    background: var(--orange-soft) !important;
+    color: var(--orange) !important;
+    border-color: var(--border) !important;
+}
+
+.action-tag.login {
+    background: #f1f5f9 !important;
+    color: #334155 !important;
+}
+
+.status-tag.moved-out {
+    background: #f1f5f9 !important;
+    color: #334155 !important;
+}
+
+.status-inactive {
+    background-color: #f1f5f9 !important;
+    color: #475569 !important;
+    border-color: #cbd5e1 !important;
+}
+
+.connovate-svg-frame,
+.connovate-svg-stage {
+    background: #ffffff !important;
+    border-color: var(--border) !important;
+}
+
+#project-analytics-box > div > div {
+    background: #ffffff !important;
+    border: 1px solid var(--border);
+}
+
+#analytics-title,
+#section-reports .page-header h2 {
+    color: var(--orange) !important;
+}
+
+#markerModalContent label,
+#markerModalContent h2,
+#markerModalContent h3 {
+    color: var(--ink) !important;
+}
+
+#markerModalContent label {
+    color: var(--muted) !important;
+}
+
+#logoutModal > div {
+    background: #ffffff !important;
+    border-color: var(--border) !important;
+    box-shadow: 0 20px 50px rgba(98, 54, 16, 0.14) !important;
+}
+
+#logoutModal button:first-child {
+    background: #f1f5f9 !important;
+    color: var(--ink) !important;
+}
+
+#logoutModal button:last-child {
+    background: var(--orange) !important;
+    color: #ffffff !important;
+}
