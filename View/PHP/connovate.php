@@ -85,7 +85,7 @@
                     </div>
                     <div>
                         <label for="connovateQuantity">Quantity</label>
-                        <input type="number" id="connovateQuantity" min="1" required>
+                        <input type="number" id="connovateQuantity" min="1" max="1" required>
                     </div>
                 </div>
                 <div class="connovate-panel connovate-card" style="margin-top: 16px;">
