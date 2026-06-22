@@ -529,6 +529,7 @@
 
                     const data = await response.json();
                     if (!response.ok || !data.success) throw new Error(data.message || "Unable to save panel.");
+                    window.alert("Save completed successfully.");
 
                     panelEntries[panelIdentity.key] = {
                         floor: panelIdentity.floor,
