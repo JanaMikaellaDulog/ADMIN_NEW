@@ -39,50 +39,47 @@
         height: 842
     };
 
+    //edited to contain "part" for connovate part/panel mapping
     const CONNOVATE_HOTSPOTS = {
         "GROUND FLOOR": [
-            { id: "gf-top-beam", x: 163, y: 95, width: 156, height: 10 },
-            { id: "gf-left-top-green", x: 76, y: 156, width: 8, height: 38 },
-            { id: "gf-left-red-1", x: 76, y: 195, width: 8, height: 100 },
-            { id: "gf-left-red-2", x: 76, y: 298, width: 8, height: 98 },
-            { id: "gf-left-bottom-green", x: 76, y: 399, width: 8, height: 38 },
-            { id: "gf-center-left-red", x: 176, y: 107, width: 8, height: 83 },
-            { id: "gf-center-purple", x: 238, y: 107, width: 8, height: 83 },
-            { id: "gf-center-green", x: 238, y: 157, width: 8, height: 33 },
-            { id: "gf-center-blue-1", x: 238, y: 195, width: 8, height: 100 },
-            { id: "gf-center-blue-2", x: 238, y: 298, width: 8, height: 98 },
-            { id: "gf-center-bottom-green", x: 238, y: 399, width: 8, height: 38 },
-            { id: "gf-center-right-red", x: 299, y: 107, width: 8, height: 83 },
-            { id: "gf-mid-beam-left", x: 78, y: 190, width: 160, height: 10 },
-            { id: "gf-mid-beam-right", x: 245, y: 190, width: 160, height: 10 },
-            { id: "gf-right-top-green", x: 399, y: 156, width: 8, height: 38 },
-            { id: "gf-right-red-1", x: 399, y: 195, width: 8, height: 100 },
-            { id: "gf-right-red-2", x: 399, y: 298, width: 8, height: 98 },
-            { id: "gf-right-bottom-green", x: 400, y: 399, width: 8, height: 38 },
-            { id: "gf-bottom-beam-left", x: 78, y: 394, width: 160, height: 10 },
-            { id: "gf-bottom-beam-right", x: 245, y: 394, width: 160, height: 10 }
+            { id: "gf-top-beam", part: "TDX-002A", x: 163, y: 95, width: 156, height: 10 },
+            { id: "gf-left-top-green", part: "TIR-207A", x: 76, y: 156, width: 8, height: 38 },
+            { id: "gf-left-red-1", part: "TDX-204A", x: 76, y: 195, width: 8, height: 100 },
+            { id: "gf-left-red-2", part: "TDX-203A", x: 76, y: 298, width: 8, height: 98 },
+            { id: "gf-left-bottom-green", part: "TIR-207A", x: 76, y: 399, width: 8, height: 38 },
+            { id: "gf-center-left-red", part: "TDX-004A", x: 176, y: 107, width: 8, height: 83 },
+            { id: "gf-center-purple", part: "TDX-001A", x: 238, y: 107, width: 8, height: 83 },
+            { id: "gf-center-green", part: "TIR-214A", x: 238, y: 157, width: 8, height: 33 },
+            { id: "gf-center-blue-1", part: "TDX-206A", x: 238, y: 195, width: 8, height: 100 },
+            { id: "gf-center-blue-2", part: "TDX-205A", x: 238, y: 298, width: 8, height: 98 },
+            { id: "gf-center-bottom-green", part: "TIR-207A", x: 238, y: 399, width: 8, height: 38 },
+            { id: "gf-center-right-red", part: "TDX-003A", x: 299, y: 107, width: 8, height: 83 },
+            { id: "gf-mid-beam-left", part: "TDX-219A", x: 78, y: 190, width: 160, height: 10 },
+            { id: "gf-mid-beam-right", part: "TDX-220A", x: 245, y: 190, width: 160, height: 10 },
+            { id: "gf-right-top-green", part: "TIR-207A", x: 399, y: 156, width: 8, height: 38 },
+            { id: "gf-right-red-1", part: "TDX-216A", x: 399, y: 195, width: 8, height: 100 },
+            { id: "gf-right-red-2", part: "TDX-215A", x: 399, y: 298, width: 8, height: 98 },
+            { id: "gf-right-bottom-green", part: "TIR-207A", x: 400, y: 399, width: 8, height: 38 },
+            { id: "gf-bottom-beam-left", part: "TDX-201A", x: 78, y: 394, width: 160, height: 10 },
+            { id: "gf-bottom-beam-right", part: "TDX-201A", x: 245, y: 394, width: 160, height: 10 }
         ],
         "SECOND FLOOR": [
-            { id: "sf-top-beam", x: 163, y: 95, width: 156, height: 10 },
-            { id: "sf-left-top-green", x: 76, y: 156, width: 8, height: 38 },
-            { id: "sf-left-red-1", x: 76, y: 195, width: 8, height: 100 },
-            { id: "sf-left-red-2", x: 76, y: 298, width: 8, height: 98 },
-            { id: "sf-left-bottom-green", x: 76, y: 399, width: 8, height: 38 },
-            { id: "sf-center-left-red", x: 176, y: 107, width: 8, height: 83 },
-            { id: "sf-center-purple", x: 238, y: 107, width: 8, height: 83 },
-            { id: "sf-center-green", x: 238, y: 157, width: 8, height: 33 },
-            { id: "sf-center-blue-1", x: 238, y: 195, width: 8, height: 100 },
-            { id: "sf-center-blue-2", x: 238, y: 298, width: 8, height: 98 },
-            { id: "sf-center-bottom-green", x: 238, y: 399, width: 8, height: 38 },
-            { id: "sf-center-right-red", x: 299, y: 107, width: 8, height: 83 },
-            { id: "sf-mid-beam-left", x: 78, y: 190, width: 160, height: 10 },
-            { id: "sf-mid-beam-right", x: 245, y: 190, width: 160, height: 10 },
-            { id: "sf-right-top-green", x: 399, y: 156, width: 8, height: 38 },
-            { id: "sf-right-red-1", x: 399, y: 195, width: 8, height: 100 },
-            { id: "sf-right-red-2", x: 399, y: 298, width: 8, height: 98 },
-            { id: "sf-right-bottom-green", x: 400, y: 399, width: 8, height: 38 },
-            { id: "sf-bottom-beam-left", x: 78, y: 394, width: 160, height: 10 },
-            { id: "sf-bottom-beam-right", x: 245, y: 394, width: 160, height: 10 }
+            { id: "sf-left-top-green", part: "TIR-214A", x: 76, y: 156, width: 8, height: 38 },
+            { id: "sf-left-red-1", part: "TDX-211A", x: 76, y: 195, width: 8, height: 100 },
+            { id: "sf-left-red-2", part: "TDX-210A", x: 76, y: 298, width: 8, height: 98 },
+            { id: "sf-left-bottom-green", part: "TIR-214A", x: 76, y: 399, width: 8, height: 38 },
+            { id: "sf-center-green", part: "TIR-214A", x: 238, y: 157, width: 8, height: 33 },
+            { id: "sf-center-blue-1", part: "TDX-213A", x: 238, y: 195, width: 8, height: 100 },
+            { id: "sf-center-blue-2", part: "TDX-212A", x: 238, y: 298, width: 8, height: 98 },
+            { id: "sf-center-bottom-green", part: "TIR-214A", x: 238, y: 399, width: 8, height: 38 },
+            { id: "sf-mid-beam-left", part: "TIR-209A", x: 78, y: 190, width: 160, height: 10 },
+            { id: "sf-mid-beam-right", part: "TIR-209A", x: 245, y: 190, width: 160, height: 10 },
+            { id: "sf-right-top-green", part: "TIR-214A", x: 399, y: 156, width: 8, height: 38 },
+            { id: "sf-right-red-1", part: "TDX-218A", x: 399, y: 195, width: 8, height: 100 },
+            { id: "sf-right-red-2", part: "TDX-217A", x: 399, y: 298, width: 8, height: 98 },
+            { id: "sf-right-bottom-green", part: "TIR-214A", x: 400, y: 399, width: 8, height: 38 },
+            { id: "sf-bottom-beam-left", part: "TIR-208A", x: 78, y: 394, width: 160, height: 10 },
+            { id: "sf-bottom-beam-right", part: "TIR-208A", x: 245, y: 394, width: 160, height: 10 }
         ]
     };
 
@@ -95,11 +92,16 @@
     // the real max panel slots per floor; counting against the raw
     // hotspot array length let stale/renamed rows in the DB inflate
     // "done" past the actual number of fillable slots.
-    const REQUIRED_PANELS_PER_FLOOR = 19;
-    window.CONNOVATE_FLOOR_REQUIRED = {
-        "GROUND FLOOR": REQUIRED_PANELS_PER_FLOOR,
-        "SECOND FLOOR": REQUIRED_PANELS_PER_FLOOR
+    const REQUIRED_PANELS_BY_FLOOR = {
+    "GROUND FLOOR": 19,
+    "SECOND FLOOR": 15
     };
+
+    window.CONNOVATE_FLOOR_REQUIRED = { ...REQUIRED_PANELS_BY_FLOOR };
+
+    function getRequiredForFloor(floorKey) {  //Edited for different panel num per floor
+        return REQUIRED_PANELS_BY_FLOOR[floorKey] ?? 0;
+    }
 
     function textOrFallback(value, fallback = "---") {
         const normalized = value === null || value === undefined ? "" : String(value).trim();
@@ -156,7 +158,7 @@
         const finishedEl = document.getElementById("connovateFinishedCount");
 
         const floor = getFloorKey();
-        const required = REQUIRED_PANELS_PER_FLOOR;
+        const required = getRequiredForFloor(floor);
 
         // Only count entries whose panelId matches a hotspot that actually
         // exists on this floor right now. Rows saved under an old/renamed
@@ -187,12 +189,12 @@
         // quantity meets or exceeds the required total on BOTH Ground Floor
         // AND Second Floor (capped per floor so over-entry on one floor
         // can't make the house look "more finished" than it is).
-        const totalRequired = Object.keys(CONNOVATE_HOTSPOTS)
-            .reduce((sum) => sum + REQUIRED_PANELS_PER_FLOOR, 0);
+        const totalRequired = Object.keys(CONNOVATE_HOTSPOTS) //Edited for different panel num per floor
+            .reduce((sum, floorKey) => sum + getRequiredForFloor(floorKey), 0);
         const totalDone = Object.keys(CONNOVATE_HOTSPOTS)
-            .reduce((sum, floorKey) => sum + Math.min(countValidDone(floorKey), REQUIRED_PANELS_PER_FLOOR), 0);
+            .reduce((sum, floorKey) => sum + Math.min(countValidDone(floorKey), getRequiredForFloor(floorKey)), 0);
         const isHouseFinished = totalRequired > 0 && totalDone >= totalRequired;
-
+ 
         if (finishedEl) finishedEl.textContent = isHouseFinished ? "Yes" : "No";
     }
 
@@ -320,8 +322,8 @@
             rect.dataset.hotspotId = hotspot.id;
             rect.style.cursor = "pointer";
             rect.style.pointerEvents = "all";
-            rect.style.stroke = "#f59e0b";  //temp border color change back to "none" afterwards "#f59e0b"
-            rect.style.strokeWidth = "2"; //temp stroke, change back to "0" "2"
+            rect.style.stroke = "nonw";  //temp border color change back to "none" afterwards "#f59e0b"
+            rect.style.strokeWidth = "0"; //temp stroke, change back to "0" "2"
             applyHotspotStatus(rect, Boolean(savedStatuses[hotspot.id]));
 
             rect.addEventListener("click", (event) => {
@@ -492,31 +494,38 @@
         }
 
         if (connovatePanelForm) {
-            connovatePanelForm.addEventListener("submit", async (event) => {
-                event.preventDefault();
+        connovatePanelForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
 
-                const panelIdentity = getSelectedPanelIdentity();
-                const controlNumber = String(connovateControlNumber?.value || "").trim();
-                const quantity = Number(connovateQuantity?.value || 0);
-                if (!panelIdentity || !controlNumber || !Number.isFinite(quantity) || quantity <= 0) return;
+            const panelIdentity = getSelectedPanelIdentity();
+            const controlNumber = String(connovateControlNumber?.value || "").trim();
+            const quantity = Number(connovateQuantity?.value || 0);
+            
+            //connovate hotspot for .part
+            const floor = getFloorKey();
+            const hotspot = CONNOVATE_HOTSPOTS[floor]?.find(h => h.id === panelIdentity.panelId);
+            const connovatePart = hotspot?.part || controlNumber;
 
-                try {
-                    const response = await fetch(CONNOVATE_ENDPOINTS.save, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            Accept: "application/json"
-                        },
-                        body: JSON.stringify({
-                            project: selectedLot.project,
-                            block: selectedLot.block,
-                            lot: selectedLot.lot,
-                            floor: panelIdentity.floor,
-                            panelId: panelIdentity.panelId,
-                            controlNumber,
-                            quantity
-                        })
-                    });
+            if (!panelIdentity || !controlNumber || !Number.isFinite(quantity) || quantity <= 0) return;
+
+            try {
+                const response = await fetch(CONNOVATE_ENDPOINTS.save, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json"
+                    },
+                    body: JSON.stringify({
+                        project: selectedLot.project,
+                        block: selectedLot.block,
+                        lot: selectedLot.lot,
+                        floor: panelIdentity.floor,
+                        panelId: panelIdentity.panelId,
+                        controlNumber,
+                        quantity,
+                        connovatePart: connovatePart
+                    })
+                });
 
                     const data = await response.json();
                     if (!response.ok || !data.success) throw new Error(data.message || "Unable to save panel.");
@@ -539,23 +548,23 @@
                     // Keep the Connovate Management board + Parts List in
                     // sync immediately, without needing a full page reload.
                     if (typeof window.upsertConnovatePanelCache === "function") {
-                        window.upsertConnovatePanelCache({
-                            project_name: selectedLot.project,
-                            block_no: selectedLot.block,
-                            lot_no: selectedLot.lot,
-                            floor_name: panelIdentity.floor,
-                            panel_key: panelIdentity.panelId,
-                            connovate_part: (data.connovatePart || controlNumber || "").toUpperCase(),
-                            control_number: controlNumber,
-                            quantity,
-                            status: "finished",
-                            completed_at: data.completedAt || ""
-                        });
-                    }
-                } catch (error) {
-                    console.warn("Unable to save Connovate panel.", error);
-                    window.alert(error.message || "Unable to save panel.");
+                    window.upsertConnovatePanelCache({
+                        project_name: selectedLot.project,
+                        block_no: selectedLot.block,
+                        lot_no: selectedLot.lot,
+                        floor_name: panelIdentity.floor,
+                        panel_key: panelIdentity.panelId,
+                        connovate_part: connovatePart.toUpperCase(),
+                        control_number: controlNumber,
+                        quantity,
+                        status: "finished",
+                        completed_at: data.completedAt || ""
+                    });
                 }
+            } catch (error) {
+                console.warn("Unable to save Connovate panel.", error);
+                window.alert(error.message || "Unable to save panel.");
+            }
             });
         }
     });

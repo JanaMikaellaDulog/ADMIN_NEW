@@ -12,6 +12,11 @@ $floor = strtoupper(trim($payload['floor'] ?? ''));
 $panelId = trim($payload['panelId'] ?? '');
 $controlNumber = trim($payload['controlNumber'] ?? '');
 $quantity = (int) ($payload['quantity'] ?? 0);
+$connovatePart = trim($payload['connovatePart'] ?? ''); 
+
+if ($connovatePart === '') {
+    $connovatePart = $controlNumber;
+}
 
 $completedById = isset($_SESSION['admin_id']) ? (int)$_SESSION['admin_id'] : null;
 $completedBy = trim($_SESSION['admin_name'] ?? 'System');
@@ -65,7 +70,7 @@ if ($existing) {
     $stmt->bind_param(
         "ssissi",
         $controlNumber,
-        $controlNumber,
+        $connovatePart,
         $quantity,
         $completedById,
         $completedBy,
@@ -102,7 +107,7 @@ if ($existing) {
         $floor,
         $panelId,
         $controlNumber,
-        $controlNumber,
+        $connovatePart,
         $quantity,
         $completedById,
         $completedBy
@@ -132,7 +137,7 @@ echo json_encode([
     'floor' => $floor,
     'panelId' => $panelId,
     'controlNumber' => $controlNumber,
-    'connovatePart' => $controlNumber,
+    'connovatePart' => $connovatePart,
     'quantity' => $quantity,
     'completedBy' => $completedBy,
     'completedAt' => date('Y-m-d H:i:s')
