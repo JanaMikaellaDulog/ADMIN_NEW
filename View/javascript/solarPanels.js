@@ -8,7 +8,8 @@
     const ENDPOINTS = {
         load: "get_solar_panels.php",
         save: "save_solar_panel.php",
-        upload: "upload_solar_proof.php"
+        upload: "upload_solar_proof.php",
+        deleteProof: "delete_solar_proof.php"
     };
 
 
@@ -411,6 +412,15 @@ function populateSolarProjects() {
         try {
             const uploadedFile = await uploadProofIfNeeded();
 
+            if (window.solarProofCleared && window.clearedProofFile) {
+                await fetch(ENDPOINTS.deleteProof, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ file: window.clearedProofFile })
+                });
+            }
+            
+
             const formData = new FormData();
             formData.append("resident_id", document.getElementById("solarResidentId")?.value || "");
             formData.append("project_name", document.getElementById("solarProjectName")?.value || "");
@@ -420,7 +430,10 @@ function populateSolarProjects() {
             formData.append("installation_date", document.getElementById("solarInstallationDate")?.value || "");
             formData.append("provider", document.getElementById("solarProvider")?.value || "");
             formData.append("capacity_details", document.getElementById("solarCapacity")?.value || "");
-            formData.append("proof_file", uploadedFile || "");
+            formData.append(
+                "proof_file",
+                window.solarProofCleared ? "" : (uploadedFile || "")
+            );
             formData.append("remarks", document.getElementById("solarRemarks")?.value || "");
 
             const response = await fetch(ENDPOINTS.save, {
@@ -435,6 +448,9 @@ function populateSolarProjects() {
             }
 
             alert("Solar information saved.");
+            window.solarProofCleared = false;
+            window.clearedProofFile = "";
+
             updateProofLink(uploadedFile);
             setText("solarStatusBadge", document.getElementById("solarStatus")?.value || "Not Installed");
 
@@ -458,7 +474,7 @@ function populateSolarProjects() {
                 installation_date: document.getElementById("solarInstallationDate")?.value || "",
                 provider: document.getElementById("solarProvider")?.value || "",
                 capacity_details: document.getElementById("solarCapacity")?.value || "",
-                proof_file: uploadedFile || "",
+                proof_file: window.solarProofCleared ? "" : (uploadedFile || ""),
                 remarks: document.getElementById("solarRemarks")?.value || ""
             };
             if (idx >= 0) {
@@ -599,4 +615,20 @@ function populateSolarProjects() {
         renderSolarAnalytics(rows);
     };
 
+    window.clearSolarForm = function () {
+        window.solarProofCleared = true;
+        window.clearedProofFile = currentProofFile;
+
+        setValue("solarStatus", "Not Installed");
+        setValue("solarInstallationDate", "");
+        setValue("solarProvider", "");
+        setValue("solarCapacity", "");
+        setValue("solarRemarks", "");
+
+        const fileInput = document.getElementById("solarProofFile");
+        if (fileInput) fileInput.value = "";
+
+        updateProofLink("");
+        setText("solarStatusBadge", "Not Installed");
+    };
 })();

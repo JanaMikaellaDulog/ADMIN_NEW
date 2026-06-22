@@ -162,7 +162,7 @@
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn-cancel" onclick="window.closeSolarModal()">Close</button>
+                <button type="button" class="btn-cancel" onclick="window.clearSolarForm()">Clear</button>
                 <button type="submit" class="primary-btn">Save Solar Info</button>
             </div>
         </form>

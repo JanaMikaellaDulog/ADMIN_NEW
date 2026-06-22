@@ -24,10 +24,36 @@ $check->bind_param('sss', $project, $block, $lot);
 $check->execute();
 $existing = $check->get_result()->fetch_assoc();
 
-if ($existing) {
-    if ($proofFile === '') {
-        $proofFile = $existing['proof_file'] ?? '';
+// If user cleared everything and status is Not Installed,
+// remove the record completely.
+if (
+    $status === 'Not Installed' &&
+    empty($date) &&
+    empty($provider) &&
+    empty($capacity) &&
+    empty($proofFile) &&
+    empty($remarks)
+) {
+
+    $delete = $conn->prepare("
+        DELETE FROM solar_panels
+        WHERE project_name=? AND block_no=? AND lot_no=?
+    ");
+
+    $delete->bind_param('sss', $project, $block, $lot);
+
+    if ($delete->execute()) {
+        echo json_encode([
+            'success' => true,
+            'message' => 'Solar record removed.'
+        ]);
+        exit;
     }
+}
+
+
+if ($existing) {
+
 
     $sql = "UPDATE solar_panels
             SET resident_id=?, solar_status=?, installation_date=?, provider=?, capacity_details=?, proof_file=?, remarks=?
