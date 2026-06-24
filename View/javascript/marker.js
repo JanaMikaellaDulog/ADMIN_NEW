@@ -2536,7 +2536,19 @@ window.PROJECT_MARKERS = {
         { pos: [433, 900], lot: "14", block: "13" },
         { pos: [406, 907], lot: "15", block: "13" },
     ],
-    "Imperial Meadows": [],
+    "Imperial Meadows": [
+        //Block 1
+        { pos: [463, 110], lot: "1", block: "1" },
+        { pos: [518, 124], lot: "2", block: "1" },
+        { pos: [518, 132], lot: "3", block: "1" },
+        { pos: [518, 139], lot: "4", block: "1" },
+        { pos: [519, 147], lot: "5", block: "1" },
+        { pos: [521, 152], lot: "6", block: "1" },
+        { pos: [522, 160], lot: "7", block: "1" },
+        { pos: [524, 167], lot: "8", block: "1" },
+        { pos: [524, 175], lot: "9", block: "1" },
+        { pos: [524, 182], lot: "10", block: "1" },
+    ],
 
 
     "Brgy. Tartaria": [
