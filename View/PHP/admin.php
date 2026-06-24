@@ -47,15 +47,15 @@ $projects = $conn->query("SELECT * FROM subdivisions ORDER BY project_name ASC")
 
 // Comprehensive Resident & Latest Utility Data (17 Fields)
 $resQuery = $conn->query("
-    SELECT 
-        r.resident_id, r.subdivision_id, s.project_name as project, 
+    SELECT
+        r.resident_id, r.subdivision_id, s.project_name as project,
         r.phase, r.block_no, r.lot_no, r.tct_no,
         r.buyer_name, r.new_buyer_assumed, r.buyer_representative,
-        r.contact_no, r.social_media, r.email_address, 
+        r.contact_no, r.social_media, r.email_address,
         r.account_number, r.account_address,
         r.resident_status, r.remarks, r.created_at,
         u.prev_reading, u.present_reading, u.total_bill, u.bill_status, u.remaining_balance, u.current_bill
-    FROM residents r 
+    FROM residents r
     LEFT JOIN subdivisions s ON r.subdivision_id = s.subdivision_id
     LEFT JOIN (
         SELECT * FROM utility_bills WHERE bill_id IN (
@@ -67,8 +67,8 @@ $resQuery = $conn->query("
 
 $residentsArray = [];
 if ($resQuery) {
-    while($row = $resQuery->fetch_assoc()) { 
-        $residentsArray[] = $row; 
+    while($row = $resQuery->fetch_assoc()) {
+        $residentsArray[] = $row;
     }
 }
 
@@ -132,12 +132,12 @@ if ($solarCheck && $solarCheck->num_rows > 0) {
  */
 // Audit Logs (Latest 100 actions)
 $audit_logs = $conn->query("
-    SELECT 
-        l.log_id, l.admin_id, l.action_type, l.details, l.timestamp, 
-        a.admin_name 
+    SELECT
+        l.log_id, l.admin_id, l.action_type, l.details, l.timestamp,
+        a.admin_name
     FROM admin_logs l
-    LEFT JOIN admins a ON l.admin_id = a.admin_id 
-    ORDER BY l.timestamp DESC 
+    LEFT JOIN admins a ON l.admin_id = a.admin_id
+    ORDER BY l.timestamp DESC
     LIMIT 100
 ");
 
@@ -169,7 +169,7 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Imperial House - Admin Dashboard</title>
-    <link rel="stylesheet" href="../assets/style.css">
+    <link rel="stylesheet" href="../assets/style.css?v=<?php echo filemtime(__DIR__ . '/../assets/style.css'); ?>">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 </head>
 <body>
@@ -192,7 +192,22 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
         </ul>
     </div>
 
-    <header class="topbar"><div class="topbar-title"><img src="../assets/img/logo/imperialhouse_logo.png?v=20260618" alt="Imperial Homes" class="topbar-logo">IMPERIAL HOMES CORPORATION</div></header>
+<header class="topbar">
+        <button type="button" id="sidebarToggle" class="sidebar-toggle" aria-controls="leftMenu" aria-expanded="true" title="Toggle navigation">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <div class="topbar-title imperial-brand">
+            <img src="../assets/img/logo/imperialhouse_logo.png?v=20260618" alt="Imperial Homes" class="topbar-logo" width="38" height="38">
+            <div class="imperial-brand-text">
+                <div class="imperial-brand-name imperial-heading-gradient">IMPERIAL HOMES</div>
+                <div class="imperial-brand-sub imperial-heading-gradient-sub">CORPORATION</div>
+
+            </div>
+        </div>
+    </header>
+
 
     <main class="main-content">
         <section id="section-dashboard" class="app-page active">
@@ -216,10 +231,10 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
                 <div class="selector-wrapper" style="display: flex; gap: 15px; margin-top: 15px;">
                     <select id="locationSelect" class="header-select">
                         <option value="">-- Select Project --</option>
-                        <?php 
-                        $projects->data_seek(0); 
+                        <?php
+                        $projects->data_seek(0);
                         while($p = $projects->fetch_assoc()): ?>
-                            <option value="<?php echo $p['subdivision_id']; ?>" 
+                            <option value="<?php echo $p['subdivision_id']; ?>"
                                     data-name="<?php echo htmlspecialchars($p['project_name']); ?>">
                                 <?php echo htmlspecialchars($p['project_name']); ?>
                             </option>
@@ -393,7 +408,7 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
             <form id="addResidentForm">
                 <div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
                     <div class="modal-section-title">Property Details</div>
-                    <div class="form-grid"> 
+                    <div class="form-grid">
                         <div>
                             <label>Subdivision Project</label>
                             <select id="addProject" name="subdivision_id" required>
@@ -415,9 +430,9 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
                     <div class="form-grid">
                         <div>
                             <label>Primary Buyer Name</label>
-                            <input type="text" id="addName" name="buyer_name" 
-                                   pattern="^[a-zA-Z\sñÑ.]+$" 
-                                   title="Numbers are not allowed in the name." 
+                            <input type="text" id="addName" name="buyer_name"
+                                   pattern="^[a-zA-Z\sñÑ.]+$"
+                                   title="Numbers are not allowed in the name."
                                    required>
                         </div>
                         <div><label>Account Number</label><input type="text" id="addAccountNo" name="account_number"></div>
@@ -433,8 +448,8 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
                     <div class="form-grid">
                         <div>
                             <label>Contact No.</label>
-                            <input type="text" id="addContact" name="contact_no" 
-                                   oninput="this.value = this.value.replace(/[^0-9+]/g, '')" 
+                            <input type="text" id="addContact" name="contact_no"
+                                   oninput="this.value = this.value.replace(/[^0-9+]/g, '')"
                                    placeholder="09123456789">
                         </div>
                         <div><label>Email Address</label><input type="email" id="addEmail" name="email_address"></div>
@@ -495,21 +510,21 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
                     <div class="form-grid">
                         <div>
                             <label>Primary Buyer Name</label>
-                            <input type="text" id="editName" name="buyer_name" 
-                                   pattern="^[a-zA-Z\sñÑ.]+$" 
-                                   title="Numbers are not allowed in the name." 
+                            <input type="text" id="editName" name="buyer_name"
+                                   pattern="^[a-zA-Z\sñÑ.]+$"
+                                   title="Numbers are not allowed in the name."
                                    required>
                         </div>
                         <div>
                             <label>New Buyer / Assumed By</label>
-                            <input type="text" id="editNewBuyer" name="new_buyer_assumed" 
-                                   pattern="^[a-zA-Z\sñÑ.]+$" 
+                            <input type="text" id="editNewBuyer" name="new_buyer_assumed"
+                                   pattern="^[a-zA-Z\sñÑ.]+$"
                                    title="Numbers are not allowed.">
                         </div>
                         <div>
                             <label>Buyer Representative</label>
-                            <input type="text" id="editRep" name="buyer_representative" 
-                                   pattern="^[a-zA-Z\sñÑ.]+$" 
+                            <input type="text" id="editRep" name="buyer_representative"
+                                   pattern="^[a-zA-Z\sñÑ.]+$"
                                    title="Numbers are not allowed.">
                         </div>
                         <div><label>Account Number</label><input type="text" id="editAccountNo" name="account_number"></div>
@@ -519,15 +534,15 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
                     <div class="form-grid">
                         <div>
                             <label>Contact No.</label>
-                            <input type="text" id="editContact" name="contact_no" 
-                                   oninput="this.value = this.value.replace(/[^0-9+]/g, '')" 
+                            <input type="text" id="editContact" name="contact_no"
+                                   oninput="this.value = this.value.replace(/[^0-9+]/g, '')"
                                    placeholder="09123456789">
                         </div>
                         <div><label>Email Address</label><input type="email" id="editEmail" name="email_address"></div>
                         <div><label>Social Media (Link/Handle)</label><input type="text" id="editSocial" name="social_media"></div>
                         <div><label>Account Address</label><input type="text" id="editAccountAddress" name="account_address"></div>
                     </div>
-                    
+
                     <div class="modal-section-title">Resident Status & Remarks</div>
                     <div class="form-grid">
                         <div>
@@ -559,7 +574,7 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
             <div class="modal-top-bar" style="background: #991b1b;"><span>Confirm Deletion</span><button onclick="closeDeleteModal()">✕</button></div>
             <div class="modal-body" style="padding: 30px;">
                 <p style="color: #f87171; font-weight: bold; margin-bottom: 20px;">This action cannot be undone. Enter Admin PIN to proceed.</p>
-                <input type="password" id="adminPinInput" placeholder="Enter 4-Digit PIN" 
+                <input type="password" id="adminPinInput" placeholder="Enter 4-Digit PIN"
                        style="text-align: center; font-size: 24px; letter-spacing: 10px; padding: 10px; width: 100%; border-radius: 8px; background: #0f172a; color: white; border: 1px solid #ef4444;">
             </div>
             <div class="modal-footer" style="justify-content: center; gap: 10px;">
@@ -578,27 +593,27 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
             <h2 style="color: #d49006; margin-bottom: 5px;">System Audit Log</h2>
             <p style="color: #64748b; font-size: 13px; margin: 0;">Track all administrative changes and system activities.</p>
         </div>
-        
-        <button onclick="exportAuditLog()" 
+
+        <button onclick="exportAuditLog()"
                 style="padding: 10px 18px; background: #d49006; color: #0f172a; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 13px; transition: 0.2s;">
             Export CSV
         </button>
     </div>
 
     <div class="audit-toolbar" style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: flex-end; background: #1e293b; padding: 15px; border-radius: 10px; border: 1px solid #334155;">
-        
+
         <div class="filter-group">
             <label style="display:block; font-size:10px; color:#d49006; font-weight:800; margin-bottom:5px; text-transform:uppercase; letter-spacing:1px;">Search Details</label>
-            <input type="text" id="auditSearch" onkeyup="filterAuditLog()" placeholder="Search content..." 
+            <input type="text" id="auditSearch" onkeyup="filterAuditLog()" placeholder="Search content..."
                    style="padding: 8px 12px; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #f8fafc; font-size: 13px; width: 200px; outline: none;">
         </div>
 
         <div class="filter-group">
             <label style="display:block; font-size:10px; color:#d49006; font-weight:800; margin-bottom:5px; text-transform:uppercase; letter-spacing:1px;">Admin</label>
-            <select id="filterAdmin" onchange="filterAuditLog()" 
+            <select id="filterAdmin" onchange="filterAuditLog()"
                     style="padding: 8px 12px; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #f8fafc; font-size: 13px; width: 140px; outline: none;">
                 <option value="">All Admins</option>
-                <?php 
+                <?php
                 // Dynamically populate admin names for the filter dropdown
                 if(isset($admins)):
                     $admins->data_seek(0);
@@ -612,7 +627,7 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
 
         <div class="filter-group">
             <label style="display:block; font-size:10px; color:#d49006; font-weight:800; margin-bottom:5px; text-transform:uppercase; letter-spacing:1px;">Action Type</label>
-            <select id="filterAction" onchange="filterAuditLog()" 
+            <select id="filterAction" onchange="filterAuditLog()"
                     style="padding: 8px 12px; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #f8fafc; font-size: 13px; width: 130px; outline: none;">
                 <option value="">All Actions</option>
                 <option value="CREATE">CREATE</option>
@@ -624,7 +639,7 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
 
         <div class="filter-group">
             <label style="display:block; font-size:10px; color:#d49006; font-weight:800; margin-bottom:5px; text-transform:uppercase; letter-spacing:1px;">Year</label>
-            <select id="filterYear" onchange="filterAuditLog()" 
+            <select id="filterYear" onchange="filterAuditLog()"
                     style="padding: 8px 12px; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #f8fafc; font-size: 13px; width: 100px; outline: none;">
                 <option value="">All Years</option>
                 <?php for($y = date("Y"); $y >= 2024; $y--): ?>
@@ -665,13 +680,13 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
             <h2>Admin Management</h2>
             <p>Master admins can manage all accounts. Staff can only edit their own profile.</p>
         </div>
-        
-        <?php 
+
+        <?php
         // Normalize role for comparison
         $sessionRole = isset($_SESSION['authority_level']) ? strtolower(trim($_SESSION['authority_level'])) : '';
         $iAmMaster = ($sessionRole === 'master');
 
-        if($iAmMaster): 
+        if($iAmMaster):
         ?>
         <button type="button" class="btn-add-admin" onclick="openAddAdminModal()">
             <i class="fas fa-plus"></i> Register New Admin
@@ -692,20 +707,20 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
             </thead>
             <tbody id="adminTableBody">
                 <?php if(isset($admins) && $admins->num_rows > 0): ?>
-                    <?php 
-                    $admins->data_seek(0); 
-                    while($row = $admins->fetch_assoc()): 
+                    <?php
+                    $admins->data_seek(0);
+                    while($row = $admins->fetch_assoc()):
                         $rowId = (int)$row['admin_id'];
                         $sessId = (int)$_SESSION['admin_id'];
-                        
+
                         $isMe = ($rowId === $sessId);
                         $rowLevelClean = strtolower(trim($row['authority_level']));
-                        
+
                         // UI Classes based on your DB values
                         $levelClass = ($rowLevelClean === 'master') ? 'level-master' : 'level-staff';
-                        
+
                         // FIXED STATUS LOGIC: Checking for 'active' instead of 'master'
-                        $status = $row['admin_status'] ?? 'Deactivated'; 
+                        $status = $row['admin_status'] ?? 'Deactivated';
                         $statusClass = (strtolower(trim($status)) === 'active') ? 'status-active' : 'status-inactive';
 
                         // Safe JSON for Edit Function
@@ -713,7 +728,7 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
                             'admin_id' => $row['admin_id'],
                             'admin_name' => $row['admin_name'],
                             'auth_key' => $row['auth_key'],
-                            'authority_level' => $row['authority_level'], 
+                            'authority_level' => $row['authority_level'],
                             'admin_status' => $status
                         ]);
                     ?>
@@ -741,9 +756,9 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
                                     <button type="button" class="btn-edit-admin" onclick='editAdmin(<?php echo htmlspecialchars($adminJson, ENT_QUOTES, 'UTF-8'); ?>)'>
                                         Edit
                                     </button>
-                                    
+
                                     <?php if ($iAmMaster && !$isMe): ?>
-                                        <button type="button" class="btn-delete-admin" 
+                                        <button type="button" class="btn-delete-admin"
                                                 onclick="confirmDeleteAdmin(<?php echo $row['admin_id']; ?>, '<?php echo addslashes($row['admin_name']); ?>')">
                                             Delete
                                         </button>
@@ -768,10 +783,10 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
         <div class="admin-modal-header">
             <h3 id="adminModalTitle">Register New Admin</h3>
         </div>
-        
+
         <form id="adminAccountForm" onsubmit="event.preventDefault(); saveAdminAccount();">
             <input type="hidden" id="modalAdminId">
-            
+
             <div class="admin-form-group">
                 <label>Username</label>
                 <input type="text" id="modalAdminName" class="admin-form-input" required>
@@ -792,7 +807,7 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
                     <option value="Master">Master</option>
                 </select>
             </div>
-            
+
             <div class="admin-form-group">
                 <label>Master PIN / Auth Key</label>
                 <div style="display: flex; gap: 5px;">
@@ -822,9 +837,9 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
         <div style="padding: 20px;">
             <p>You are about to permanently delete admin: <b id="targetAdminNameText"></b></p>
             <p style="font-size: 13px; color: #64748b; margin-top: 10px;">To proceed, please enter <b>YOUR</b> Master Authorization Key:</p>
-            
+
             <input type="hidden" id="deleteTargetId">
-            
+
             <div class="admin-form-group" style="margin-top: 15px;">
                 <input type="password" id="masterVerifyKey" class="admin-form-input" placeholder="Enter Master Key" maxlength="6">
             </div>
@@ -843,7 +858,7 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
         <div style="font-size: 40px; margin-bottom: 15px;">🚪</div>
         <h3 style="color:#f8fafc; margin-bottom:10px; font-weight:800; text-transform:uppercase; letter-spacing:1px;">Confirm Logout</h3>
         <p style="color:#94a3b8; font-size:14px; margin-bottom:25px;">Are you sure you want to end your session?</p>
-        
+
         <div style="display:flex; gap:10px;">
             <button onclick="closeLogoutModal()" style="flex:1; padding:12px; background:#334155; color:#f8fafc; border:none; border-radius:8px; cursor:pointer; font-weight:700; transition:0.2s;">CANCEL</button>
             <button onclick="processLogout()" style="flex:1; padding:12px; background:#d49006; color:#0f172a; border:none; border-radius:8px; cursor:pointer; font-weight:800; transition:0.2s;">LOG OUT</button>
@@ -858,13 +873,13 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
     window.connovatePanels = <?php echo json_encode($connovatePanelsArray ?? []); ?>;
     window.solarPanels = <?php echo json_encode($solarPanelsArray ?? []); ?>;
 
-    
+
     // Audit Logs Data (Using the processed array from your PHP update)
     window.auditLogs = <?php echo json_encode($auditLogsArray ?? []); ?>;
-    
+
     // Debugging Console - Helps verify data load on page start
-    console.log("System Ready: " + 
-        (window.residents ? window.residents.length : 0) + " residents and " + 
+    console.log("System Ready: " +
+        (window.residents ? window.residents.length : 0) + " residents and " +
         (window.auditLogs ? window.auditLogs.length : 0) + " logs loaded."
     );
 </script>
@@ -872,7 +887,7 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<script src="get_maps_data.php"></script> 
+<script src="get_maps_data.php"></script>
 
 <script src="../javascript/marker.js?v=<?php echo filemtime(__DIR__ . '/../javascript/marker.js'); ?>"></script>
 <script src="../javascript/ui_utils.js"></script>
@@ -883,7 +898,7 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
 <script src="../javascript/adminManagement.js"></script>
 <script src="../javascript/auditReports.js"></script>
 <script src="../javascript/projectAnalytics.js"></script>
-<script src="../javascript/menu.js"></script> 
+<script src="../javascript/menu.js"></script>
 <script src="../javascript/map.js"></script>
 <script src="../javascript/logOut.js"></script>
 <script src="../javascript/solarPanels.js"></script>

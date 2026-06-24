@@ -11,9 +11,39 @@ html, body {
     height: 100%;
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     background: #f4f6f9;
+    /* Allow page to scroll when switching to small screens */
     overflow: hidden;
     color: #1e293b;
 }
+
+/* Ensure small screens can scroll safely */
+@media (max-width: 768px) {
+    html, body {
+        overflow-x: hidden;
+    }
+
+    .left-menu {
+        width: 260px;
+        padding: 18px;
+    }
+
+    .main-content {
+        margin-left: 260px;
+        overflow: auto;
+        height: auto;
+        min-height: calc(100vh - 60px);
+    }
+
+    .app-page {
+        position: relative;
+        inset: auto;
+        min-height: calc(100vh - 120px);
+    }
+}
+
+
+
+
 
 /* =========================
     2. LAYOUT STRUCTURE
@@ -26,18 +56,18 @@ html, body {
     padding: 0 25px;
     position: fixed;
     top: 0;
-    left: 0; 
+    left: 0;
     right: 0;
-    z-index: 1200; 
+    z-index: 1200;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
 .left-menu {
     position: fixed;
-    top: 60px; 
+    top: 60px;
     left: 0;
     width: 280px;
-    height: calc(100vh - 60px); 
+    height: calc(100vh - 60px);
     background: #1a1a2e;
     color: white;
     padding: 25px;
@@ -48,10 +78,10 @@ html, body {
 }
 
 .main-content {
-    margin-left: 280px; 
-    margin-top: 60px;   
+    margin-left: 280px;
+    margin-top: 60px;
     height: calc(100vh - 60px);
-    background: #f4f7f6; 
+    background: #f4f7f6;
     position: relative;
     overflow: hidden;
 }
@@ -64,7 +94,7 @@ html, body {
     inset: 0;
     padding: 30px;
     overflow-y: auto;
-    display: none; 
+    display: none;
     opacity: 0;
     transform: translateX(20px);
     transition: all 0.3s ease;
@@ -85,20 +115,62 @@ html, body {
     4. TOPBAR & SIDEBAR DESIGN
 ========================= */
 .topbar-title {
-    color: #ffffff;             
-    font-size: 24px;            
-    font-weight: 800;           
-    letter-spacing: 2px;        
-    text-transform: uppercase;  
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2); 
-    font-family: 'Inter', 'Segoe UI', sans-serif; 
-    user-select: none;          
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    user-select: none;
     display: flex;
     align-items: center;
+    gap: 12px;
 }
 
+.imperial-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.imperial-brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.05;
+}
+
+.imperial-brand-name {
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.imperial-brand-sub {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    opacity: 0.95;
+}
+
+/* Gradient title for the Imperial Homes heading */
+.imperial-heading-gradient {
+    background: linear-gradient(90deg, #d49006 0%, #f57c1f 45%, #ffae00 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent !important;
+}
+
+.imperial-heading-gradient-sub {
+    background: linear-gradient(90deg, #d49006 0%, #f57c1f 55%, #ffae00 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent !important;
+    opacity: 1 !important;
+}
+
+
+
 .left-menu-header {
-    height: 40px; 
+    height: 40px;
     display: flex;
     align-items: center;
     margin-bottom: 20px;
@@ -119,14 +191,14 @@ html, body {
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 8px; 
+    gap: 8px;
 }
 
 .left-menu-item {
     padding: 14px 20px;
     border-radius: 10px;
     cursor: pointer;
-    color: #cbd5e1; 
+    color: #cbd5e1;
     font-weight: 600;
     font-size: 14px;
     letter-spacing: 0.5px;
@@ -136,13 +208,13 @@ html, body {
 }
 
 .left-menu-item:hover {
-    background: #2d2d50; 
+    background: #2d2d50;
     color: #ffffff;
-    transform: translateX(5px); 
+    transform: translateX(5px);
 }
 
 .left-menu-item.active {
-    background: #d49006; 
+    background: #d49006;
     color: #ffffff;
     box-shadow: 0 4px 15px rgba(212, 144, 6, 0.3);
 }
@@ -445,8 +517,8 @@ html, body {
     text-transform: uppercase;
 }
 
-.modal-body input, 
-.modal-body select, 
+.modal-body input,
+.modal-body select,
 .modal-body textarea {
     width: 100%;
     padding: 10px 14px;
@@ -704,18 +776,18 @@ textarea { min-height: 80px; resize: vertical; }
 }
 
 /* Green for Active */
-.custom-pin.active-resident .pin { 
-    background-color: #22c55e !important; 
+.custom-pin.active-resident .pin {
+    background-color: #22c55e !important;
 }
 
 /* Red for Inactive */
-.custom-pin.inactive-resident .pin { 
-    background-color: #ef4444 !important; 
+.custom-pin.inactive-resident .pin {
+    background-color: #ef4444 !important;
 }
 
 /* Explicit Orange for Vacant (Matches map.js logic) */
-.custom-pin.vacant-lot .pin { 
-    background-color: #f97316 !important; 
+.custom-pin.vacant-lot .pin {
+    background-color: #f97316 !important;
 }
 
 /* =========================
@@ -723,8 +795,20 @@ textarea { min-height: 80px; resize: vertical; }
 ========================= */
 #markerModalContent {
     position: relative;
-    color: white;
+    color: var(--ink) !important;
+    background: var(--panel) !important;
 }
+
+#markerModalContent .billing-title { color: var(--orange) !important; }
+#markerModalContent .billing-section { background: var(--panel) !important; border-top-color: rgba(229,231,235,1) !important; }
+#markerModalContent .billing-row { background: transparent !important; border-bottom-color: rgba(229,231,235,1) !important; }
+#markerModalContent .billing-label,
+#markerModalContent .billing-amount { color: var(--ink) !important; }
+#markerModalContent #infoTotalBill,
+#markerModalContent #infoBillStatus { color: var(--orange) !important; }
+
+
+
 
 .accent-bar {
     position: absolute;
@@ -737,7 +821,9 @@ textarea { min-height: 80px; resize: vertical; }
 
 .details-section {
     padding: 24px 24px 24px 36px;
+    background: transparent !important;
 }
+
 
 .detail-row {
     display: flex;
@@ -763,9 +849,10 @@ textarea { min-height: 80px; resize: vertical; }
 
 .billing-section {
     margin-top: 28px;
-    border-top: 1px solid #334155;
+    border-top: 1px solid rgba(229,231,235,1) !important;
     padding-top: 20px;
 }
+
 
 .billing-title {
     font-size: 14px;
@@ -800,9 +887,9 @@ textarea { min-height: 80px; resize: vertical; }
 /* =========================
     13. REPORTS & AUDIT LOG (DARK SLATE THEME)
 ========================= */
-#section-reports { 
-    background: #0f172a; 
-    color: #e2e8f0; 
+#section-reports {
+    background: #0f172a;
+    color: #e2e8f0;
 }
 
 /* Wrapper to handle scrolling for long logs */
@@ -1138,7 +1225,7 @@ textarea { min-height: 80px; resize: vertical; }
 }
 
 .security-modal {
-    max-width: 360px !important; 
+    max-width: 360px !important;
     border: 1px solid #7f1d1d;
     box-shadow: 0 0 40px rgba(0, 0, 0, 0.4);
     border-radius: 12px;
@@ -1189,8 +1276,8 @@ textarea { min-height: 80px; resize: vertical; }
 
 #adminPinInput {
     text-align: center;
-    font-size: 18px !important; 
-    letter-spacing: 2px; 
+    font-size: 18px !important;
+    letter-spacing: 2px;
     padding: 12px !important;
     width: 100%;
     border-radius: 8px;
@@ -1249,22 +1336,22 @@ textarea { min-height: 80px; resize: vertical; }
 }
 
 #section-admins .page-header {
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 25px;
     border-bottom: 2px solid #334155;
     padding-bottom: 15px;
 }
 
 #section-admins .page-header h2 {
-    color: #d49006; 
+    color: #d49006;
     font-size: 1.8rem;
     letter-spacing: 0.5px;
 }
 
 #section-admins .page-header p {
-    color: #94a3b8; 
+    color: #94a3b8;
     font-size: 14px;
 }
 
@@ -1283,7 +1370,7 @@ textarea { min-height: 80px; resize: vertical; }
 }
 
 .admin-list-wrapper th {
-    background: #0f172a; 
+    background: #0f172a;
     color: #d49006;
     text-align: left;
     padding: 15px;
@@ -1303,7 +1390,7 @@ textarea { min-height: 80px; resize: vertical; }
 }
 
 .admin-list-wrapper tr:hover {
-    background: #2d3748; 
+    background: #2d3748;
 }
 
 .admin-id-badge {
@@ -1318,7 +1405,7 @@ textarea { min-height: 80px; resize: vertical; }
 
 .auth-key-cell {
     font-family: 'Consolas', 'Monaco', monospace;
-    color: #3b82f6; 
+    color: #3b82f6;
     background: rgba(59, 130, 246, 0.1);
     padding: 4px 8px;
     border-radius: 4px;
@@ -1344,7 +1431,7 @@ textarea { min-height: 80px; resize: vertical; }
     border-radius: 6px !important;
     font-weight: 800 !important;
     cursor: pointer !important;
-    display: inline-block !important; 
+    display: inline-block !important;
     text-transform: uppercase;
 }
 .btn-add-admin:hover {
@@ -1410,13 +1497,13 @@ textarea { min-height: 80px; resize: vertical; }
 
 /* --- ADMIN MODAL STYLES --- */
 .modal-overlay {
-    display: none; 
+    display: none;
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(15, 23, 42, 0.85); 
+    background: rgba(15, 23, 42, 0.85);
     backdrop-filter: blur(4px);
     z-index: 2000;
     justify-content: center;
@@ -1481,7 +1568,7 @@ textarea { min-height: 80px; resize: vertical; }
 }
 
 .btn-cancel {
-    padding: 10px 18px; 
+    padding: 10px 18px;
     background: transparent;
     border: 1px solid #334155;
     color: #94a3b8;
@@ -1567,13 +1654,13 @@ textarea { min-height: 80px; resize: vertical; }
 :root {
     --orange: #f57c1f;
     --orange-hover: #e06a10;
-    --orange-soft: #fff4ea;
-    --ink: #1a1a1a;
-    --muted: #6b6b6b;
-    --border: #f3c397;
+    --orange-soft: #fff7ed;
+    --ink: #172033;
+    --muted: #64748b;
+    --border: #e5e7eb;
     --panel: #ffffff;
-    --page: #fffaf5;
-    --soft-panel: #fff7ef;
+    --page: #f8fafc;
+    --soft-panel: #f9fafb;
 }
 
 html,
@@ -1897,4 +1984,492 @@ body,
 #logoutModal button:last-child {
     background: var(--orange) !important;
     color: #ffffff !important;
+}
+
+/* =========================
+    17. MODERN RESPONSIVE UI POLISH
+========================= */
+html,
+body {
+    font-family: "Century Gothic", "Segoe UI", system-ui, -apple-system, sans-serif;
+    background: var(--page) !important;
+}
+
+.topbar {
+    height: 64px !important;
+    padding: 0 24px !important;
+    gap: 14px;
+}
+
+.sidebar-toggle {
+    width: 42px;
+    height: 42px;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #ffffff;
+    color: var(--ink);
+    cursor: pointer;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sidebar-toggle span {
+    width: 18px;
+    height: 2px;
+    display: block;
+    border-radius: 999px;
+    background: var(--ink);
+}
+
+.sidebar-toggle:hover {
+    background: var(--orange-soft);
+    border-color: #fed7aa;
+    transform: translateY(-1px);
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.09);
+}
+
+.imperial-brand-name,
+.imperial-brand-sub {
+    font-family: "Century Gothic", "Avant Garde", "Segoe UI", sans-serif !important;
+    letter-spacing: 0.04em;
+}
+
+.imperial-brand-name {
+    font-size: 17px !important;
+    font-weight: 700 !important;
+}
+
+.imperial-brand-sub {
+    font-size: 11px !important;
+    letter-spacing: 0.16em !important;
+    font-weight: 700 !important;
+}
+
+.left-menu {
+    top: 64px !important;
+    width: 280px !important;
+    height: calc(100vh - 64px) !important;
+    padding: 22px 18px !important;
+    overflow-x: hidden;
+    transition: width 0.25s ease, padding 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.main-content {
+    margin-top: 64px !important;
+    margin-left: 280px !important;
+    height: calc(100vh - 64px) !important;
+    background: var(--page) !important;
+    transition: margin-left 0.25s ease;
+}
+
+body.sidebar-collapsed .left-menu {
+    width: 82px !important;
+    padding: 22px 12px !important;
+}
+
+body.sidebar-collapsed .main-content {
+    margin-left: 82px !important;
+}
+
+body.sidebar-collapsed .left-menu-title,
+body.sidebar-collapsed .left-menu-item {
+    visibility: hidden !important; /* fully hide anything text-like */
+    font-size: 0 !important;
+    letter-spacing: 0 !important;
+}
+
+
+body.sidebar-collapsed .left-menu-header {
+    justify-content: center;
+}
+
+body.sidebar-collapsed .left-menu-item {
+    min-height: 48px;
+    padding: 14px !important;
+    pointer-events: none; /* prevent accidental clicks/hovers in collapsed mode */
+}
+
+
+/* In collapsed mode, hide text completely (no acronyms) */
+body.sidebar-collapsed .left-menu-item::after {
+    content: "";
+}
+
+/* Also ensure logout doesn't display any acronym */
+body.sidebar-collapsed .left-menu-item.logout-item::after { content: ""; }
+body.sidebar-collapsed .left-menu-item[data-page="dashboard"]::after { content: ""; }
+body.sidebar-collapsed .left-menu-item[data-page="residents"]::after { content: ""; }
+body.sidebar-collapsed .left-menu-item[data-page="connovate"]::after { content: ""; }
+body.sidebar-collapsed .left-menu-item[data-page="solar"]::after { content: ""; }
+body.sidebar-collapsed .left-menu-item[data-page="admins"]::after { content: ""; }
+body.sidebar-collapsed .left-menu-item[data-page="reports"]::after { content: ""; }
+
+
+
+.left-menu-title {
+    color: var(--muted) !important;
+    font-size: 11px !important;
+    letter-spacing: 0.16em !important;
+}
+
+.left-menu-nav {
+    gap: 7px !important;
+}
+
+.left-menu-item {
+    border-radius: 8px !important;
+    padding: 13px 14px !important;
+    color: #334155 !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.02em !important;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.left-menu-item:hover {
+    transform: translateX(3px) !important;
+    box-shadow: inset 3px 0 0 #fed7aa;
+}
+
+.left-menu-item.active {
+    box-shadow: 0 10px 22px rgba(245, 124, 31, 0.22) !important;
+}
+
+.app-page {
+    padding: 28px !important;
+}
+
+.page-header {
+    color: var(--ink);
+}
+
+.page-header h2,
+#analytics-title,
+.connovate-chart-header h3,
+.connovate-panel-toolbar h3 {
+    font-weight: 800 !important;
+    letter-spacing: 0 !important;
+}
+
+.stats-ribbon {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px !important;
+}
+
+.stat-card {
+    border: 1px solid var(--border) !important;
+    border-top: 4px solid var(--orange) !important;
+    border-radius: 10px !important;
+    padding: 22px !important;
+    text-align: left !important;
+    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.07) !important;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 18px 42px rgba(15, 23, 42, 0.1) !important;
+}
+
+.stat-label {
+    margin-bottom: 8px !important;
+    color: var(--muted) !important;
+    font-size: 11px !important;
+}
+
+.stat-value {
+    color: #0f172a !important;
+    font-size: clamp(1.45rem, 2vw, 2rem) !important;
+    line-height: 1.1;
+}
+
+.location-selector-section,
+#project-analytics-box,
+.connovate-chart-card,
+.connovate-board-chart-block,
+.connovate-panel-toolbar,
+.residents-table-wrapper,
+.connovate-table-wrapper,
+.audit-table-wrapper,
+.admin-list-wrapper {
+    border-radius: 12px !important;
+    border: 1px solid var(--border) !important;
+    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.07) !important;
+}
+
+.selector-wrapper,
+.connovate-selector-wrapper {
+    display: flex !important;
+    align-items: center;
+    gap: 12px !important;
+}
+
+.header-select,
+.search-input,
+.admin-form-input,
+.connovate-select,
+.modal-body input,
+.modal-body select,
+.modal-body textarea,
+.audit-toolbar input,
+.audit-toolbar select {
+    min-height: 42px;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+}
+
+.primary-btn,
+.btn-load,
+.btn-add-admin,
+.btn-save-admin,
+.btn-cancel,
+.btn-edit,
+.btn-delete,
+.btn-edit-admin,
+.btn-delete-admin {
+    min-height: 38px;
+    border-radius: 8px !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease !important;
+}
+
+.primary-btn:hover,
+.btn-load:hover,
+.btn-add-admin:hover,
+.btn-save-admin:hover,
+.btn-edit-admin:hover,
+.btn-delete-admin:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.12) !important;
+}
+
+.residents-table-wrapper,
+.connovate-table-wrapper,
+.audit-table-wrapper,
+.admin-list-wrapper {
+    overflow: auto !important;
+}
+
+.residents-table,
+.connovate-table,
+.audit-log-table,
+.admin-list-wrapper table {
+    min-width: 760px;
+}
+
+.residents-table th,
+.connovate-table th,
+.audit-log-table th,
+.admin-list-wrapper th,
+#section-admins th {
+    white-space: nowrap;
+    font-size: 11px !important;
+    letter-spacing: 0.08em !important;
+}
+
+.residents-table td,
+.connovate-table td,
+.audit-log-table td,
+.admin-list-wrapper td,
+#section-admins td {
+    vertical-align: middle;
+}
+
+#project-analytics-box {
+    padding: 24px !important;
+}
+
+#project-analytics-box > div {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px !important;
+}
+
+#project-analytics-box > div > div,
+.connovate-chart-frame {
+    height: 340px !important;
+    min-height: 340px !important;
+    border-radius: 12px !important;
+    border: 1px solid var(--border) !important;
+    background:
+        linear-gradient(180deg, rgba(255, 247, 237, 0.72), rgba(255, 255, 255, 0.92)),
+        #ffffff !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75), 0 10px 24px rgba(15, 23, 42, 0.05) !important;
+}
+
+.connovate-board-stage {
+    display: grid;
+    gap: 14px;
+}
+
+.connovate-board-strip {
+    border-radius: 10px !important;
+    border: 1px solid var(--border) !important;
+    padding: 16px 18px !important;
+}
+
+.connovate-board-strip strong {
+    color: #0f172a;
+    font-size: clamp(1.6rem, 2vw, 2.15rem);
+    line-height: 1.1;
+}
+
+.connovate-floor-meta {
+    grid-template-columns: repeat(4, minmax(150px, 1fr)) !important;
+    overflow-wrap: anywhere;
+}
+
+.modal-container,
+.admin-modal-content {
+    border: 1px solid var(--border) !important;
+    border-radius: 12px !important;
+}
+
+.modal-top-bar {
+    background: linear-gradient(135deg, #f57c1f 0%, #ff9f45 100%) !important;
+}
+
+#mapContainer {
+    border: 1px solid var(--border);
+    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.07);
+}
+
+@media (max-width: 1100px) {
+    .stats-ribbon,
+    #project-analytics-box > div {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .connovate-floor-meta {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+}
+
+@media (max-width: 768px) {
+    html,
+    body {
+        overflow: auto !important;
+    }
+
+    .topbar {
+        padding: 0 14px !important;
+    }
+
+    .topbar-logo {
+        width: 34px !important;
+        height: 34px !important;
+    }
+
+    .imperial-brand-name {
+        font-size: 14px !important;
+    }
+
+    .imperial-brand-sub {
+        font-size: 9px !important;
+    }
+
+    .left-menu {
+        width: min(82vw, 280px) !important;
+        transform: translateX(-105%);
+        box-shadow: 12px 0 30px rgba(15, 23, 42, 0.18) !important;
+    }
+
+    body:not(.sidebar-collapsed) .left-menu {
+        transform: translateX(0);
+    }
+
+    body.sidebar-collapsed .left-menu {
+        width: min(82vw, 280px) !important;
+        transform: translateX(-105%);
+        padding: 22px 18px !important;
+    }
+
+    body.sidebar-collapsed .left-menu-title,
+    body.sidebar-collapsed .left-menu-item {
+        font-size: 13px !important;
+        letter-spacing: 0.02em !important;
+    }
+
+    body.sidebar-collapsed .left-menu-item::after {
+        content: none !important;
+    }
+
+    .main-content,
+    body.sidebar-collapsed .main-content {
+        margin-left: 0 !important;
+        height: auto !important;
+        min-height: calc(100vh - 64px) !important;
+        overflow: visible !important;
+    }
+
+    .app-page {
+        position: relative !important;
+        min-height: calc(100vh - 64px);
+        padding: 18px !important;
+    }
+
+    .stats-ribbon,
+    #project-analytics-box > div,
+    .selector-wrapper,
+    .connovate-selector-wrapper,
+    .residents-toolbar,
+    .connovate-panel-toolbar,
+    #section-admins .page-header {
+        grid-template-columns: 1fr !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    .search-input,
+    .header-select,
+    .btn-load,
+    .primary-btn,
+    .btn-add-admin {
+        width: 100% !important;
+    }
+
+    #project-analytics-box,
+    .location-selector-section {
+        padding: 18px !important;
+    }
+
+    #project-analytics-box > div > div,
+    .connovate-chart-frame {
+        height: 300px !important;
+        min-height: 300px !important;
+    }
+
+    .form-grid,
+    .detail-grid,
+    .connovate-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .topbar-title {
+        gap: 8px !important;
+    }
+
+    .imperial-brand-sub {
+        display: none;
+    }
+
+    .stat-card {
+        padding: 18px !important;
+    }
+
+    .connovate-floor-meta {
+        grid-template-columns: 1fr !important;
+    }
+
+    #project-analytics-box > div > div,
+    .connovate-chart-frame {
+        height: 280px !important;
+        min-height: 280px !important;
+    }
 }

@@ -379,7 +379,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 ctx.save();
                 ctx.fillStyle = "#1f2937";
-                ctx.font = "700 16px Arial";
+                ctx.font = '700 13px "Century Gothic", "Segoe UI", sans-serif';
                 ctx.textAlign = "center";
                 ctx.textBaseline = "bottom";
 
@@ -402,11 +402,13 @@ document.addEventListener("DOMContentLoaded", () => {
                         label: "Produced Parts",
                         data: [ground.doneQuantity, second.doneQuantity],
                         backgroundColor: "#16a34a",
-                        borderColor: "#16a34a",
+                        borderColor: "#15803d",
                         borderWidth: 1,
+                        borderRadius: 8,
+                        borderSkipped: false,
                         stack: "panels",
-                        categoryPercentage: 0.58,
-                        barPercentage: 0.82
+                        categoryPercentage: 0.56,
+                        barPercentage: 0.78
                     },
                     {
                         label: "Remaining Parts",
@@ -417,9 +419,11 @@ document.addEventListener("DOMContentLoaded", () => {
                         backgroundColor: "#ffd6b3",
                         borderColor: "#f57c1f",
                         borderWidth: 1,
+                        borderRadius: 8,
+                        borderSkipped: false,
                         stack: "panels",
-                        categoryPercentage: 0.58,
-                        barPercentage: 0.82
+                        categoryPercentage: 0.56,
+                        barPercentage: 0.78
                     }
                 ]
             },
@@ -444,6 +448,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             boxWidth: 14,
                             boxHeight: 14,
                             font: {
+                                family: "Century Gothic",
                                 size: 13
                             }
                         }
@@ -453,7 +458,15 @@ document.addEventListener("DOMContentLoaded", () => {
                         borderColor: "#f3c397",
                         borderWidth: 1,
                         titleColor: "#1a1a1a",
-                        bodyColor: "#1a1a1a"
+                        bodyColor: "#1a1a1a",
+                        displayColors: true,
+                        callbacks: {
+                            footer(items) {
+                                const index = items[0]?.dataIndex || 0;
+                                const totals = [ground.totalQuantity, second.totalQuantity];
+                                return `Total: ${totals[index]} parts`;
+                            }
+                        }
                     }
                 },
                 scales: {
@@ -462,6 +475,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         ticks: {
                             color: "#1a1a1a",
                             font: {
+                                family: "Century Gothic",
                                 size: 14,
                                 weight: "700"
                             }
@@ -476,14 +490,15 @@ document.addEventListener("DOMContentLoaded", () => {
                         beginAtZero: true,
                         ticks: {
                             precision: 0,
-                            color: "#1a1a1a",
+                            color: "#64748b",
                             stepSize: 1,
                             font: {
+                                family: "Century Gothic",
                                 size: 13
                             }
                         },
                         grid: {
-                            color: "rgba(243, 195, 151, 0.35)",
+                            color: "rgba(148, 163, 184, 0.22)",
                             drawBorder: false
                         }
                     }

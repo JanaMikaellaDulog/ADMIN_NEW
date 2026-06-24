@@ -63,6 +63,27 @@ function renderSolarAnalytics(rows = []) {
 
     if (solarChart) solarChart.destroy();
 
+    const solarValueLabels = {
+        id: "solarValueLabels",
+        afterDatasetsDraw(chart) {
+            const { ctx } = chart;
+            const meta = chart.getDatasetMeta(0);
+
+            ctx.save();
+            ctx.fillStyle = "#172033";
+            ctx.font = '700 13px "Century Gothic", "Segoe UI", sans-serif';
+            ctx.textAlign = "center";
+            ctx.textBaseline = "bottom";
+
+            meta.data.forEach((bar, index) => {
+                const value = chart.data.datasets[0].data[index];
+                ctx.fillText(String(value), bar.x, bar.y - 8);
+            });
+
+            ctx.restore();
+        }
+    };
+
     solarChart = new Chart(canvas.getContext("2d"), {
         type: "bar",
         data: {
@@ -72,30 +93,61 @@ function renderSolarAnalytics(rows = []) {
                 data: [installed, notInstalled],
                 backgroundColor: ["#16a34a", "#f57c1f"],
                 borderColor: ["#15803d", "#e06a10"],
-                borderWidth: 1
+                borderWidth: 1,
+                borderRadius: 10,
+                borderSkipped: false,
+                barPercentage: 0.58,
+                categoryPercentage: 0.62
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            layout: {
+                padding: { top: 28, right: 12, bottom: 6, left: 6 }
+            },
             plugins: {
                 legend: {
+                    position: "bottom",
                     labels: {
-                        color: "#1a1a1a"
+                        color: "#172033",
+                        usePointStyle: true,
+                        boxWidth: 8,
+                        font: { family: "Century Gothic", size: 12, weight: "700" }
                     }
+                },
+                tooltip: {
+                    backgroundColor: "rgba(255, 255, 255, 0.96)",
+                    titleColor: "#172033",
+                    bodyColor: "#172033",
+                    borderColor: "#e5e7eb",
+                    borderWidth: 1,
+                    displayColors: false
                 }
             },
             scales: {
                 x: {
-                    ticks: { color: "#1a1a1a" },
-                    grid: { color: "rgba(243, 195, 151, 0.35)" }
+                    ticks: {
+                        color: "#172033",
+                        font: { family: "Century Gothic", size: 12, weight: "700" }
+                    },
+                    grid: { display: false },
+                    border: { display: false }
                 },
                 y: {
-                    ticks: { color: "#1a1a1a", precision: 0 },
-                    grid: { color: "rgba(243, 195, 151, 0.35)" }
+                    beginAtZero: true,
+                    grace: "18%",
+                    ticks: {
+                        color: "#64748b",
+                        precision: 0,
+                        font: { family: "Century Gothic", size: 11 }
+                    },
+                    grid: { color: "rgba(148, 163, 184, 0.22)" },
+                    border: { display: false }
                 }
             }
-        }
+        },
+        plugins: [solarValueLabels]
     });
 }
 
@@ -216,11 +268,7 @@ function renderSolarTab() {
     renderSolarAnalytics(rows);
 
 
-    if (projectSelect && !projectSelect.dataset.bound) {
-        projectSelect.dataset.bound = "true";
 
-
-    }
 }
 
 function populateSolarProjects() {
@@ -419,7 +467,7 @@ function populateSolarProjects() {
                     body: JSON.stringify({ file: window.clearedProofFile })
                 });
             }
-            
+
 
             const formData = new FormData();
             formData.append("resident_id", document.getElementById("solarResidentId")?.value || "");

@@ -4,6 +4,27 @@
 document.addEventListener('DOMContentLoaded', () => {
     const menuItems = document.querySelectorAll('.left-menu-item');
     const sections = document.querySelectorAll('.app-page');
+    const sidebar = document.getElementById('leftMenu');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+
+    function setSidebarCollapsed(isCollapsed) {
+        if (!sidebar) return;
+
+        document.body.classList.toggle('sidebar-collapsed', isCollapsed);
+        sidebar.classList.toggle('is-collapsed', isCollapsed);
+
+        if (sidebarToggle) {
+            sidebarToggle.setAttribute('aria-expanded', String(!isCollapsed));
+        }
+
+        localStorage.setItem('imperial_sidebar_collapsed', isCollapsed ? '1' : '0');
+    }
+
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', () => {
+            setSidebarCollapsed(!document.body.classList.contains('sidebar-collapsed'));
+        });
+    }
 
     // Function to switch pages
     function showPage(pageId) {
@@ -16,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const target = document.getElementById('section-' + pageId);
         if (target) {
             target.style.display = 'block';
-            
+
             // SAVE the current page to browser memory
             localStorage.setItem('imperial_last_page', pageId);
         }
@@ -57,4 +78,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Load the saved page on startup
     showPage(savedPage);
+
+    setSidebarCollapsed(localStorage.getItem('imperial_sidebar_collapsed') === '1');
 });
