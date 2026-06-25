@@ -47,7 +47,7 @@ INSERT INTO `admins` (`admin_id`, `admin_name`, `authority_level`, `auth_key`, `
 (3, 'William Reynold', 'Staff', 'william123', '2026-03-29 11:41:54', '$2y$10$IdRFDkeJ02430e7Oy0X6t.JHRIRORQ.2pCne7Yk8of4TlCWENcnai', 'active'),
 (4, 'Leyn', 'Master', 'leyn123', '2026-06-25 00:27:36', '$2b$12$mFmOGp8YTIR8hnMKLSCmBO7NWJBS9.M.WfAMxxZ9mny4VVD6SVE.W', 'active'),
 (5, 'Catherine', 'Master', 'cath123', '2026-06-17 07:49:02', '$2b$12$EvBy28xjbS.f6WU9.e2FYu3QD8iXP6Dq.7y2Sixl6f33n/qhkwPjq', 'active'),
-(6, 'hellnah', 'Master', '12345', '2026-06-19 00:30:38', '$2y$10$B4rS11up9hEOmvHGbYXsy.4KVsyCv0TjqACkKZwKq.QB5FwbScKNy', 'active');
+(6, 'hellnah', 'Master', '12345', '2026-06-19 00:30:38', '$2y$10$B4rS11up9hEOmvHGbYXsy.4KVsyCv0TjqACkKZwKq.QB5FwbScKNy', 'active'),
 (7, 'JanaDulog', 'Master', 'jana123', '2026-06-22 01:19:19', '$2y$10$5a7yaJ7RuykjbdwBQziI8ejFaP4KQ1ypc5088vaEZvslBvcTPxCLC', 'active');
 
 -- --------------------------------------------------------
