@@ -49,7 +49,7 @@ $projects = $conn->query("SELECT * FROM subdivisions ORDER BY project_name ASC")
 $resQuery = $conn->query("
     SELECT
         r.resident_id, r.subdivision_id, s.project_name as project,
-        r.phase, r.block_no, r.lot_no, r.tct_no,
+        r.phase, r.block_no, r.lot_no, r.tct_no, r.tct_file,
         r.buyer_name, r.new_buyer_assumed, r.buyer_representative,
         r.contact_no, r.social_media, r.email_address,
         r.account_number, r.account_address,
@@ -363,16 +363,56 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
                         </div>
                     </div>
 
+                    <!-- REPLACE the entire property grid div in the Property Detail View modal -->
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
-                        <div><label style="color: #94a3b8; font-size: 10px; display: block;">SUBDIVISION / PROJECT</label><span id="infoAddress" style="font-size: 13px;">-</span></div>
-                        <div><label style="color: #94a3b8; font-size: 10px; display: block;">TCT NUMBER</label><span id="infoTct" style="font-size: 13px;">-</span></div>
-                        <div><label style="color: #94a3b8; font-size: 10px; display: block;">PHASE / BLK / LOT</label><span id="infoProperty" style="font-size: 13px;">-</span></div>
-                        <div><label style="color: #94a3b8; font-size: 10px; display: block;">CONTACT NO.</label><span id="infoContact" style="font-size: 13px;">-</span></div>
-                        <div><label style="color: #94a3b8; font-size: 10px; display: block;">EMAIL ADDRESS</label><span id="infoEmail" style="font-size: 13px;">-</span></div>
-                        <div><label style="color: #94a3b8; font-size: 10px; display: block;">SOCIAL MEDIA</label><span id="infoSocial" style="font-size: 13px;">-</span></div>
-                        <div><label style="color: #94a3b8; font-size: 10px; display: block;">NEW BUYER / ASSUMED</label><span id="infoNewBuyer" style="font-size: 13px;">-</span></div>
-                        <div><label style="color: #94a3b8; font-size: 10px; display: block;">REPRESENTATIVE</label><span id="infoRep" style="font-size: 13px;">-</span></div>
-                        <div style="grid-column: span 2;"><label style="color: #94a3b8; font-size: 10px; display: block;">ACCOUNT ADDRESS</label><span id="infoAccAddress" style="font-size: 13px;">-</span></div>
+
+                        <div>
+                            <label style="color: #94a3b8; font-size: 10px; display: block;">SUBDIVISION / PROJECT</label>
+                            <span id="infoAddress" style="font-size: 13px;">-</span>
+                        </div>
+                        <div>
+                            <label style="color: #94a3b8; font-size: 10px; display: block;">TCT NUMBER</label>
+                            <span id="infoTct" style="font-size: 13px;">-</span>
+                        </div>
+
+                        <div>
+                            <label style="color: #94a3b8; font-size: 10px; display: block;">PHASE / BLK / LOT</label>
+                            <span id="infoProperty" style="font-size: 13px;">-</span>
+                        </div>
+                        <div>
+                            <label style="color: #94a3b8; font-size: 10px; display: block;">TCT FILE</label>
+                            <div id="infoTctFile" style="font-size: 13px; margin-top: 2px;">-</div>
+                        </div>
+
+                        <div>
+                            <label style="color: #94a3b8; font-size: 10px; display: block;">CONTACT NO.</label>
+                            <span id="infoContact" style="font-size: 13px;">-</span>
+                        </div>
+                        <div>
+                            <label style="color: #94a3b8; font-size: 10px; display: block;">EMAIL ADDRESS</label>
+                            <span id="infoEmail" style="font-size: 13px;">-</span>
+                        </div>
+
+                        <div>
+                            <label style="color: #94a3b8; font-size: 10px; display: block;">SOCIAL MEDIA</label>
+                            <span id="infoSocial" style="font-size: 13px;">-</span>
+                        </div>
+                        <div>
+                            <label style="color: #94a3b8; font-size: 10px; display: block;">NEW BUYER / ASSUMED</label>
+                            <span id="infoNewBuyer" style="font-size: 13px;">-</span>
+                        </div>
+
+                        <div>
+                            <label style="color: #94a3b8; font-size: 10px; display: block;">REPRESENTATIVE</label>
+                            <span id="infoRep" style="font-size: 13px;">-</span>
+                        </div>
+                        <div></div>
+
+                        <div style="grid-column: span 2;">
+                            <label style="color: #94a3b8; font-size: 10px; display: block;">ACCOUNT ADDRESS</label>
+                            <span id="infoAccAddress" style="font-size: 13px;">-</span>
+                        </div>
+
                     </div>
 
                     <div style="background: #0f172a; padding: 15px; border-radius: 8px; border: 1px solid #334155; margin-bottom: 20px;">
@@ -417,6 +457,10 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
                                     <option value="<?php echo htmlspecialchars($p['subdivision_id']); ?>"><?php echo $p['project_name']; ?></option>
                                 <?php endwhile; ?>
                             </select>
+                        </div>
+                        <div>
+                            <label>TCT Number</label>
+                            <input type="text" id="editTct" name="tct_no">
                         </div>
                         <div><label>TCT Number</label><input type="text" id="addTct" name="tct_no"></div>
                     </div>
@@ -499,7 +543,20 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
                                 <?php endwhile; ?>
                             </select>
                         </div>
-                        <div><label>TCT Number</label><input type="text" id="editTct" name="tct_no"></div>
+                        <div>
+                            <label>TCT File</label>
+                            <input type="file" id="editTctFile" accept=".pdf,.jpg,.jpeg,.png">
+                            <input type="hidden" id="editCurrentTctFile" name="tct_file">
+                            <input type="hidden" id="editDeleteTctFile" value="0">
+                            <div id="editTctFileInfo" style="display:none; margin-top:6px; align-items:center; gap:8px;">
+                                <span id="editTctFileName" style="font-size:13px; color:#64748b;"></span>
+                                <button type="button" id="editTctDeleteBtn"
+                                    style="background:#ef4444; color:white; border:none; border-radius:4px;
+                                        padding:2px 8px; font-size:11px; font-weight:700; cursor:pointer;"
+                                    onclick="removeTctFile()">✕</button>
+                            </div>
+                            <small id="editTctFileEmpty" style="display:block; margin-top:5px; color:#64748b;">No TCT file uploaded</small>
+                        </div>
                         <div><label>Phase</label><input type="text" id="editPhase" name="phase"></div>
                         <div><label>Block No.</label><input type="text" id="editBlock" name="block_no" style="text-transform: uppercase;" required></div>
                         <div><label>Lot No.</label><input type="text" id="editLot" name="lot_no" style="text-transform: uppercase;" required></div>

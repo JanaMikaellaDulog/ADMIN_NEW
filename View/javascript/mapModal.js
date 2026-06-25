@@ -107,6 +107,13 @@
         const currentBill = resident.current_bill ? `₱ ${Number(resident.current_bill).toLocaleString()}` : "₱ 0.00";
         const balance = resident.remaining_balance ? `₱ ${Number(resident.remaining_balance).toLocaleString()}` : "₱ 0.00";
 
+        // TCT File display
+        const tctFileHtml = resident.tct_file
+            ? `<a href="../../${resident.tct_file}" target="_blank" style="font-size:13px; font-weight:600; color:#2563eb; display:inline-block; margin-top:4px;">
+                   📄 Open Current TCT
+               </a>`
+            : `<span style="font-size:13px; color:#94a3b8; display:inline-block; margin-top:4px;">No TCT file uploaded</span>`;
+
         markerContent.innerHTML = `
             <div class="details-section" style="max-height: 70vh; overflow-y: auto; padding-right: 5px;">
                 
@@ -129,12 +136,16 @@
                         <span style="font-size: 13px; font-weight: 600;">${project}</span>
                     </div>
                     <div>
-                        <label style="display:block; font-size: 10px; color: #64748b;">TCT NO.</label>
-                        <span style="font-size: 13px; font-weight: 600;">${resident.tct_no || '---'}</span>
+                        <label style="display:block; font-size:10px; color:#64748b;">TCT NUMBER</label>
+                        <span style="font-size:13px; font-weight:600;">${resident.tct_no || '---'}</span>
                     </div>
                     <div>
                         <label style="display:block; font-size: 10px; color: #64748b;">PHASE / BLK / LOT</label>
                         <span style="font-size: 13px; font-weight: 600;">P${resident.phase || '1'} | B${block} L${lot}</span>
+                    </div>
+                    <div>
+                        <label style="display:block; font-size:10px; color:#64748b;">TCT FILE</label>
+                        ${tctFileHtml}
                     </div>
                     <div>
                         <label style="display:block; font-size: 10px; color: #64748b;">DATE REGISTERED</label>

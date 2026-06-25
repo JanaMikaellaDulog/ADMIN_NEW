@@ -233,6 +233,25 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("editResidentId").value = res.resident_id || "";
             document.getElementById("editProject").value = res.subdivision_id || "";
             document.getElementById("editTct").value = res.tct_no || "";
+
+            // ---------- TCT FILE ----------
+                 
+            document.getElementById("editCurrentTctFile").value = res.tct_file || "";
+            document.getElementById("editDeleteTctFile").value = "0"; // reset delete flag
+
+            const tctFileInfo = document.getElementById("editTctFileInfo");
+            const tctFileName = document.getElementById("editTctFileName");
+            const tctFileEmpty = document.getElementById("editTctFileEmpty");
+
+            if (res.tct_file) {
+                tctFileName.textContent = res.tct_file.split("/").pop();
+                tctFileInfo.style.display = "flex";
+                tctFileEmpty.style.display = "none";
+            } else {
+                tctFileInfo.style.display = "none";
+                tctFileEmpty.style.display = "block";
+            }
+
             document.getElementById("editPhase").value = res.phase || "";
             document.getElementById("editBlock").value = res.block_no || "";
             document.getElementById("editLot").value = res.lot_no || "";
@@ -255,13 +274,39 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     if (editForm) {
-        editForm.addEventListener("submit", function(e) {
+        editForm.addEventListener("submit", async function(e) {
             e.preventDefault();
+
+            let tctFilePath = document.getElementById("editCurrentTctFile")?.value || "";
+            const tctFileInput = document.getElementById("editTctFile");
+
+            if (tctFileInput && tctFileInput.files.length > 0) {
+                const uploadData = new FormData();
+                uploadData.append("tct_file", tctFileInput.files[0]);
+
+                const uploadRes = await fetch("upload_tct_file.php", {
+                    method: "POST",
+                    body: uploadData
+                });
+
+                const uploadJson = await uploadRes.json();
+
+                if (!uploadJson.success) {
+                    alert(uploadJson.message || "Unable to upload TCT file.");
+                    return;
+                }
+
+                tctFilePath = uploadJson.file;
+                document.getElementById("editDeleteTctFile").value = "0";
+            }
+
             const formData = {
                 action: 'edit',
                 id: document.getElementById("editResidentId").value,
                 subdivision_id: document.getElementById("editProject").value,
                 tct_no: document.getElementById("editTct").value,
+                tct_file: tctFilePath,
+                delete_tct_file: document.getElementById("editDeleteTctFile").value,
                 phase: document.getElementById("editPhase").value,
                 block_no: document.getElementById("editBlock").value,
                 lot_no: document.getElementById("editLot").value,
@@ -301,7 +346,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const pinInput = document.getElementById("adminPinInput");
         if (pinInput) {
             pinInput.value = "";
-            // Small timeout to focus the input after the modal animation starts
             setTimeout(() => pinInput.focus(), 200); 
         }
 
@@ -316,7 +360,6 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // Disable the confirm button so they can't click it twice
         const confirmBtn = document.querySelector("#deleteResidentModal button[onclick='processDeleteResident()']");
         if (confirmBtn) confirmBtn.disabled = true;
 
@@ -332,19 +375,13 @@ document.addEventListener("DOMContentLoaded", () => {
         .then(res => res.json())
         .then(data => {
             if(data.success) {
-                // FIX: Clear PIN and Close Modal
                 pinInput.value = ""; 
                 window.closeDeleteModal();
-
                 showToast("Resident successfully deleted", "success");
-                
-                // FIX: Force reload to update the table immediately
-                setTimeout(() => {
-                    location.reload(); 
-                }, 1000); 
+                setTimeout(() => { location.reload(); }, 1000); 
             } else {
                 alert(data.message || "Invalid Admin PIN");
-                pinInput.value = ""; // Clear on wrong PIN too
+                pinInput.value = "";
                 pinInput.focus();
                 if (confirmBtn) confirmBtn.disabled = false;
             }
@@ -370,6 +407,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     window.closeEditModal = () => {
         document.getElementById("editResidentModal").classList.remove("show");
+
+        if (window.currentInfoResident) {
+            const overlay = document.getElementById("modalOverlay");
+            if (overlay) overlay.classList.add("show");
+        }
     };
     
     window.closeDeleteModal = () => {
@@ -418,6 +460,18 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("infoAddress").innerText = res.project || res.subdivision_id || "N/A";
             document.getElementById("infoProperty").innerText = `Phase ${res.phase || '1'} | Blk ${res.block_no} Lot ${res.lot_no}`;
             document.getElementById("infoTct").innerText = res.tct_no || "---";
+
+            // ---- TCT FILE (Property Detail View) ----
+            const tctFileEl = document.getElementById("infoTctFile");
+            if (tctFileEl) {
+                tctFileEl.innerHTML = res.tct_file
+                    ? `<a href="../../${res.tct_file}" target="_blank"
+                          style="color:#d49006; font-weight:600; font-size:13px;">
+                          📄 Open TCT File
+                       </a>`
+                    : `<span style="color:#64748b;">No TCT file uploaded</span>`;
+            }
+
             document.getElementById("infoClient").innerText = res.buyer_name || "Unassigned";
             document.getElementById("infoNewBuyer").innerText = res.new_buyer_assumed || "None";
             document.getElementById("infoRep").innerText = res.buyer_representative || "---";
@@ -427,6 +481,10 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("infoAccAddress").innerText = res.account_address || "---";
             document.getElementById("infoAccNo").innerText = res.account_number || "---";
             document.getElementById("infoTotalBill").innerText = res.total_bill ? `₱ ${Number(res.total_bill).toLocaleString()}` : "₱ 0.00";
+
+            document.getElementById("infoBillStatus").innerText = res.bill_status || "Unpaid";
+            document.getElementById("infoBillStatus").style.color = res.bill_status === "Paid" ? "#4ade80" : "#fb7185";
+
             document.getElementById("infoRemarks").innerText = res.remarks || "No additional remarks.";
             document.getElementById("infoCreated").innerText = res.created_at || "-";
 
@@ -457,15 +515,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
         } else {
             if(addForm) addForm.reset();
+            if (typeof window.closeMarkerModal === "function") window.closeMarkerModal();
             const addProj = document.getElementById("addProject");
             if(addProj) addProj.value = projectID;
             document.getElementById("addBlock").value = block;
             document.getElementById("addLot").value = lot;
             window.openResidentForm();
+
         }
     };
-
-    // ... (All your other logic for Add, Edit, Delete, etc. stays above this) ...
 
     window.openConnovateFromInfo = function() {
         if (
@@ -502,11 +560,21 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     };
 
+    window.removeTctFile = function() {
+        document.getElementById("editDeleteTctFile").value = "1";
+        document.getElementById("editCurrentTctFile").value = "";
+
+        document.getElementById("editTctFileInfo").style.display = "none";
+        document.getElementById("editTctFileEmpty").style.display = "block";
+        document.getElementById("editTctFileEmpty").textContent = "File will be removed after saving changes.";
+
+        document.getElementById("editTctFile").value = "";
+    };
+
     // ==========================================
     // Final Listeners & Initialization
     // ==========================================
     
-    // Listeners for closing modals with Escape key
     document.addEventListener('keydown', (e) => {
         if (e.key === "Escape") {
             closeAddModal();
@@ -515,28 +583,21 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Example: Deleting a Resident
     function deleteResident(index) {
-        // Show our custom logic
         showSystemLoader("Removing Resident Record...");
-
-        // Small artificial delay so the animation is visible
         setTimeout(() => {
             window.residents.splice(index, 1);
-            renderResidentsTable(); // Refresh your UI
-            
-            hideSystemLoader(); // Close it when done
+            renderResidentsTable();
+            hideSystemLoader();
         }, 800); 
     }
 
-    // FIND THIS PART AT THE VERY END:
     if (searchInput) {
         searchInput.addEventListener("input", e => {
-            currentPage = 1; // Reset to page 1 so results aren't hidden on "Page 2"
+            currentPage = 1;
             renderResidentsTable(e.target.value);
         });
     }
 
-    // Initial render when the page first loads
     renderResidentsTable();
 });

@@ -39,11 +39,34 @@ if ($data) {
 
     // ACTION: EDIT
     if ($action === 'edit' && isset($data['id'])) {
-        $sql = "UPDATE residents SET subdivision_id=?, tct_no=?, phase=?, block_no=?, lot_no=?, buyer_name=?, account_number=?, contact_no=?, email_address=?, resident_status=?, remarks=? WHERE resident_id=?";
+
+        $delete_tct_file = $data['delete_tct_file'] ?? "0";
+        $tct_file = $data['tct_file'] ?? "";
+
+        if ($delete_tct_file === "1") {
+            $getTct = $conn->prepare("SELECT tct_file FROM residents WHERE resident_id = ?");
+            $getTct->bind_param("i", $data['id']);
+            $getTct->execute();
+            $oldTct = $getTct->get_result()->fetch_assoc();
+
+            if (!empty($oldTct['tct_file'])) {
+                $filePath = realpath(__DIR__ . '/../../' . $oldTct['tct_file']);
+                $basePath = realpath(__DIR__ . '/../../uploads/tct_files');
+
+                if ($filePath && $basePath && str_starts_with($filePath, $basePath) && file_exists($filePath)) {
+                    unlink($filePath);
+                }
+            }
+
+            $tct_file = "";
+        }
+
+
+        $sql = "UPDATE residents SET subdivision_id=?, tct_no=?, tct_file=?, phase=?, block_no=?, lot_no=?, buyer_name=?, account_number=?, contact_no=?, email_address=?, resident_status=?, remarks=? WHERE resident_id=?";;
         $stmt = $conn->prepare($sql);
         if ($stmt) {
-            $stmt->bind_param("issssssssssi", 
-                $data['subdivision_id'], $data['tct_no'], $data['phase'], $data['block_no'], $data['lot_no'], 
+            $stmt->bind_param("isssssssssssi",
+                $data['subdivision_id'], $data['tct_no'], $data['tct_file'], $data['phase'], $data['block_no'], $data['lot_no'], 
                 $data['buyer_name'], $data['account_number'], $data['contact_no'], 
                 $data['email_address'], $data['resident_status'], $data['remarks'], $data['id']
             );
