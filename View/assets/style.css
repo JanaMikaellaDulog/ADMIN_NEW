@@ -78,7 +78,7 @@ html, body {
 }
 
 .main-content {
-    margin-left: 280px;
+    margin-left: 250px;
     margin-top: 60px;
     height: calc(100vh - 60px);
     background: #f4f7f6;
@@ -140,14 +140,14 @@ html, body {
 }
 
 .imperial-brand-name {
-    font-size: 18px;
-    font-weight: 900;
+    font-size: 15px;
+    font-weight: 700;
 }
 
 .imperial-brand-sub {
     font-size: 12px;
-    font-weight: 800;
-    letter-spacing: 0.18em;
+    font-weight: 700;
+    letter-spacing: 0.14em;
     opacity: 0.95;
 }
 
@@ -167,13 +167,39 @@ html, body {
     opacity: 1 !important;
 }
 
-
+.left-menu-header {
+    border-bottom: 1px solid #f57c1f;
+    padding-bottom: 14px;
+    margin-bottom: 14px;
+}
 
 .left-menu-header {
     height: 40px;
     display: flex;
     align-items: center;
     margin-bottom: 20px;
+}
+
+.left-menu-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sidebar-logo {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    background: transparent;
+    border: 1.5px solid #f57c1f;
+    border-radius: 10px;
+    padding: 7px;
+    box-sizing: border-box;
+    object-fit: contain;
+}
+
+body.sidebar-collapsed .imperial-brand-text {
+    display: none;
 }
 
 .left-menu-title {
@@ -204,7 +230,6 @@ html, body {
     letter-spacing: 0.5px;
     transition: all 0.2s ease;
     position: relative;
-    text-transform: uppercase;
 }
 
 .left-menu-item:hover {
@@ -2009,13 +2034,13 @@ body {
     align-items: center;
     justify-content: center;
     gap: 5px;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    background: #ffffff;
+    border: none;
+    border-radius: 0;
+    background: transparent;
     color: var(--ink);
     cursor: pointer;
-    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
-    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: none;
+    transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
 .sidebar-toggle span {
@@ -2027,10 +2052,9 @@ body {
 }
 
 .sidebar-toggle:hover {
-    background: var(--orange-soft);
-    border-color: #fed7aa;
+    background: transparent;
     transform: translateY(-1px);
-    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.09);
+    opacity: 0.7;
 }
 
 .imperial-brand-name,
@@ -2051,17 +2075,23 @@ body {
 }
 
 .left-menu {
-    top: 64px !important;
-    width: 280px !important;
-    height: calc(100vh - 64px) !important;
+    top: 0 !important;
+    width: 250px !important;
+    height: 100vh !important;
     padding: 22px 18px !important;
     overflow-x: hidden;
     transition: width 0.25s ease, padding 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
 }
 
+.topbar {
+    margin-left: 250px !important;
+    height: 64px !important;
+    transition: margin-left 0.25s ease;
+}
+
 .main-content {
     margin-top: 64px !important;
-    margin-left: 280px !important;
+    margin-left: 250px !important;
     height: calc(100vh - 64px) !important;
     background: var(--page) !important;
     transition: margin-left 0.25s ease;
@@ -2072,43 +2102,55 @@ body.sidebar-collapsed .left-menu {
     padding: 22px 12px !important;
 }
 
+body.sidebar-collapsed .topbar {
+    margin-left: 82px !important;
+}
+
 body.sidebar-collapsed .main-content {
     margin-left: 82px !important;
 }
 
-body.sidebar-collapsed .left-menu-title,
-body.sidebar-collapsed .left-menu-item {
-    visibility: hidden !important; /* fully hide anything text-like */
-    font-size: 0 !important;
-    letter-spacing: 0 !important;
+.left-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
+.menu-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.icon-active {
+    display: none;
+}
+
+.left-menu-item.active .icon-default {
+    display: none;
+}
+
+.left-menu-item.active .icon-active {
+    display: inline-block;
+}
+
+body.sidebar-collapsed .left-menu-title {
+    visibility: hidden;
+    font-size: 0;
+}
 
 body.sidebar-collapsed .left-menu-header {
     justify-content: center;
 }
 
 body.sidebar-collapsed .left-menu-item {
-    min-height: 48px;
-    padding: 14px !important;
-    pointer-events: none; /* prevent accidental clicks/hovers in collapsed mode */
+    justify-content: center;
+    padding: 14px 0 !important;
 }
 
-
-/* In collapsed mode, hide text completely (no acronyms) */
-body.sidebar-collapsed .left-menu-item::after {
-    content: "";
+body.sidebar-collapsed .menu-label {
+    display: none;
 }
-
-/* Also ensure logout doesn't display any acronym */
-body.sidebar-collapsed .left-menu-item.logout-item::after { content: ""; }
-body.sidebar-collapsed .left-menu-item[data-page="dashboard"]::after { content: ""; }
-body.sidebar-collapsed .left-menu-item[data-page="residents"]::after { content: ""; }
-body.sidebar-collapsed .left-menu-item[data-page="connovate"]::after { content: ""; }
-body.sidebar-collapsed .left-menu-item[data-page="solar"]::after { content: ""; }
-body.sidebar-collapsed .left-menu-item[data-page="admins"]::after { content: ""; }
-body.sidebar-collapsed .left-menu-item[data-page="reports"]::after { content: ""; }
-
 
 
 .left-menu-title {
@@ -2118,14 +2160,14 @@ body.sidebar-collapsed .left-menu-item[data-page="reports"]::after { content: ""
 }
 
 .left-menu-nav {
-    gap: 7px !important;
+    gap: 3px !important;
 }
 
 .left-menu-item {
-    border-radius: 8px !important;
-    padding: 13px 14px !important;
+    border-radius: 6px !important;
+    padding: 9px 12px !important;
     color: #334155 !important;
-    font-size: 13px !important;
+    font-size: 11px !important;
     font-weight: 700 !important;
     letter-spacing: 0.02em !important;
     transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease !important;
@@ -2373,7 +2415,7 @@ body.sidebar-collapsed .left-menu-item[data-page="reports"]::after { content: ""
     }
 
     .left-menu {
-        width: min(82vw, 280px) !important;
+        width: min(82vw, 250px) !important;
         transform: translateX(-105%);
         box-shadow: 12px 0 30px rgba(15, 23, 42, 0.18) !important;
     }
@@ -2383,7 +2425,7 @@ body.sidebar-collapsed .left-menu-item[data-page="reports"]::after { content: ""
     }
 
     body.sidebar-collapsed .left-menu {
-        width: min(82vw, 280px) !important;
+        width: min(82vw, 250px) !important;
         transform: translateX(-105%);
         padding: 22px 18px !important;
     }

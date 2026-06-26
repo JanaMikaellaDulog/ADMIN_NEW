@@ -175,21 +175,53 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
 <body>
 
     <div id="leftMenu" class="left-menu">
+
         <div class="left-menu-header">
-            <div class="left-menu-title">Navigation</div>
+            <img src="../assets/img/logo/imperialhouse_logo.png?v=20260618" alt="Imperial Homes" class="sidebar-logo" width="38" height="38">
+            <div class="imperial-brand-text">
+                <div class="imperial-brand-name imperial-heading-gradient">IMPERIAL HOMES</div>
+                <div class="imperial-brand-sub imperial-heading-gradient-sub">CORPORATION</div>
+            </div>
         </div>
 
         <ul class="left-menu-nav">
-            <li class="left-menu-item active" data-page="dashboard">DASHBOARD</li>
-            <li class="left-menu-item" data-page="residents">RESIDENTS</li>
-            <li class="left-menu-item" data-page="connovate">CONNOVATE</li>
-            <li class="left-menu-item" data-page="solar">SOLAR PANELS</li>
-            <li class="left-menu-item" data-page="admins">ADMIN MANAGEMENT</li>
-            <li class="left-menu-item" data-page="reports">REPORT</li>
-
-
-            <li class="left-menu-item logout-item" onclick="confirmLogout(event)">LOG OUT</li>
+            <li class="left-menu-item active" data-page="dashboard">
+                <img src="../assets/img/icons/dashboardBlack.png" class="menu-icon icon-default" alt="">
+                <img src="../assets/img/icons/dashboardWhite.png" class="menu-icon icon-active" alt="">
+                <span class="menu-label">Dashboard</span>
+            </li>
+            <li class="left-menu-item" data-page="residents">
+                <img src="../assets/img/icons/residentsBlack.png" class="menu-icon icon-default" alt="">
+                <img src="../assets/img/icons/residentsWhite.png" class="menu-icon icon-active" alt="">
+                <span class="menu-label">Residents</span>
+            </li>
+            <li class="left-menu-item" data-page="connovate">
+                <img src="../assets/img/icons/connovateBlack.png" class="menu-icon icon-default" alt="">
+                <img src="../assets/img/icons/connovateWhite.png" class="menu-icon icon-active" alt="">
+                <span class="menu-label">Connovate</span>
+            </li>
+            <li class="left-menu-item" data-page="solar">
+                <img src="../assets/img/icons/solarBlack.png" class="menu-icon icon-default" alt="">
+                <img src="../assets/img/icons/solarWhite.png" class="menu-icon icon-active" alt="">
+                <span class="menu-label">Solar Panels</span>
+            </li>
+            <li class="left-menu-item" data-page="admins">
+                <img src="../assets/img/icons/adminBlack.png" class="menu-icon icon-default" alt="">
+                <img src="../assets/img/icons/adminWhite.png" class="menu-icon icon-active" alt="">
+                <span class="menu-label">Admin Management</span>
+            </li>
+            <li class="left-menu-item" data-page="reports">
+                <img src="../assets/img/icons/auditBlack.png" class="menu-icon icon-default" alt="">
+                <img src="../assets/img/icons/auditWhite.png" class="menu-icon icon-active" alt="">
+                <span class="menu-label">Audit Logs</span>
+            </li>
+            <li class="left-menu-item logout-item" onclick="confirmLogout(event)">
+                <img src="../assets/img/icons/logoutBlack.png" class="menu-icon icon-default" alt="">
+                <img src="../assets/img/icons/logoutWhite.png" class="menu-icon icon-active" alt="">
+                <span class="menu-label">LOG OUT</span>
+            </li>
         </ul>
+
     </div>
 
 <header class="topbar">
@@ -198,14 +230,6 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
             <span></span>
             <span></span>
         </button>
-        <div class="topbar-title imperial-brand">
-            <img src="../assets/img/logo/imperialhouse_logo.png?v=20260618" alt="Imperial Homes" class="topbar-logo" width="38" height="38">
-            <div class="imperial-brand-text">
-                <div class="imperial-brand-name imperial-heading-gradient">IMPERIAL HOMES</div>
-                <div class="imperial-brand-sub imperial-heading-gradient-sub">CORPORATION</div>
-
-            </div>
-        </div>
     </header>
 
 
