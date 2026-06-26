@@ -460,9 +460,26 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
                         </div>
                         <div>
                             <label>TCT Number</label>
-                            <input type="text" id="editTct" name="tct_no">
+                            <input type="text" id="addTct" name="tct_no">
                         </div>
-                        <div><label>TCT Number</label><input type="text" id="addTct" name="tct_no"></div>
+
+                        <div>
+                            <label>TCT File</label>
+                            <input type="file" id="addTctFile" accept=".pdf,.jpg,.jpeg,.png">
+                            <input type="hidden" id="addCurrentTctFile" name="tct_file">
+
+                            <div id="addTctFileInfo" style="display:none; margin-top:6px; align-items:center; gap:8px;">
+                                <span id="addTctFileName" style="font-size:13px; color:#64748b;"></span>
+                                <button type="button"
+                                    style="background:#ef4444; color:white; border:none; border-radius:4px;
+                                        padding:2px 8px; font-size:11px; font-weight:700; cursor:pointer;"
+                                    onclick="removeAddTctFile()">✕</button>
+                            </div>
+
+                            <small id="addTctFileEmpty" style="display:block; margin-top:5px; color:#64748b;">
+                                No TCT file uploaded
+                            </small>
+                        </div>
                     </div>
                     <div style="display: flex; gap: 15px; margin-top: 10px; flex-wrap: wrap;">
                         <div style="flex: 1;"><label>Phase</label><input type="text" id="addPhase" name="phase"></div>
@@ -543,6 +560,12 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
                                 <?php endwhile; ?>
                             </select>
                         </div>
+
+                        <div>
+                            <label>TCT Number</label>
+                            <input type="text" id="editTct" name="tct_no">
+                        </div>
+
                         <div>
                             <label>TCT File</label>
                             <input type="file" id="editTctFile" accept=".pdf,.jpg,.jpeg,.png">

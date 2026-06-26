@@ -62,11 +62,11 @@ if ($data) {
         }
 
 
-        $sql = "UPDATE residents SET subdivision_id=?, tct_no=?, tct_file=?, phase=?, block_no=?, lot_no=?, buyer_name=?, account_number=?, contact_no=?, email_address=?, resident_status=?, remarks=? WHERE resident_id=?";;
+        $sql = "UPDATE residents SET subdivision_id=?, tct_no=?, tct_file=?, phase=?, block_no=?, lot_no=?, buyer_name=?, account_number=?, contact_no=?, email_address=?, resident_status=?, remarks=? WHERE resident_id=?";
         $stmt = $conn->prepare($sql);
         if ($stmt) {
             $stmt->bind_param("isssssssssssi",
-                $data['subdivision_id'], $data['tct_no'], $data['tct_file'], $data['phase'], $data['block_no'], $data['lot_no'], 
+                $data['subdivision_id'], $data['tct_no'],  $tct_file, $data['phase'], $data['block_no'], $data['lot_no'], 
                 $data['buyer_name'], $data['account_number'], $data['contact_no'], 
                 $data['email_address'], $data['resident_status'], $data['remarks'], $data['id']
             );
@@ -82,22 +82,43 @@ if ($data) {
 
     // ACTION: ADD
     else if ($action === 'add') {
-        $sql = "INSERT INTO residents (subdivision_id, tct_no, phase, block_no, lot_no, buyer_name, new_buyer_assumed, buyer_representative, contact_no, email_address, social_media, account_number, account_address, resident_status, remarks, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        $tct_file = $data['tct_file'] ?? "";
+
+        $sql = "INSERT INTO residents 
+            (subdivision_id, tct_no, tct_file, phase, block_no, lot_no, buyer_name, new_buyer_assumed, buyer_representative, contact_no, email_address, social_media, account_number, account_address, resident_status, remarks, created_at) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
         $stmt = $conn->prepare($sql);
+
         if ($stmt) {
-            $stmt->bind_param("isssssssssssssss", 
-                $data['subdivision_id'], $data['tct_no'], $data['phase'], $data['block_no'], $data['lot_no'], 
-                $data['buyer_name'], $data['new_buyer_assumed'], $data['buyer_representative'], 
-                $data['contact_no'], $data['email_address'], $data['social_media'], 
-                $data['account_number'], $data['account_address'], $data['resident_status'], 
-                $data['remarks'], $data['created_at']
+            $stmt->bind_param("issssssssssssssss", 
+                $data['subdivision_id'],
+                $data['tct_no'],
+                $tct_file,
+                $data['phase'],
+                $data['block_no'],
+                $data['lot_no'],
+                $data['buyer_name'],
+                $data['new_buyer_assumed'],
+                $data['buyer_representative'],
+                $data['contact_no'],
+                $data['email_address'],
+                $data['social_media'],
+                $data['account_number'],
+                $data['account_address'],
+                $data['resident_status'],
+                $data['remarks'],
+                $data['created_at']
             );
+
             if ($stmt->execute()) {
                 $output = ["success" => true];
                 record_audit($conn, $current_admin, 'CREATED', "Added: " . $data['buyer_name']);
             } else {
                 $output["message"] = $stmt->error;
             }
+
             $stmt->close();
         }
     }

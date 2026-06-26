@@ -169,20 +169,44 @@ document.addEventListener("DOMContentLoaded", () => {
     // 2. Add Resident Logic (FIXED DOUBLE SAVE)
     // ==========================================
     if (addForm) {
-        addForm.addEventListener("submit", function (e) {
+        addForm.addEventListener("submit", async function (e) {
             e.preventDefault();
 
-            // Safety check: prevent double clicks
             const submitBtn = addForm.querySelector('button[type="submit"]');
             if (submitBtn.disabled) return;
-            
+
             submitBtn.disabled = true;
             submitBtn.innerText = "Saving...";
+
+            let tctFilePath = "";
+            const tctFileInput = document.getElementById("addTctFile");
+
+            if (tctFileInput && tctFileInput.files.length > 0) {
+                const uploadData = new FormData();
+                uploadData.append("tct_file", tctFileInput.files[0]);
+
+                const uploadRes = await fetch("upload_tct_file.php", {
+                    method: "POST",
+                    body: uploadData
+                });
+
+                const uploadJson = await uploadRes.json();
+
+                if (!uploadJson.success) {
+                    alert(uploadJson.message || "Unable to upload TCT file.");
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = "Register Resident";
+                    return;
+                }
+
+                tctFilePath = uploadJson.file;
+            }
 
             const formData = {
                 action: 'add',
                 subdivision_id: document.getElementById("addProject").value,
                 tct_no: document.getElementById("addTct").value,
+                tct_file: tctFilePath,
                 phase: document.getElementById("addPhase").value,
                 block_no: document.getElementById("addBlock").value,
                 lot_no: document.getElementById("addLot").value,
@@ -206,18 +230,18 @@ document.addEventListener("DOMContentLoaded", () => {
             })
             .then(res => res.json())
             .then(data => {
-                if(data.success) {
-                    location.reload(); 
+                if (data.success) {
+                    location.reload();
                 } else {
                     alert("Error: " + data.message);
                     submitBtn.disabled = false;
-                    submitBtn.innerText = "Save Resident";
+                    submitBtn.innerText = "Register Resident";
                 }
             })
             .catch(err => {
                 console.error(err);
                 submitBtn.disabled = false;
-                submitBtn.innerText = "Save Resident";
+                submitBtn.innerText = "Register Resident";
             });
         });
     }
@@ -570,6 +594,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
         document.getElementById("editTctFile").value = "";
     };
+
+
+
+    window.removeAddTctFile = function() {
+        document.getElementById("addTctFile").value = "";
+        document.getElementById("addCurrentTctFile").value = "";
+
+        document.getElementById("addTctFileInfo").style.display = "none";
+        document.getElementById("addTctFileEmpty").style.display = "block";
+        document.getElementById("addTctFileEmpty").textContent = "No TCT file uploaded";
+    };
+
+    document.getElementById("addTctFile")?.addEventListener("change", function() {
+        const file = this.files[0];
+
+        if (file) {
+            document.getElementById("addTctFileName").textContent = file.name;
+            document.getElementById("addTctFileInfo").style.display = "flex";
+            document.getElementById("addTctFileEmpty").style.display = "none";
+        } else {
+            removeAddTctFile();
+        }
+    });
+
+
+
 
     // ==========================================
     // Final Listeners & Initialization
