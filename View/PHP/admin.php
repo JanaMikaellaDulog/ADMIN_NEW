@@ -233,20 +233,35 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
     </header>
 
 
-    <main class="main-content">
+<main class="main-content">
         <section id="section-dashboard" class="app-page active">
             <div class="stats-ribbon">
                 <div class="stat-card">
-                    <div class="stat-label">Global Residents</div>
-                    <div class="stat-value"><?php echo number_format($totalResidents); ?></div>
+                    <div class="stat-card-text">
+                        <div class="stat-label">Global Residents</div>
+                        <div class="stat-value"><?php echo number_format($totalResidents); ?></div>
+                    </div>
+                    <div class="stat-icon stat-icon-green">
+                        <img src="../assets/img/icons/global.png" alt="">
+                    </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">Active Connections</div>
-                    <div class="stat-value"><?php echo number_format($activeResidents); ?></div>
+                    <div class="stat-card-text">
+                        <div class="stat-label">Active Connections</div>
+                        <div class="stat-value"><?php echo number_format($activeResidents); ?></div>
+                    </div>
+                    <div class="stat-icon stat-icon-blue">
+                        <img src="../assets/img/icons/social-network (1).png" alt="">
+                    </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">Total Receivables</div>
-                    <div class="stat-value">₱ <?php echo number_format($totalMoney, 2); ?></div>
+                    <div class="stat-card-text">
+                        <div class="stat-label">Total Receivables</div>
+                        <div class="stat-value">₱ <?php echo number_format($totalMoney, 2); ?></div>
+                    </div>
+                    <div class="stat-icon stat-icon-orange">
+                        <img src="../assets/img/icons/dollar.png" alt="">
+                    </div>
                 </div>
             </div>
 

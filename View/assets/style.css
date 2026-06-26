@@ -292,6 +292,9 @@ body.sidebar-collapsed .imperial-brand-text {
 }
 
 .stat-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     background: #ffffff;
     flex: 1;
     padding: 24px;
@@ -300,6 +303,33 @@ body.sidebar-collapsed .imperial-brand-text {
     border-top: 5px solid #d49006;
     text-align: center;
     transition: transform 0.3s;
+}
+
+.stat-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.stat-icon img {
+    width: 20px;
+    height: 20px;
+}
+
+.stat-icon-green {
+    background: #d6f5e3;
+}
+
+.stat-icon-blue {
+    background: #d9ecfb;
+}
+
+.stat-icon-orange {
+    background: #fdecd2;
 }
 
 .stat-card:hover { transform: translateY(-5px); }
@@ -329,6 +359,7 @@ body.sidebar-collapsed .imperial-brand-text {
     border-radius: 12px;
     border: 1px solid #334155;
     margin-bottom: 25px;
+    box-shadow: 0 10px 20px -8px rgba(15, 23, 42, 0.18) !important;
 }
 
 .location-selector-section .section-title {
@@ -343,14 +374,17 @@ body.sidebar-collapsed .imperial-brand-text {
 /* Dropdown styling */
 .header-select {
     flex: 1;
-    background: #0f172a;
-    color: #f8fafc;
-    border: 1px solid #334155;
-    padding: 10px 15px;
-    border-radius: 8px;
-    font-size: 14px;
+    background: #ffffff;
+    color: #334155;
+    border: 1px solid var(--border);
+    padding: 10px 28px !important;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
     outline: none;
     transition: border-color 0.2s;
+    box-shadow: none;
+    background-position: right 36px center;
 }
 
 .header-select:focus {
@@ -361,15 +395,16 @@ body.sidebar-collapsed .imperial-brand-text {
 .btn-load {
     background: #d49006;
     color: #0f172a;
-    padding: 10px 25px;
+    padding: 10px 22px;
     border: none;
-    border-radius: 8px;
-    font-weight: 800;
-    text-transform: uppercase;
-    font-size: 12px;
+    border-radius: 6px;
+    font-weight: 600;
+    text-transform: none;
+    font-size: 13px;
     cursor: pointer;
     transition: all 0.2s ease;
     white-space: nowrap;
+    letter-spacing: normal;
 }
 
 .btn-load:hover {
@@ -1012,6 +1047,7 @@ textarea { min-height: 80px; resize: vertical; }
 }
 
 .connovate-toolbar.location-selector-section {
+    padding: 18px 22px !important;
     margin-bottom: 20px;
 }
 
@@ -2206,11 +2242,10 @@ body.sidebar-collapsed .menu-label {
 
 .stat-card {
     border: 1px solid var(--border) !important;
-    border-top: 4px solid var(--orange) !important;
     border-radius: 10px !important;
     padding: 22px !important;
     text-align: left !important;
-    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.07) !important;
+    box-shadow: 0 10px 20px -8px rgba(15, 23, 42, 0.18) !important;
 }
 
 .stat-card:hover {
