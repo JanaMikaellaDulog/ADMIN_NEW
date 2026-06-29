@@ -328,7 +328,10 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
             <div class="page-header" style="margin-bottom: 25px;"><h2 class="page-title">Residents Management</h2></div>
             <div class="residents-toolbar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <button class="primary-btn" onclick="openResidentForm()">+ Add Resident</button>
-                <input type="text" id="residentSearch" placeholder="Search by name, TCT, or account..." class="search-input">
+                <!-- Fake fields to trick Chrome autofill away from the search bar -->
+                <input type="text" style="display:none;" aria-hidden="true">
+                <input type="password" style="display:none;" aria-hidden="true">
+                <input type="text" id="residentSearch" placeholder="Search by name, TCT, or account..." class="search-input" autocomplete="off" name="search_residents">
             </div>
             <div class="residents-table-wrapper">
                 <table class="residents-table">
