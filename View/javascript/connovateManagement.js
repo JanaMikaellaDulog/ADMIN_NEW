@@ -217,16 +217,31 @@ document.addEventListener("DOMContentLoaded", () => {
         ribbon.className = "stats-ribbon";
         ribbon.innerHTML = `
             <div class="stat-card">
-                <div class="stat-label">Finished Houses</div>
-                <div class="stat-value" id="connovateFinishedProjects">0</div>
+                <div class="stat-card-text">
+                    <div class="stat-label">Finished Houses</div>
+                    <div class="stat-value" id="connovateFinishedProjects">0</div>
+                </div>
+                <div class="stat-icon stat-icon-green">
+                    <img src="../assets/img/icons/finished.png" alt="">
+                </div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Unfinished Houses</div>
-                <div class="stat-value" id="connovateInProgressProjects">0</div>
+                <div class="stat-card-text">
+                    <div class="stat-label">Unfinished Houses</div>
+                    <div class="stat-value" id="connovateInProgressProjects">0</div>
+                </div>
+                <div class="stat-icon stat-icon-red">
+                    <img src="../assets/img/icons/unfinished.png" alt="">
+                </div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Total Connovate</div>
-                <div class="stat-value" id="connovateTotalQuantity">0</div>
+                <div class="stat-card-text">
+                    <div class="stat-label">Total Connovate</div>
+                    <div class="stat-value" id="connovateTotalQuantity">0</div>
+                </div>
+                <div class="stat-icon stat-icon-blue">
+                    <img src="../assets/img/icons/masonry.png" alt="">
+                </div>
             </div>
         `;
 

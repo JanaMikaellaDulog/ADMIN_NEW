@@ -332,6 +332,10 @@ body.sidebar-collapsed .imperial-brand-text {
     background: #fdecd2;
 }
 
+.stat-icon-red {
+    background: #fde2e2;
+}
+
 .stat-card:hover { transform: translateY(-5px); }
 
 .stat-label {

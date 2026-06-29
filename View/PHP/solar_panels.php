@@ -6,16 +6,31 @@
 
     <div class="stats-ribbon">
         <div class="stat-card">
-            <div class="stat-label">Installed</div>
-            <div class="stat-value" id="solarInstalledCount">0</div>
+            <div class="stat-card-text">
+                <div class="stat-label">Installed</div>
+                <div class="stat-value" id="solarInstalledCount">0</div>
+            </div>
+            <div class="stat-icon stat-icon-green">
+                <img src="../assets/img/icons/check.png" alt="">
+            </div>
         </div>
         <div class="stat-card">
-            <div class="stat-label">Not Installed</div>
-            <div class="stat-value" id="solarNotInstalledCount">0</div>
+            <div class="stat-card-text">
+                <div class="stat-label">Not Installed</div>
+                <div class="stat-value" id="solarNotInstalledCount">0</div>
+            </div>
+            <div class="stat-icon stat-icon-red">
+                <img src="../assets/img/icons/cross.png" alt="">
+            </div>
         </div>
         <div class="stat-card">
-            <div class="stat-label">Total Records</div>
-            <div class="stat-value" id="solarTotalCount">0</div>
+            <div class="stat-card-text">
+                <div class="stat-label">Total Records</div>
+                <div class="stat-value" id="solarTotalCount">0</div>
+            </div>
+            <div class="stat-icon stat-icon-blue">
+                <img src="../assets/img/icons/totalrecords.png" alt="">
+            </div>
         </div>
     </div>
 
