@@ -833,27 +833,34 @@ textarea { min-height: 80px; resize: vertical; }
 ========================= */
 .custom-pin .pin {
     display: block;
-    width: 20px;
-    height: 20px;
-    background-color: #f97316; /* DEFAULT: Vacant (Orange) */
-    border: 3px solid #000;
+    width: 22px;
+    height: 22px;
+    background-color: #f97316; /* DEFAULT: Vacant (Gray) */
+    border: 4px solid #ffffff;
+    outline: 2px solid #000000;
     border-radius: 50%;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.35);
 }
 
 /* Green for Active */
 .custom-pin.active-resident .pin {
     background-color: #22c55e !important;
+    border: 4px solid #ffffff !important;
+    outline: 2px solid #000000 !important;
 }
 
 /* Red for Inactive */
 .custom-pin.inactive-resident .pin {
-    background-color: #ef4444 !important;
+    background-color: #ff0000 !important;
+    border: 4px solid #ffffff !important;
+    outline: 2px solid #000000 !important;
 }
 
-/* Explicit Orange for Vacant (Matches map.js logic) */
+/* Gray for Vacant */
 .custom-pin.vacant-lot .pin {
     background-color: #f97316 !important;
+    border: 4px solid #ffffff !important;
+    outline: 2px solid #000000 !important;
 }
 
 /* =========================
