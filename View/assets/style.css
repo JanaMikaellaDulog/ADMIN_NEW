@@ -53,6 +53,7 @@ html, body {
     background: #d49006;
     display: flex;
     align-items: center;
+    justify-content: space-between;   /* ← ADD */
     padding: 0 25px;
     position: fixed;
     top: 0;
@@ -60,6 +61,7 @@ html, body {
     right: 0;
     z-index: 1200;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    overflow: visible;                /* ← ADD */
 }
 
 .left-menu {
@@ -2064,6 +2066,9 @@ body {
     height: 64px !important;
     padding: 0 24px !important;
     gap: 14px;
+    display: flex !important;
+    align-items: center !important;
+    overflow: visible !important;
 }
 
 .sidebar-toggle {
@@ -2157,8 +2162,8 @@ body.sidebar-collapsed .main-content {
 }
 
 .menu-icon {
-    width: 18px;
-    height: 18px;
+    width: 25px;
+    height: 25px;
     flex-shrink: 0;
 }
 
@@ -2185,7 +2190,7 @@ body.sidebar-collapsed .left-menu-header {
 
 body.sidebar-collapsed .left-menu-item {
     justify-content: center;
-    padding: 14px 0 !important;
+    padding: 10px 0 !important;
 }
 
 body.sidebar-collapsed .menu-label {
@@ -2205,9 +2210,9 @@ body.sidebar-collapsed .menu-label {
 
 .left-menu-item {
     border-radius: 6px !important;
-    padding: 9px 12px !important;
+    padding: 10ypx 12px !important;
     color: #334155 !important;
-    font-size: 11px !important;
+    font-size: 14px !important;
     font-weight: 700 !important;
     letter-spacing: 0.02em !important;
     transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease !important;
@@ -2553,4 +2558,140 @@ body.sidebar-collapsed .menu-label {
         height: 280px !important;
         min-height: 280px !important;
     }
+}
+/* =========================
+   PAGE TITLE STYLE
+========================= */
+.page-title,
+.page-header h2.page-title,
+#section-admins .page-header h2.page-title,
+#section-reports .page-header h2.page-title {
+    color: #f57c1f !important;
+    font-size: 25px !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+    display: block !important;
+    padding-bottom: 10px !important;
+    margin-bottom: 25px !important;
+    position: relative !important;
+}
+
+.page-title::after,
+.page-header h2.page-title::after,
+#section-admins .page-header h2.page-title::after,
+#section-reports .page-header h2.page-title::after {
+    content: '' !important;
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: 500px !important;
+    height: 1px !important;
+    background: #f57c1f !important;
+    border-radius: 2px !important;
+}
+
+/* =========================
+   TOPBAR USER AREA
+========================= */
+.topbar-user-area {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    position: relative;
+}
+
+.topbar-welcome {
+    color: var(--ink);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+}
+
+.topbar-welcome strong {
+    color: #f57c1f;
+    font-weight: 800;
+}
+
+.topbar-user-menu {
+    position: relative;
+}
+
+.topbar-avatar-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #f57c1f;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.topbar-avatar-btn:hover {
+    background: #b97000;
+}
+
+.topbar-avatar-btn:active {
+    background: #8a5200;
+    transform: scale(0.95);
+}
+
+.topbar-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    min-width: 170px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    overflow: hidden;
+    z-index: 99999;
+}
+
+.topbar-dropdown.open {
+    display: block;
+}
+
+.topbar-dropdown-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 12px 16px;
+    background: #ffffff;
+    border: none;
+    color: #1a1a1a;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.topbar-dropdown-item:hover {
+    background: #f57c1f;
+    color: #ffffff;
+}
+
+.topbar-dropdown-item:active {
+    background: #b97000;
+    color: #ffffff;
+}
+
+.topbar-dropdown-signout:hover {
+    background: #f57c1f;
+    color: #ffffff;
+}
+
+.topbar-dropdown-signout:active {
+    background: #b97000;
+    color: #ffffff;
 }

@@ -2,6 +2,12 @@
  * logOut.js - Resident Management System
  */
 
+// Remove any stuck overlay immediately when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    var stuck = document.getElementById('system-loader-overlay');
+    if (stuck) stuck.remove();
+});
+
 function confirmLogout() {
     // 1. Prevent the menu from switching to a blank "logout" page
     if (event) {
@@ -69,3 +75,20 @@ function showLogoutLoading(message) {
     }
     overlay.style.display = 'flex';
 }
+
+function toggleUserDropdown(event) {
+    event.stopPropagation();
+    const dropdown = document.getElementById('topbarDropdown');
+    dropdown.classList.toggle('open');
+}
+
+function handleEditProfile() {
+    // No function yet — placeholder
+    document.getElementById('topbarDropdown').classList.remove('open');
+}
+
+// Close dropdown when clicking anywhere else
+document.addEventListener('click', function () {
+    const dropdown = document.getElementById('topbarDropdown');
+    if (dropdown) dropdown.classList.remove('open');
+});

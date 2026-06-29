@@ -1,6 +1,6 @@
 <section id="section-solar" class="app-page">
     <div class="page-header" style="margin-bottom: 25px;">
-        <h2>Solar Panels</h2>
+        <h2 class="page-title">Solar Panels</h2>
         <p style="color: #64748b; font-size: 13px; margin: 0;">Manage and monitor solar panel installations.</p>
     </div>
 

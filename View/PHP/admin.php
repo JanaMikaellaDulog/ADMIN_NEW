@@ -215,26 +215,50 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
                 <img src="../assets/img/icons/auditWhite.png" class="menu-icon icon-active" alt="">
                 <span class="menu-label">Audit Logs</span>
             </li>
-            <li class="left-menu-item logout-item" onclick="confirmLogout(event)">
-                <img src="../assets/img/icons/logoutBlack.png" class="menu-icon icon-default" alt="">
-                <img src="../assets/img/icons/logoutWhite.png" class="menu-icon icon-active" alt="">
-                <span class="menu-label">LOG OUT</span>
-            </li>
         </ul>
 
     </div>
 
 <header class="topbar">
-        <button type="button" id="sidebarToggle" class="sidebar-toggle" aria-controls="leftMenu" aria-expanded="true" title="Toggle navigation">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-    </header>
+    <button type="button" id="sidebarToggle" class="sidebar-toggle" aria-controls="leftMenu" aria-expanded="true" title="Toggle navigation">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <!-- RIGHT SIDE: Welcome + User Dropdown -->
+    <div class="topbar-user-area">
+        <span class="topbar-welcome">
+            Welcome, <strong><?php echo htmlspecialchars(strtoupper($_SESSION['admin_name'] ?? 'Admin')); ?></strong>!
+        </span>
+
+        <div class="topbar-user-menu" id="topbarUserMenu">
+            <!-- Orange user icon button -->
+            <button class="topbar-avatar-btn" onclick="toggleUserDropdown(event)" aria-label="User menu">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+                    <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+                </svg>
+            </button>
+
+            <!-- Dropdown -->
+            <div class="topbar-dropdown" id="topbarDropdown">
+                <button class="topbar-dropdown-item" onclick="handleEditProfile()">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15"><path d="M3 17.25V21h3.75l11.06-11.06-3.75-3.75L3 17.25zm17.71-10.21a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                    Edit Profile
+                </button>
+                <button class="topbar-dropdown-item topbar-dropdown-signout" onclick="confirmLogout(event)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5a2 2 0 0 0-2 2v4h2V5h14v14H5v-4H3v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/></svg>
+                    Sign Out
+                </button>
+            </div>
+        </div>
+    </div>
+</header>
 
 
 <main class="main-content">
         <section id="section-dashboard" class="app-page active">
+            <h2 class="page-title">Dashboard</h2>
             <div class="stats-ribbon">
                 <div class="stat-card">
                     <div class="stat-card-text">
@@ -301,7 +325,7 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
         </section>
 
         <section id="section-residents" class="app-page">
-            <div class="page-header" style="margin-bottom: 25px;"><h2>Residents Management</h2></div>
+            <div class="page-header" style="margin-bottom: 25px;"><h2 class="page-title">Residents Management</h2></div>
             <div class="residents-toolbar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <button class="primary-btn" onclick="openResidentForm()">+ Add Resident</button>
                 <input type="text" id="residentSearch" placeholder="Search by name, TCT, or account..." class="search-input">
@@ -320,7 +344,7 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
         </section>
 
 <section id="section-connovate" class="app-page">
-            <div class="page-header" style="margin-bottom: 25px;"><h2>Connovate</h2></div>
+            <div class="page-header" style="margin-bottom: 25px;"><h2 class="page-title">Connovate</h2></div>
             <div class="connovate-toolbar location-selector-section">
                 <h2 class="section-title">Project Selection</h2>
                 <div class="selector-wrapper connovate-selector-wrapper">
@@ -709,7 +733,7 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
         <section id="section-reports" class="app-page">
     <div class="page-header" style="margin-bottom: 25px; display: flex; justify-content: space-between; align-items: flex-end;">
         <div>
-            <h2 style="color: #d49006; margin-bottom: 5px;">System Audit Log</h2>
+            <h2 class="page-title">System Audit Log</h2>
             <p style="color: #64748b; font-size: 13px; margin: 0;">Track all administrative changes and system activities.</p>
         </div>
 
@@ -796,7 +820,7 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
     <section id="section-admins" class="app-page">
     <div class="page-header">
         <div class="header-info">
-            <h2>Admin Management</h2>
+            <h2 class="page-title">Admin Management</h2>
             <p>Master admins can manage all accounts. Staff can only edit their own profile.</p>
         </div>
 
@@ -975,12 +999,12 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
 <div id="logoutModal" class="modal-overlay" style="display:none; position:fixed; inset:0; background:rgba(15, 23, 42, 0.9); backdrop-filter:blur(5px); z-index:10001; justify-content:center; align-items:center;">
     <div style="background:#1e293b; border:1px solid #334155; padding:30px; border-radius:15px; width:350px; text-align:center; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
         <div style="font-size: 40px; margin-bottom: 15px;">🚪</div>
-        <h3 style="color:#f8fafc; margin-bottom:10px; font-weight:800; text-transform:uppercase; letter-spacing:1px;">Confirm Logout</h3>
+        <h3 style="color:#f8fafc; margin-bottom:10px; font-weight:800; text-transform:uppercase; letter-spacing:1px;">Confirm Sign Out</h3>
         <p style="color:#94a3b8; font-size:14px; margin-bottom:25px;">Are you sure you want to end your session?</p>
 
         <div style="display:flex; gap:10px;">
             <button onclick="closeLogoutModal()" style="flex:1; padding:12px; background:#334155; color:#f8fafc; border:none; border-radius:8px; cursor:pointer; font-weight:700; transition:0.2s;">CANCEL</button>
-            <button onclick="processLogout()" style="flex:1; padding:12px; background:#d49006; color:#0f172a; border:none; border-radius:8px; cursor:pointer; font-weight:800; transition:0.2s;">LOG OUT</button>
+            <button onclick="processLogout()" style="flex:1; padding:12px; background:#d49006; color:#0f172a; border:none; border-radius:8px; cursor:pointer; font-weight:800; transition:0.2s;">SIGN OUT</button>
         </div>
     </div>
 </div>
@@ -1026,4 +1050,3 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
 
 </body>
 </html>
-
