@@ -833,10 +833,10 @@ textarea { min-height: 80px; resize: vertical; }
 ========================= */
 .custom-pin .pin {
     display: block;
-    width: 22px;
-    height: 22px;
+    width: 15px;
+    height: 15px;
     background-color: #ef4444; /* DEFAULT: Vacant (Gray) */
-    border: 4px solid #ffffff;
+    border: 3px solid #ffffff;
     outline: 2px solid #000000;
     border-radius: 50%;
     box-shadow: 0 4px 10px rgba(0,0,0,0.35);
@@ -845,21 +845,21 @@ textarea { min-height: 80px; resize: vertical; }
 /* Green for Active */
 .custom-pin.active-resident .pin {
     background-color: #22c55e !important;
-    border: 4px solid #ffffff !important;
+    border: 3px solid #ffffff !important;
     outline: 2px solid #000000 !important;
 }
 
 /* Red for Inactive */
 .custom-pin.inactive-resident .pin {
     background-color: #ef4444 !important;
-    border: 4px solid #ffffff !important;
+    border: 3px solid #ffffff !important;
     outline: 2px solid #000000 !important;
 }
 
 /* Gray for Vacant */
 .custom-pin.vacant-lot .pin {
     background-color: #ef4444 !important;
-    border: 4px solid #ffffff !important;
+    border: 3px solid #ffffff !important;
     outline: 2px solid #000000 !important;
 }
 
