@@ -115,15 +115,27 @@ body{
 }
 
 .login-head h1{
-    font-size:22px;
-    font-weight:900;
-    margin-bottom:6px;
-    font-family:'Century Gothic', 'CenturyGothic', AppleGothic, sans-serif;
-    background: linear-gradient(180deg, #f5a623 0%, #e06a10 100%);
+    font-size: 20px;
+    font-weight: 900;
+    font-family: 'Century Gothic', sans-serif;
+    display: inline-block;
+
+    background: linear-gradient(
+        90deg,
+        #ff6f00 0%,
+        #ff9800 45%,
+        #ff6f00 100%
+    );
+
     -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
     background-clip: text;
-    -webkit-text-stroke: 0.5px #f5a623;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    -webkit-text-stroke: 0.8px;
+
+    text-shadow:
+        0 1px 0 rgba(255,255,255,.4),
+        0 2px 6px rgba(255,165,0,.35);
 }
 
 .login-head p{
@@ -305,7 +317,8 @@ body{
     <?php endif; ?>
 
     <div class="login-head">
-        <h1>IMPERIAL HOMES<br>CORPORATION</h1>
+        <h1>IMPERIAL HOMES CORPORATION</h1>
+        <br><br>
         <p>Sign in to your account</p>
     </div>
 
