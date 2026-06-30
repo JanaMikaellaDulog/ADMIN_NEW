@@ -17,6 +17,7 @@ if (isset($_SESSION['admin_id'])) {
 
 <link rel="stylesheet"
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link href="https://fonts.cdnfonts.com/css/century-gothic" rel="stylesheet">
 
 <style>
 :root{
@@ -114,10 +115,15 @@ body{
 }
 
 .login-head h1{
-    font-size:26px;
-    font-weight:700;
-    color:var(--ink);
+    font-size:22px;
+    font-weight:900;
     margin-bottom:6px;
+    font-family:'Century Gothic', 'CenturyGothic', AppleGothic, sans-serif;
+    background: linear-gradient(180deg, #f5a623 0%, #e06a10 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    -webkit-text-stroke: 0.5px #f5a623;
 }
 
 .login-head p{
@@ -299,8 +305,8 @@ body{
     <?php endif; ?>
 
     <div class="login-head">
-        <h1>Welcome Back</h1>
-        <p>Sign in to Imperial Homes Corporation</p>
+        <h1>IMPERIAL HOMES<br>CORPORATION</h1>
+        <p>Sign in to your account</p>
     </div>
 
     <form action="login_process.php" method="POST" class="login-form">
