@@ -51,7 +51,7 @@
         <div class="connovate-chart-card connovate-board-card">
             <div class="connovate-chart-header">
                 <div>
-                    <h3 id="solarBoardTitle">All Projects Solar Board</h3>
+                    <h3 id="solarBoardTitle">All Projects Solar Panel</h3>
                     <p id="solarBoardSubtitle">Installed vs not installed houses.</p>
                 </div>
             </div>

@@ -531,7 +531,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (boardEmpty) boardEmpty.hidden = rows.length > 0;
 
         const projectName = normalize(projectFilter) || "All Projects";
-        if (boardTitle) boardTitle.textContent = `${projectName} Connovate Board`;
+        if (boardTitle) boardTitle.textContent = `${projectName} Connovate Panel`;
         if (boardSubtitle) {
             boardSubtitle.textContent = rows.length
                 ? "Ground Floor and Second Floor produced vs remaining parts."
