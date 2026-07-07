@@ -116,7 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function createFloorSlot(required) {
-        return { required, done: 0 };
+        return { required, done: 0, filledSlots: 0 };
     }
 
     // Build the master list of houses straight from window.PROJECT_MARKERS
@@ -197,6 +197,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             house.floors[floorName].done += toNumber(panel.quantity);
+            house.floors[floorName].filledSlots += 1;
         });
 
         return houses;
@@ -377,30 +378,33 @@ document.addEventListener("DOMContentLoaded", () => {
     function summarizeFloor(rows, floorName, houses) {
         const floorRows = rows.filter((panel) => normalizeFloor(panel.floor_name) === floorName);
 
-        // totalQuantity / doneQuantity = produced PARTS (sum of `quantity`,
-        // since one panel slot can hold more than 1 part). Every saved row
-        // is, by definition, done.
-        let totalQuantity = 0;
-        floorRows.forEach((panel) => {
-            totalQuantity += toNumber(panel.quantity);
-        });
-        const doneQuantity = totalQuantity;
+        // doneQuantity = produced PANELS (count of filled slots for this
+        // floor across all houses in scope).
+        const doneQuantity = floorRows.length;
 
-        // remainingQuantity = remaining PANEL SLOTS (not parts) — i.e. how
-        // many hotspots across all houses in scope still have no saved
-        // record. We don't know how many parts an unfilled slot will need,
-        // so this counts slots, not quantity.
+        // remainingQuantity = empty PANEL SLOTS across all houses in scope.
+        // totalCapacity = every slot (filled + empty) across those houses.
         let remainingQuantity = 0;
+        let totalCapacity = 0;
         houses.forEach((house) => {
             const floor = house.floors[floorName] || createFloorSlot(0);
-            remainingQuantity += Math.max(floor.required - floor.done, 0);
+            remainingQuantity += Math.max(floor.required - floor.filledSlots, 0);
+            totalCapacity += floor.required;
         });
+
+        // Convert to percentages so "Produced" and "Remaining" are always
+        // on the same 0-100 scale, regardless of how many houses are in
+        // scope (a handful of lots vs. thousands company-wide).
+        const producedPercent = totalCapacity > 0 ? Math.round((doneQuantity / totalCapacity) * 100) : 0;
+        const remainingPercent = totalCapacity > 0 ? Math.round((remainingQuantity / totalCapacity) * 100) : 0;
 
         return {
             recordCount: floorRows.length,
-            totalQuantity,
+            totalQuantity: doneQuantity,
             doneQuantity,
-            remainingQuantity
+            remainingQuantity,
+            producedPercent,
+            remainingPercent
         };
     }
 
@@ -420,10 +424,23 @@ document.addEventListener("DOMContentLoaded", () => {
             id: "connovateTotalLabelPlugin",
             afterDatasetsDraw(chart) {
                 const { ctx, scales } = chart;
-                const meta = chart.getDatasetMeta(1);
-                const totals = [
-                    ground.totalQuantity,
-                    second.totalQuantity
+                const producedMeta = chart.getDatasetMeta(0);
+                const remainingMeta = chart.getDatasetMeta(1);
+                const producedCounts = [
+                    ground.doneQuantity,
+                    second.doneQuantity
+                ];
+                const producedPercents = [
+                    ground.producedPercent,
+                    second.producedPercent
+                ];
+                const remainingCounts = [
+                    ground.remainingQuantity,
+                    second.remainingQuantity
+                ];
+                const remainingPercents = [
+                    ground.remainingPercent,
+                    second.remainingPercent
                 ];
 
                 ctx.save();
@@ -432,10 +449,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 ctx.textAlign = "center";
                 ctx.textBaseline = "bottom";
 
-                meta.data.forEach((bar, index) => {
+                producedMeta.data.forEach((bar, index) => {
                     const x = bar.x;
-                    const y = scales.y.getPixelForValue(totals[index]) - 8;
-                    ctx.fillText(String(totals[index]), x, y);
+                    const y = scales.y.getPixelForValue(producedPercents[index]) - 8;
+                    ctx.fillText(String(producedCounts[index]), x, y);
+                });
+
+                remainingMeta.data.forEach((bar, index) => {
+                    const x = bar.x;
+                    const y = scales.y.getPixelForValue(remainingPercents[index]) - 8;
+                    ctx.fillText(String(remainingCounts[index]), x, y);
                 });
 
                 ctx.restore();
@@ -449,28 +472,27 @@ document.addEventListener("DOMContentLoaded", () => {
                 datasets: [
                     {
                         label: "Produced Parts",
-                        data: [ground.doneQuantity, second.doneQuantity],
+                        data: [ground.producedPercent, second.producedPercent],
                         backgroundColor: "#16a34a",
                         borderColor: "#15803d",
                         borderWidth: 1,
-                        borderRadius: 8,
+                        borderRadius: 14,
                         borderSkipped: false,
-                        stack: "panels",
+                        minBarLength: 6,
                         categoryPercentage: 0.56,
                         barPercentage: 0.78
                     },
                     {
                         label: "Remaining Parts",
                         data: [
-                            ground.remainingQuantity,
-                            second.remainingQuantity
+                            ground.remainingPercent,
+                            second.remainingPercent
                         ],
-                        backgroundColor: "#ffd6b3",
-                        borderColor: "#f57c1f",
+                        backgroundColor: "#f43f5e",
+                        borderColor: "#e11d48",
                         borderWidth: 1,
-                        borderRadius: 8,
+                        borderRadius: 14,
                         borderSkipped: false,
-                        stack: "panels",
                         categoryPercentage: 0.56,
                         barPercentage: 0.78
                     }
@@ -494,8 +516,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         position: "bottom",
                         labels: {
                             color: "#1a1a1a",
-                            boxWidth: 14,
-                            boxHeight: 14,
+                            usePointStyle: true,
+                            pointStyle: "circle",
+                            boxWidth: 10,
+                            boxHeight: 10,
                             font: {
                                 family: "Century Gothic",
                                 size: 13
@@ -512,15 +536,15 @@ document.addEventListener("DOMContentLoaded", () => {
                         callbacks: {
                             footer(items) {
                                 const index = items[0]?.dataIndex || 0;
-                                const totals = [ground.totalQuantity, second.totalQuantity];
-                                return `Total: ${totals[index]} parts`;
+                                const totals = [ground.doneQuantity, second.doneQuantity];
+                                const capacities = [ground.doneQuantity + ground.remainingQuantity, second.doneQuantity + second.remainingQuantity];
+                                return `Produced: ${totals[index]} of ${capacities[index]} panels`;
                             }
                         }
                     }
                 },
                 scales: {
                     x: {
-                        stacked: true,
                         ticks: {
                             color: "#1a1a1a",
                             font: {
@@ -535,12 +559,12 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                     },
                     y: {
-                        stacked: true,
                         beginAtZero: true,
+                        max: 100,
                         ticks: {
                             precision: 0,
                             color: "#64748b",
-                            stepSize: 1,
+                            callback: (val) => val + "%",
                             font: {
                                 family: "Century Gothic",
                                 size: 13
