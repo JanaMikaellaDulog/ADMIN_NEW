@@ -833,10 +833,10 @@ textarea { min-height: 80px; resize: vertical; }
 ========================= */
 .custom-pin .pin {
     display: block;
-    width: 15px;
-    height: 15px;
+    width: 22px;
+    height: 22px;
     background-color: #ef4444; /* DEFAULT: Vacant (Gray) */
-    border: 3px solid #ffffff;
+    border: 4px solid #ffffff;
     outline: 2px solid #000000;
     border-radius: 50%;
     box-shadow: 0 4px 10px rgba(0,0,0,0.35);
@@ -845,21 +845,21 @@ textarea { min-height: 80px; resize: vertical; }
 /* Green for Active */
 .custom-pin.active-resident .pin {
     background-color: #22c55e !important;
-    border: 3px solid #ffffff !important;
+    border: 4px solid #ffffff !important;
     outline: 2px solid #000000 !important;
 }
 
 /* Red for Inactive */
 .custom-pin.inactive-resident .pin {
     background-color: #ef4444 !important;
-    border: 3px solid #ffffff !important;
+    border: 4px solid #ffffff !important;
     outline: 2px solid #000000 !important;
 }
 
 /* Gray for Vacant */
 .custom-pin.vacant-lot .pin {
     background-color: #ef4444 !important;
-    border: 3px solid #ffffff !important;
+    border: 4px solid #ffffff !important;
     outline: 2px solid #000000 !important;
 }
 
@@ -2165,12 +2165,12 @@ body.sidebar-collapsed .main-content {
 .left-menu-item {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
 }
 
 .menu-icon {
-    width: 22px;
-    height: 22px;
+    width: 25px;
+    height: 25px;
     flex-shrink: 0;
 }
 
@@ -2212,12 +2212,12 @@ body.sidebar-collapsed .menu-label {
 }
 
 .left-menu-nav {
-    gap: 5px !important;
+    gap: 3px !important;
 }
 
 .left-menu-item {
     border-radius: 6px !important;
-    padding: 10px 12px !important;
+    padding: 10ypx 12px !important;
     color: #334155 !important;
     font-size: 14px !important;
     font-weight: 700 !important;
@@ -2716,4 +2716,55 @@ body.sidebar-collapsed .menu-label {
 .topbar-date svg {
     color: #f7931e;
     flex-shrink: 0;
+}
+
+/* =========================
+   SOLAR FILE INPUT
+========================= */
+
+.solar-file-box {
+    width: 100%;
+    min-height: 48px;
+    padding: 0 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.solar-file-box:hover {
+    border-color: #f57c1f;
+}
+
+#solarProofFileName {
+    color: #172033;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+}
+
+.solar-file-x {
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 50%;
+    background: #ef4444;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 10px;
+}
+
+.solar-file-x:hover {
+    background: #dc2626;
 }

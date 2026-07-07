@@ -160,7 +160,19 @@
 
                     <div class="connovate-card">
                         <label>Proof File</label>
-                        <input type="file" id="solarProofFile" accept=".pdf,.jpg,.jpeg,.png">
+                        <input type="file" id="solarProofFile" accept=".pdf,.jpg,.jpeg,.png" style="display:none;">
+
+                        <div class="solar-file-box" onclick="document.getElementById('solarProofFile').click()">
+                            <span id="solarProofFileName">Choose File</span>
+
+                            <button type="button"
+                                    id="solarProofRemoveBtn"
+                                    class="solar-file-x"
+                                    style="display:none;"
+                                    onclick="event.stopPropagation(); removeSolarProofFile();">
+                                ✕
+                            </button>
+                        </div>
                     </div>
                 </div>
 

@@ -388,7 +388,41 @@ function populateSolarProjects() {
             link.style.display = "inline-block";
             link.href = "../../" + filePath;
         }
+
+        updateSolarFileBox(filePath);
     }
+
+
+    function updateSolarFileBox(filePath = "") {
+        const fileName = document.getElementById("solarProofFileName");
+        const removeBtn = document.getElementById("solarProofRemoveBtn");
+
+        if (!fileName || !removeBtn) return;
+
+        if (filePath) {
+            fileName.textContent = filePath.split("/").pop();
+            removeBtn.style.display = "inline-flex";
+        } else {
+            fileName.textContent = "Choose File";
+            removeBtn.style.display = "none";
+        }
+    }
+
+    window.removeSolarProofFile = function () {
+        const fileInput = document.getElementById("solarProofFile");
+
+        if (fileInput) fileInput.value = "";
+
+        window.solarProofCleared = true;
+        window.clearedProofFile = currentProofFile || "";
+
+        currentProofFile = "";
+
+        updateSolarFileBox("");
+        updateProofLink("");
+    };
+
+
 
     async function loadSolarInfo() {
         if (!currentContext) return;
@@ -542,6 +576,7 @@ function populateSolarProjects() {
             alert(error.message || "Unable to save solar information.");
             console.warn(error);
         }
+        
     }
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -558,6 +593,20 @@ function populateSolarProjects() {
                 }
             });
         }
+
+        const proofInput = document.getElementById("solarProofFile");
+
+        if (proofInput) {
+            proofInput.addEventListener("change", function () {
+                if (this.files && this.files.length > 0) {
+                    window.solarProofCleared = false;
+                    window.clearedProofFile = "";
+                    updateSolarFileBox(this.files[0].name);
+                }
+            });
+        }
+
+
     });
 
     window.openSolarModal = function (resident = {}, context = {}) {
@@ -586,6 +635,14 @@ function populateSolarProjects() {
         if (typeof window.closeMarkerModal === "function") {
             window.closeMarkerModal();
         }
+
+        window.solarProofCleared = false;
+        window.clearedProofFile = "";
+
+        const proofInput = document.getElementById("solarProofFile");
+        if (proofInput) proofInput.value = "";
+
+        updateSolarFileBox("");
 
         solarModal.classList.add("show");
         loadSolarInfo();
