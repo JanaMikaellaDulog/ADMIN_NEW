@@ -433,10 +433,24 @@ body.sidebar-collapsed .imperial-brand-text {
     margin-bottom: 25px;
 }
 
+
+.search-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.search-icon {
+    position: absolute;
+    left: 14px;
+    color: #64748b;
+    pointer-events: none;
+}
+
 .search-input {
     width: 350px;
-    padding: 12px 18px;
-    border-radius: 10px;
+    padding: 12px 18px 12px 40px;
+    border-radius: 30px;
     border: 1px solid #334155;
     background: #1e293b;
     color: white;
@@ -631,13 +645,16 @@ textarea { min-height: 80px; resize: vertical; }
     color: white;
     padding: 10px 22px;
     border: none;
-    border-radius: 8px;
+    border-radius: 30px;
     font-weight: 700;
     cursor: pointer;
 }
 
-.btn-edit { background: #0ea5e9 !important; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: 700; font-size: 11px; cursor: pointer; text-transform: uppercase; }
-.btn-delete { background: #ef4444 !important; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: 700; font-size: 11px; cursor: pointer; text-transform: uppercase; }
+.btn-edit { background: #0ea5e9 !important; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: 700; font-size: 11px; cursor: pointer; text-transform: uppercase; transition: background 0.2s ease; }
+.btn-delete { background: #ef4444 !important; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: 700; font-size: 11px; cursor: pointer; text-transform: uppercase; transition: background 0.2s ease; }
+
+.btn-edit:hover { background: #0369a1 !important; }
+.btn-delete:hover { background: #991b1b !important; }
 
 .modal-footer {
     padding: 15px 24px;
@@ -826,7 +843,9 @@ textarea { min-height: 80px; resize: vertical; }
 }
 .status-tag.active { background: #dcfce7; color: #166534; }
 .status-tag.inactive { background: #fee2e2; color: #991b1b; }
-.status-tag.moved-out { background: #475569; color: #cbd5e1; }
+.status-tag.finished { background: #dcfce7; color: #166534; }
+.status-tag.ongoing { background: #fef3c7; color: #92400e; }
+.status-tag.not-started { background: #fee2e2; color: #991b1b; }
 
 /* =========================
     11. MAP PINS
@@ -1410,10 +1429,7 @@ textarea { min-height: 80px; resize: vertical; }
 }
 
 #section-admins .page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
+    margin-bottom: 20px;
     border-bottom: 2px solid #334155;
     padding-bottom: 15px;
 }
@@ -1427,6 +1443,38 @@ textarea { min-height: 80px; resize: vertical; }
 #section-admins .page-header p {
     color: #94a3b8;
     font-size: 14px;
+    margin-top: 6px;
+}
+
+.admin-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.admin-search-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.admin-search-label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6b6b6b;
+    white-space: nowrap;
+}
+
+#adminSearch.admin-search-input {
+    width: 180px !important;
+    min-height: unset !important;
+    padding: 6px 12px !important;
+    border-radius: 6px !important;
+    font-size: 13px !important;
+    border: 1px solid #e5e7eb !important;
 }
 
 .admin-list-wrapper {
@@ -1510,6 +1558,21 @@ textarea { min-height: 80px; resize: vertical; }
 }
 .btn-add-admin:hover {
     background: #ffae00 !important;
+}
+
+.btn-add-resident {
+    padding: 10px 20px !important;
+    font-size: 13px !important;
+    margin-right: 40px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-add-resident .plus-icon {
+    font-size: 20px;
+    font-weight: 800;
+    line-height: 1;
 }
 
 .btn-edit-admin {
@@ -1815,7 +1878,6 @@ body,
 
 .stat-card,
 .location-selector-section,
-.residents-table-wrapper,
 .connovate-table-wrapper,
 .connovate-panel-toolbar,
 .audit-table-wrapper,
@@ -1839,6 +1901,13 @@ body,
     box-shadow: 0 12px 30px rgba(98, 54, 16, 0.08) !important;
 }
 
+.residents-table-wrapper {
+    background: var(--panel) !important;
+    color: var(--ink) !important;
+    border: 1px solid var(--border) !important;
+    box-shadow: 0 12px 30px rgba(98, 54, 16, 0.08) !important;
+}
+
 .connovate-hero {
     background: var(--orange-soft) !important;
     border-color: var(--border) !important;
@@ -1850,7 +1919,6 @@ body,
     color: var(--ink) !important;
 }
 
-.search-input,
 .header-select,
 .modal-body input,
 .modal-body select,
@@ -1864,6 +1932,12 @@ body,
     background: #ffffff !important;
     color: var(--ink) !important;
     border-color: var(--border) !important;
+}
+
+.search-input {
+    background: #ffffff !important;
+    color: var(--ink) !important;
+    border: 1px solid var(--orange) !important;
 }
 
 .search-input::placeholder,
@@ -1886,11 +1960,16 @@ body,
 }
 
 .residents-table th,
-.connovate-table th,
 .audit-log-table th,
 .admin-list-wrapper th,
 #section-admins th {
-    background: var(--orange-soft) !important;
+    background: #fcd8bc !important;
+    color: var(--orange) !important;
+    border-bottom-color: var(--border) !important;
+}
+
+.connovate-table th {
+    background: #fcd8bc !important;
     color: var(--orange) !important;
     border-bottom-color: var(--border) !important;
 }
@@ -2003,11 +2082,6 @@ body,
 }
 
 .action-tag.login {
-    background: #f1f5f9 !important;
-    color: #334155 !important;
-}
-
-.status-tag.moved-out {
     background: #f1f5f9 !important;
     color: #334155 !important;
 }
@@ -2286,10 +2360,15 @@ body.sidebar-collapsed .menu-label {
 .connovate-chart-card,
 .connovate-board-chart-block,
 .connovate-panel-toolbar,
-.residents-table-wrapper,
 .connovate-table-wrapper,
 .audit-table-wrapper,
 .admin-list-wrapper {
+    border-radius: 12px !important;
+    border: 1px solid var(--border) !important;
+    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.07) !important;
+}
+
+.residents-table-wrapper {
     border-radius: 12px !important;
     border: 1px solid var(--border) !important;
     box-shadow: 0 14px 34px rgba(15, 23, 42, 0.07) !important;
@@ -2303,7 +2382,6 @@ body.sidebar-collapsed .menu-label {
 }
 
 .header-select,
-.search-input,
 .admin-form-input,
 .connovate-select,
 .modal-body input,
@@ -2316,7 +2394,12 @@ body.sidebar-collapsed .menu-label {
     font-size: 14px !important;
 }
 
-.primary-btn,
+.search-input {
+    min-height: 42px;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+}
+
 .btn-load,
 .btn-add-admin,
 .btn-save-admin,
@@ -2327,6 +2410,12 @@ body.sidebar-collapsed .menu-label {
 .btn-delete-admin {
     min-height: 38px;
     border-radius: 8px !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease !important;
+}
+
+.primary-btn {
+    min-height: 38px;
+    border-radius: 30px !important;
     transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease !important;
 }
 
@@ -2409,6 +2498,41 @@ body.sidebar-collapsed .menu-label {
     color: #0f172a;
     font-size: clamp(1.6rem, 2vw, 2.15rem);
     line-height: 1.1;
+}
+
+#connovateBoardTitle {
+    color: var(--orange) !important;
+    text-transform: uppercase;
+}
+
+#solarBoardTitle {
+    color: var(--orange) !important;
+    text-transform: uppercase;
+}
+
+#connovateRecordsTitle {
+    color: var(--orange) !important;
+    text-transform: uppercase;
+}
+
+#connovatePartsListTitle {
+    color: var(--orange) !important;
+    text-transform: uppercase;
+}
+
+#solarRecordsTitle {
+    color: var(--orange) !important;
+    text-transform: uppercase;
+}
+
+#connovateRecordsTable th {
+    background: #f5a662 !important;
+    color: #ffffff !important;
+}
+
+#solarInstallationTable th {
+    background: #fcd8bc !important;
+    color: var(--orange) !important;
 }
 
 .connovate-floor-meta {
@@ -2511,7 +2635,7 @@ body.sidebar-collapsed .menu-label {
     .connovate-selector-wrapper,
     .residents-toolbar,
     .connovate-panel-toolbar,
-    #section-admins .page-header {
+    .admin-toolbar {
         grid-template-columns: 1fr !important;
         flex-direction: column !important;
         align-items: stretch !important;
@@ -2523,6 +2647,10 @@ body.sidebar-collapsed .menu-label {
     .primary-btn,
     .btn-add-admin {
         width: 100% !important;
+    }
+
+    .admin-search-group {
+        width: 100%;
     }
 
     #project-analytics-box,
@@ -2766,5 +2894,64 @@ body.sidebar-collapsed .menu-label {
 }
 
 .solar-file-x:hover {
+    background: #dc2626;
+}
+
+
+
+.custom-file-box {
+    width: 100%;
+    height: 48px;              /* same height as inputs */
+    padding: 10px 14px;        /* same padding */
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    cursor: pointer;
+    transition: .2s;
+    box-sizing: border-box;
+}
+
+.custom-file-box:hover {
+    border-color: #f57c1f;
+}
+
+.custom-file-box span {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 400;          /* same as your inputs */
+    color: #172033;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.custom-file-x {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+
+    border: none;
+    border-radius: 50%;
+
+    background: #ef4444;
+    color: white;
+
+    font-size: 18px;
+    line-height: 1;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    cursor: pointer;
+}
+
+.custom-file-x:hover {
     background: #dc2626;
 }

@@ -80,7 +80,7 @@ function toggleUserDropdown(event) {
     event.stopPropagation();
     const dropdown = document.getElementById('topbarDropdown');
     dropdown.classList.toggle('open');
-}
+} 
 
 function handleEditProfile() {
     // No function yet — placeholder

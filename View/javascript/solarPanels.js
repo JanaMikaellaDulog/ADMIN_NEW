@@ -4,6 +4,7 @@
     let currentContext = null;
     let currentProofFile = "";
     let solarChart = null;
+    let lastInstalledRows = [];
 
     const ENDPOINTS = {
         load: "get_solar_panels.php",
@@ -253,6 +254,30 @@ function installedOnly(rows) {
     return rows.filter(row => String(row.solar_status || "").toLowerCase() === "installed");
 }
 
+// Filters the cached installed-only rows by whatever's typed in the
+// Search box (resident id, project, block, lot, or provider).
+function filterSolarRows(rows) {
+    const searchInput = document.getElementById("solarRecordsSearch");
+    const term = String(searchInput?.value || "").trim().toLowerCase();
+    if (!term) return rows;
+
+    return rows.filter(row =>
+        String(row.resident_id || "").toLowerCase().includes(term) ||
+        String(row.project_name || "").toLowerCase().includes(term) ||
+        String(row.block_no || "").toLowerCase().includes(term) ||
+        String(row.lot_no || "").toLowerCase().includes(term) ||
+        String(row.provider || "").toLowerCase().includes(term)
+    );
+}
+
+// Caches the latest installed rows, then renders whatever matches the
+// current search term. Call this instead of renderSolarTable(installedOnly(rows))
+// anywhere the table needs a refresh, so search stays in sync with new data.
+function refreshSolarTable(installedRows) {
+    lastInstalledRows = installedRows;
+    renderSolarTable(filterSolarRows(lastInstalledRows));
+}
+
 function renderSolarTab() {
     if (!Array.isArray(window.solarPanels)) {
         window.solarPanels = [];
@@ -264,7 +289,7 @@ function renderSolarTab() {
 
     populateSolarProjects();
     updateSolarStats(rows);
-    renderSolarTable(installedOnly(rows));
+    refreshSolarTable(installedOnly(rows));
     renderSolarAnalytics(rows);
 
 
@@ -570,7 +595,7 @@ function populateSolarProjects() {
             const selectedProject = projectSelect ? projectSelect.value : "";
             const rows = buildSolarDashboardRows(selectedProject);
             updateSolarStats(rows);
-            renderSolarTable(installedOnly(rows));
+            refreshSolarTable(installedOnly(rows));
             renderSolarAnalytics(rows);
         } catch (error) {
             alert(error.message || "Unable to save solar information.");
@@ -582,6 +607,13 @@ function populateSolarProjects() {
     document.addEventListener("DOMContentLoaded", () => {
         solarModal = document.getElementById("solarEditModal")
         renderSolarTab();
+
+        const recordsSearchInput = document.getElementById("solarRecordsSearch");
+        if (recordsSearchInput) {
+            recordsSearchInput.addEventListener("input", () => {
+                renderSolarTable(filterSolarRows(lastInstalledRows));
+            });
+        }
 
         const form = document.getElementById("solarPanelForm");
         if (form) form.addEventListener("submit", saveSolarInfo);
@@ -716,7 +748,7 @@ function populateSolarProjects() {
         const rows = buildSolarDashboardRows(selectedProject);
 
         updateSolarStats(rows);
-        renderSolarTable(installedOnly(rows));
+        refreshSolarTable(installedOnly(rows));
         renderSolarAnalytics(rows);
     };
 

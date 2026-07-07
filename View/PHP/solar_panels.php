@@ -51,7 +51,7 @@
         <div class="connovate-chart-card connovate-board-card">
             <div class="connovate-chart-header">
                 <div>
-                    <h3 id="solarBoardTitle">All Projects Solar Board</h3>
+                    <h3 id="solarBoardTitle">All Projects Solar Panel</h3>
                     <p id="solarBoardSubtitle">Installed vs not installed houses.</p>
                 </div>
             </div>
@@ -83,10 +83,16 @@
     </div>
 
     <div style="margin-top: 30px;">
-        <h3 style="color: #1a1a1a; margin-bottom: 15px;">Solar Installation Records</h3>
+        <div class="connovate-panel-toolbar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3 id="solarRecordsTitle" style="margin: 0; font-size: 16px; font-weight: 600;">Solar Installation Records</h3>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <label style="color: #6b6b6b; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Search:</label>
+                <input type="text" id="solarRecordsSearch" style="padding: 6px 12px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 6px; color: #1a1a1a; font-size: 13px; min-width: 180px; outline: none;">
+            </div>
+        </div>
 
-        <div class="residents-table-wrapper">
-            <table class="residents-table">
+        <div class="residents-table-wrapper">   
+            <table class="residents-table" id="solarInstallationTable">
                 <thead>
                     <tr>
                         <th>Resident ID</th>

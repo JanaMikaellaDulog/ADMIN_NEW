@@ -303,8 +303,17 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
         <section id="section-residents" class="app-page">
             <div class="page-header" style="margin-bottom: 25px;"><h2>Residents Management</h2></div>
             <div class="residents-toolbar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <button class="primary-btn" onclick="openResidentForm()">+ Add Resident</button>
-                <input type="text" id="residentSearch" placeholder="Search by name, TCT, or account..." class="search-input">
+                <div class="search-wrapper">
+                    <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <!-- Fake fields to trick Chrome autofill away from the search bar -->
+                    <input type="text" style="display:none;" aria-hidden="true">
+                    <input type="password" style="display:none;" aria-hidden="true">
+                    <input type="text" id="residentSearch" placeholder="Search by Name, TCT, or Account" class="search-input" autocomplete="off" name="search_residents">
+                </div>
+                <button class="primary-btn btn-add-resident" onclick="openResidentForm()"><span class="plus-icon">+</span> Add Resident</button>
             </div>
             <div class="residents-table-wrapper">
                 <table class="residents-table">
@@ -340,8 +349,8 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
                     <div class="connovate-board-stage" id="connovateBoardStage">
                         <div class="connovate-board-strip">
                             <span class="board-box-label">Project Summary</span>
-                            <strong id="connovateBoardProjectTotal">0</strong>
-                            <small id="connovateBoardProjectMeta">0 records | 0 completed</small>
+                            <strong id="connovateBoardProjectTotal">0%</strong>
+                            <small id="connovateBoardProjectMeta">0 of 0 houses finished</small>
                         </div>
 
                         <div class="connovate-board-main connovate-board-chart-block">
@@ -365,7 +374,29 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
                 </div>
             </div>
             <div class="connovate-panel-toolbar" style="display: flex; justify-content: space-between; align-items: center; margin-top: 30px; margin-bottom: 20px;">
-                <h3 style="color: #f8fafc; margin: 0; font-size: 16px; font-weight: 600;">Connovate Parts List</h3>
+                <h3 id="connovateRecordsTitle" style="margin: 0; font-size: 16px; font-weight: 600;">Connovated Records</h3>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <label style="color: #6b6b6b; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Search:</label>
+                    <input type="text" id="connovateRecordsSearch" style="padding: 6px 12px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 6px; color: #1a1a1a; font-size: 13px; min-width: 180px; outline: none;">
+                    <label style="color: #6b6b6b; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Block:</label>
+                    <select id="connovateRecordsBlockFilter" style="padding: 6px 12px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 6px; color: #1a1a1a; font-size: 13px; min-width: 100px; cursor: pointer; outline: none;">
+                        <option value="">All</option>
+                    </select>
+                </div>
+            </div>
+            <div class="connovate-table-wrapper">
+                <table class="connovate-table" id="connovateRecordsTable">
+                    <thead>
+                        <tr>
+                            <th>Block</th><th>Lot</th><th>Phase</th><th>Connovated Quantity</th><th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="connovateRecordsTableBody"></tbody>
+                </table>
+                <p id="connovateRecordsEmpty" style="display:none; text-align:center; color:#94a3b8; padding: 20px; font-size: 13px;">Select a project above to view Block/Lot records.</p>
+            </div>
+            <div class="connovate-panel-toolbar" style="display: flex; justify-content: space-between; align-items: center; margin-top: 30px; margin-bottom: 20px;">
+                <h3 id="connovatePartsListTitle" style="margin: 0; font-size: 16px; font-weight: 600;">Connovate Parts List</h3>
                 <div id="connovateFilterContainer" style="display: flex; gap: 10px; align-items: center;"></div>
             </div>
             <div class="connovate-table-wrapper">
@@ -504,20 +535,19 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
 
                         <div>
                             <label>TCT File</label>
-                            <input type="file" id="addTctFile" accept=".pdf,.jpg,.jpeg,.png">
+                            <input type="file" id="addTctFile" accept=".pdf,.jpg,.jpeg,.png" style="display:none;">
                             <input type="hidden" id="addCurrentTctFile" name="tct_file">
 
-                            <div id="addTctFileInfo" style="display:none; margin-top:6px; align-items:center; gap:8px;">
-                                <span id="addTctFileName" style="font-size:13px; color:#64748b;"></span>
+                            <div class="custom-file-box" onclick="document.getElementById('addTctFile').click()">
+                                <span id="addTctFileName">Choose File</span>
                                 <button type="button"
-                                    style="background:#ef4444; color:white; border:none; border-radius:4px;
-                                        padding:2px 8px; font-size:11px; font-weight:700; cursor:pointer;"
-                                    onclick="removeAddTctFile()">✕</button>
+                                        id="addTctRemoveBtn"
+                                        class="custom-file-x"
+                                        style="display:none;"
+                                        onclick="event.stopPropagation(); removeAddTctFile();">
+                                    ✕
+                                </button>
                             </div>
-
-                            <small id="addTctFileEmpty" style="display:block; margin-top:5px; color:#64748b;">
-                                No TCT file uploaded
-                            </small>
                         </div>
                     </div>
                     <div style="display: flex; gap: 15px; margin-top: 10px; flex-wrap: wrap;">
@@ -564,7 +594,6 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
                             <select id="addStatus" name="resident_status">
                                 <option value="Active">Active</option>
                                 <option value="Inactive">Inactive</option>
-                                <option value="Moved Out">Moved Out</option>
                             </select>
                         </div>
                         <div><label>Registration Date</label><input type="date" id="addCreatedAt" name="created_at" value="<?php echo date('Y-m-d'); ?>"></div>
@@ -607,17 +636,20 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
 
                         <div>
                             <label>TCT File</label>
-                            <input type="file" id="editTctFile" accept=".pdf,.jpg,.jpeg,.png">
+                            <input type="file" id="editTctFile" accept=".pdf,.jpg,.jpeg,.png" style="display:none;">
                             <input type="hidden" id="editCurrentTctFile" name="tct_file">
                             <input type="hidden" id="editDeleteTctFile" value="0">
-                            <div id="editTctFileInfo" style="display:none; margin-top:6px; align-items:center; gap:8px;">
-                                <span id="editTctFileName" style="font-size:13px; color:#64748b;"></span>
-                                <button type="button" id="editTctDeleteBtn"
-                                    style="background:#ef4444; color:white; border:none; border-radius:4px;
-                                        padding:2px 8px; font-size:11px; font-weight:700; cursor:pointer;"
-                                    onclick="removeTctFile()">✕</button>
+
+                            <div class="custom-file-box" onclick="document.getElementById('editTctFile').click()">
+                                <span id="editTctFileName">Choose File</span>
+                                <button type="button"
+                                        id="editTctRemoveBtn"
+                                        class="custom-file-x"
+                                        style="display:none;"
+                                        onclick="event.stopPropagation(); removeTctFile();">
+                                    ✕
+                                </button>
                             </div>
-                            <small id="editTctFileEmpty" style="display:block; margin-top:5px; color:#64748b;">No TCT file uploaded</small>
                         </div>
                         <div><label>Phase</label><input type="text" id="editPhase" name="phase"></div>
                         <div><label>Block No.</label><input type="text" id="editBlock" name="block_no" style="text-transform: uppercase;" required></div>
@@ -669,7 +701,6 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
                             <select id="editStatus" name="resident_status">
                                 <option value="Active">Active</option>
                                 <option value="Inactive">Inactive</option>
-                                <option value="Moved Out">Moved Out</option>
                             </select>
                         </div>
                         <div><label>Remarks</label><textarea id="editRemarks" name="remarks"></textarea></div>
@@ -795,9 +826,14 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
 
     <section id="section-admins" class="app-page">
     <div class="page-header">
-        <div class="header-info">
-            <h2>Admin Management</h2>
-            <p>Master admins can manage all accounts. Staff can only edit their own profile.</p>
+        <h2 class="page-title">Admin Management</h2>
+        <p>Master admins can manage all accounts. Staff can only edit their own profile.</p>
+    </div>
+
+    <div class="admin-toolbar">
+        <div class="admin-search-group">
+            <span class="admin-search-label">Search:</span>
+            <input type="text" id="adminSearch" placeholder="Search" class="search-input admin-search-input" autocomplete="off">
         </div>
 
         <?php
@@ -974,8 +1010,8 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
 
 <div id="logoutModal" class="modal-overlay" style="display:none; position:fixed; inset:0; background:rgba(15, 23, 42, 0.9); backdrop-filter:blur(5px); z-index:10001; justify-content:center; align-items:center;">
     <div style="background:#1e293b; border:1px solid #334155; padding:30px; border-radius:15px; width:350px; text-align:center; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
-        <div style="font-size: 40px; margin-bottom: 15px;">🚪</div>
-        <h3 style="color:#f8fafc; margin-bottom:10px; font-weight:800; text-transform:uppercase; letter-spacing:1px;">Confirm Logout</h3>
+        <img src="../assets/img/icons/logout.png" alt="Sign Out" style="width:40px; height:40px; margin-bottom:15px;">
+        <h3 style="color:#f8fafc; margin-bottom:10px; font-weight:800; text-transform:uppercase; letter-spacing:1px;">Confirm Sign Out</h3>
         <p style="color:#94a3b8; font-size:14px; margin-bottom:25px;">Are you sure you want to end your session?</p>
 
         <div style="display:flex; gap:10px;">
@@ -1012,7 +1048,7 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
 <script src="../javascript/ui_utils.js"></script>
 <script src="../javascript/mapModal.js?v=<?php echo filemtime(__DIR__ . '/../javascript/mapModal.js'); ?>"></script>
 <script src="../javascript/connovateModal.js?v=<?php echo filemtime(__DIR__ . '/../javascript/connovateModal.js'); ?>"></script>
-<script src="../javascript/residentsManagement.js"></script>
+<script src="../javascript/residentsManagement.js?v=<?php echo filemtime(__DIR__ . '/../javascript/residentsManagement.js'); ?>"></script>
 <script src="../javascript/connovateManagement.js?v=<?php echo filemtime(__DIR__ . '/../javascript/connovateManagement.js'); ?>"></script>
 <script src="../javascript/adminManagement.js"></script>
 <script src="../javascript/auditReports.js"></script>

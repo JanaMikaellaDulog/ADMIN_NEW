@@ -43,15 +43,21 @@ document.addEventListener("DOMContentLoaded", () => {
     let floorChart = null;
     let currentFloorFilter = "";
 
-    // Create and insert the floor filter in the toolbar
+    // Create and insert the search/block/floor filters in the toolbar
     const filterContainer = document.getElementById("connovateFilterContainer");
     if (filterContainer) {
         const filterDiv = document.createElement("div");
         filterDiv.className = "connovate-filter";
         filterDiv.style.cssText = "display: flex; gap: 8px; align-items: center;";
         filterDiv.innerHTML = `
+            <label style="color: #6b6b6b; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Search:</label>
+            <input type="text" id="connovatePartsSearch" style="padding: 6px 12px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 6px; color: #1a1a1a; font-size: 13px; min-width: 180px; outline: none;">
+            <label style="color: #6b6b6b; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Block:</label>
+            <select id="connovatePartsBlockFilter" style="padding: 6px 12px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 6px; color: #1a1a1a; font-size: 13px; min-width: 100px; cursor: pointer; outline: none;">
+                <option value="">All</option>
+            </select>
             <label style="color: #6b6b6b; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Floor:</label>
-            <select id="connovateFloorFilter" style="padding: 8px 12px; background: #ffffff; border: 1px solid #f3c397; border-radius: 6px; color: #1a1a1a; font-size: 13px; min-width: 140px; cursor: pointer; outline: none;">
+            <select id="connovateFloorFilter" style="padding: 6px 12px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 6px; color: #1a1a1a; font-size: 13px; min-width: 120px; cursor: pointer; outline: none;">
                 <option value="">All Floors</option>
                 <option value="GROUND FLOOR">Ground Floor</option>
                 <option value="SECOND FLOOR">Second Floor</option>
@@ -77,14 +83,18 @@ document.addEventListener("DOMContentLoaded", () => {
         return normalize(value).toUpperCase();
     }
 
-    function getAggregatedParts(rows, floorFilter = "") {
+    function getAggregatedParts(rows, floorFilter = "", blockFilter = "", searchTerm = "") {
         const totals = new Map();
+        const searchLower = searchTerm.toLowerCase();
 
         rows.forEach((panel) => {
             const panelFloor = normalize(panel.floor_name).toUpperCase();
+            const panelBlock = normalize(panel.block_no);
             const partName = normalizePart(panel.connovate_part);
 
             if (floorFilter && panelFloor !== floorFilter) return;
+            if (blockFilter && panelBlock !== blockFilter) return;
+            if (searchLower && !partName.toLowerCase().includes(searchLower)) return;
             if (!allowedPartSet.has(partName)) return;
 
             totals.set(partName, (totals.get(partName) || 0) + toNumber(panel.quantity));
@@ -288,9 +298,33 @@ document.addEventListener("DOMContentLoaded", () => {
         if (totalEl) totalEl.textContent = String(totalProducedQuantity);
     }
 
+    function populatePartsBlockFilter(rows) {
+        const blockFilterSelect = document.getElementById("connovatePartsBlockFilter");
+        if (!blockFilterSelect) return;
+        const previousValue = blockFilterSelect.value;
+        const blocks = [...new Set(rows.map((r) => normalize(r.block_no)).filter(Boolean))]
+            .sort((a, b) => sortableNum(a) - sortableNum(b) || String(a).localeCompare(String(b)));
+
+        blockFilterSelect.innerHTML = '<option value="">All</option>';
+        blocks.forEach((block) => {
+            const option = document.createElement("option");
+            option.value = block;
+            option.textContent = block;
+            blockFilterSelect.appendChild(option);
+        });
+        if (blocks.includes(previousValue)) blockFilterSelect.value = previousValue;
+    }
+
     function populateConnovateTable(floorFilter = "") {
         const rows = getFilteredRows(projectSelect?.value || "");
-        const aggregatedRows = getAggregatedParts(rows, floorFilter);
+        populatePartsBlockFilter(rows);
+
+        const searchInput = document.getElementById("connovatePartsSearch");
+        const blockFilterSelect = document.getElementById("connovatePartsBlockFilter");
+        const searchTerm = normalize(searchInput?.value || "");
+        const blockFilter = normalize(blockFilterSelect?.value || "");
+
+        const aggregatedRows = getAggregatedParts(rows, floorFilter, blockFilter, searchTerm);
 
         const tableBody = document.getElementById("connovateTableBody");
         if (tableBody) {
@@ -523,6 +557,118 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    function getResidentPhase(projectName, blockNo, lotNo) {
+        const residents = window.residents || [];
+        const match = residents.find((r) =>
+            normalize(r.project).toLowerCase() === normalize(projectName).toLowerCase() &&
+            normalize(r.block_no) === normalize(blockNo) &&
+            normalize(r.lot_no) === normalize(lotNo)
+        );
+        return match && match.phase ? `P${match.phase}` : "—";
+    }
+
+    function getHouseQuantity(house) {
+        const g = house.floors["GROUND FLOOR"] || createFloorSlot(0);
+        const s = house.floors["SECOND FLOOR"] || createFloorSlot(0);
+        return g.done + s.done;
+    }
+
+    function getHouseStatus(house) {
+        if (isHouseFinished(house)) return "finished";
+        return getHouseQuantity(house) > 0 ? "ongoing" : "not-started";
+    }
+
+    function sortableNum(value) {
+        const n = parseInt(value, 10);
+        return Number.isFinite(n) ? n : Number.MAX_SAFE_INTEGER;
+    }
+
+    let connovateRecordsRows = [];
+
+    function populateRecordsBlockFilter(rowsForProject) {
+        const blockFilterSelect = document.getElementById("connovateRecordsBlockFilter");
+        if (!blockFilterSelect) return;
+        const previousValue = blockFilterSelect.value;
+        const blocks = [...new Set(rowsForProject.map((r) => r.blockNo))]
+            .sort((a, b) => sortableNum(a) - sortableNum(b) || String(a).localeCompare(String(b)));
+
+        blockFilterSelect.innerHTML = '<option value="">All</option>';
+        blocks.forEach((block) => {
+            const option = document.createElement("option");
+            option.value = block;
+            option.textContent = block;
+            blockFilterSelect.appendChild(option);
+        });
+        if (blocks.includes(previousValue)) blockFilterSelect.value = previousValue;
+    }
+
+    function renderRecordsTableRows() {
+        const tableBody = document.getElementById("connovateRecordsTableBody");
+        if (!tableBody) return;
+
+        const searchInput = document.getElementById("connovateRecordsSearch");
+        const blockFilterSelect = document.getElementById("connovateRecordsBlockFilter");
+        const searchTerm = normalize(searchInput?.value || "").toLowerCase();
+        const blockFilterValue = normalize(blockFilterSelect?.value || "");
+
+        const filtered = connovateRecordsRows.filter((row) => {
+            if (blockFilterValue && normalize(row.blockNo) !== blockFilterValue) return false;
+            if (!searchTerm) return true;
+            return row.blockNo.toLowerCase().includes(searchTerm) || row.lotNo.toLowerCase().includes(searchTerm);
+        });
+
+        tableBody.innerHTML = "";
+        filtered.forEach((row) => {
+            const tr = document.createElement("tr");
+            const statusLabel = row.status === "finished" ? "Finished" : row.status === "ongoing" ? "Ongoing" : "Not Started";
+
+            tr.innerHTML = `
+                <td>${row.blockNo}</td>
+                <td>${row.lotNo}</td>
+                <td>${row.phase}</td>
+                <td>${row.quantity}</td>
+                <td><span class="status-tag ${row.status}">${statusLabel}</span></td>
+            `;
+            tableBody.appendChild(tr);
+        });
+    }
+
+    function renderConnovateRecordsTable(projectFilter, houses) {
+        const emptyMsg = document.getElementById("connovateRecordsEmpty");
+        const table = document.getElementById("connovateRecordsTable");
+        const hasProject = normalize(projectFilter) !== "";
+
+        if (!hasProject) {
+            if (table) table.style.display = "none";
+            if (emptyMsg) emptyMsg.style.display = "block";
+            connovateRecordsRows = [];
+            const tableBody = document.getElementById("connovateRecordsTableBody");
+            if (tableBody) tableBody.innerHTML = "";
+            populateRecordsBlockFilter([]);
+            return;
+        }
+
+        if (table) table.style.display = "";
+        if (emptyMsg) emptyMsg.style.display = "none";
+
+        const rows = [];
+        houses.forEach((house) => {
+            rows.push({
+                blockNo: house.blockNo,
+                lotNo: house.lotNo,
+                phase: getResidentPhase(house.projectName, house.blockNo, house.lotNo),
+                quantity: getHouseQuantity(house),
+                status: getHouseStatus(house)
+            });
+        });
+
+        rows.sort((a, b) => sortableNum(a.blockNo) - sortableNum(b.blockNo) || sortableNum(a.lotNo) - sortableNum(b.lotNo));
+
+        connovateRecordsRows = rows;
+        populateRecordsBlockFilter(rows);
+        renderRecordsTableRows();
+    }
+
     function renderConnovateBoard(projectFilter = "") {
         const rows = getFilteredRows(projectFilter);
         const houses = getHouseSummaries(projectFilter);
@@ -531,7 +677,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (boardEmpty) boardEmpty.hidden = rows.length > 0;
 
         const projectName = normalize(projectFilter) || "All Projects";
-        if (boardTitle) boardTitle.textContent = `${projectName} Connovate Board`;
+        if (boardTitle) boardTitle.textContent = `${projectName} Connovate Panel`;
         if (boardSubtitle) {
             boardSubtitle.textContent = rows.length
                 ? "Ground Floor and Second Floor produced vs remaining parts."
@@ -540,14 +686,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const ground = summarizeFloor(rows, "GROUND FLOOR", houses);
         const second = summarizeFloor(rows, "SECOND FLOOR", houses);
-        const totalQuantity = ground.totalQuantity + second.totalQuantity;
-        const totalRecords = rows.length;
-        const completedQuantity = ground.doneQuantity + second.doneQuantity;
         const remainingQuantity = ground.remainingQuantity + second.remainingQuantity;
         const projectMeta = document.getElementById("connovateBoardProjectMeta");
         const remainingMeta = document.getElementById("connovateBoardRemainingMeta");
 
-        setText("connovateBoardProjectTotal", totalQuantity);
+        let finishedHouses = 0;
+        houses.forEach((house) => {
+            if (isHouseFinished(house)) finishedHouses += 1;
+        });
+        const totalHouses = houses.size;
+        const completionRate = totalHouses > 0 ? ((finishedHouses / totalHouses) * 100).toFixed(1) : "0.0";
+
+        setText("connovateBoardProjectTotal", `${completionRate}%`);
         setText("connovateGroundFloorPanels", ground.totalQuantity);
         setText("connovateGroundFloorDone", ground.doneQuantity);
         setText("connovateSecondFloorPanels", second.totalQuantity);
@@ -555,9 +705,10 @@ document.addEventListener("DOMContentLoaded", () => {
         setText("connovateBoardRemainingQuantity", remainingQuantity);
         renderFloorChart(ground, second);
 
-        if (projectMeta) projectMeta.textContent = `${totalRecords} records | ${completedQuantity} produced parts`;
+        if (projectMeta) projectMeta.textContent = `${finishedHouses} of ${totalHouses} houses finished`;
         if (remainingMeta) remainingMeta.textContent = `${remainingQuantity} remaining panels`;
 
+        renderConnovateRecordsTable(projectFilter, houses);
         populateConnovateTable(currentFloorFilter);
     }
 
@@ -624,10 +775,34 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    const recordsSearchInput = document.getElementById("connovateRecordsSearch");
+    if (recordsSearchInput) {
+        recordsSearchInput.addEventListener("input", renderRecordsTableRows);
+    }
+
+    const recordsBlockFilterSelect = document.getElementById("connovateRecordsBlockFilter");
+    if (recordsBlockFilterSelect) {
+        recordsBlockFilterSelect.addEventListener("change", renderRecordsTableRows);
+    }
+
     const floorFilterSelect = document.getElementById("connovateFloorFilter");
     if (floorFilterSelect) {
         floorFilterSelect.addEventListener("change", () => {
             currentFloorFilter = floorFilterSelect.value;
+            populateConnovateTable(currentFloorFilter);
+        });
+    }
+
+    const partsSearchInput = document.getElementById("connovatePartsSearch");
+    if (partsSearchInput) {
+        partsSearchInput.addEventListener("input", () => {
+            populateConnovateTable(currentFloorFilter);
+        });
+    }
+
+    const partsBlockFilterSelect = document.getElementById("connovatePartsBlockFilter");
+    if (partsBlockFilterSelect) {
+        partsBlockFilterSelect.addEventListener("change", () => {
             populateConnovateTable(currentFloorFilter);
         });
     }

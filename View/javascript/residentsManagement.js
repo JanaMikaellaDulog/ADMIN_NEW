@@ -115,7 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <td>
                         <div style="display: flex; gap: 5px;">
                             <button class="btn-edit" onclick="editResident(${res.originalIndex})">Edit</button>
-                            <button class="btn-delete" onclick="deleteResident(${res.originalIndex})" style="background:#991b1b;">Del</button>
+                            <button class="btn-delete" onclick="deleteResident(${res.originalIndex})">Delete</button>
                         </div>
                     </td>
                 `;
@@ -263,18 +263,8 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("editCurrentTctFile").value = res.tct_file || "";
             document.getElementById("editDeleteTctFile").value = "0"; // reset delete flag
 
-            const tctFileInfo = document.getElementById("editTctFileInfo");
-            const tctFileName = document.getElementById("editTctFileName");
-            const tctFileEmpty = document.getElementById("editTctFileEmpty");
-
-            if (res.tct_file) {
-                tctFileName.textContent = res.tct_file.split("/").pop();
-                tctFileInfo.style.display = "flex";
-                tctFileEmpty.style.display = "none";
-            } else {
-                tctFileInfo.style.display = "none";
-                tctFileEmpty.style.display = "block";
-            }
+            updateTctBox("edit", res.tct_file || "");
+            document.getElementById("editTctFile").value = "";
 
             document.getElementById("editPhase").value = res.phase || "";
             document.getElementById("editBlock").value = res.block_no || "";
@@ -584,37 +574,54 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     };
 
+    function updateTctBox(prefix, fileName = "") {
+        const nameEl = document.getElementById(prefix + "TctFileName");
+        const removeBtn = document.getElementById(prefix + "TctRemoveBtn");
+
+        if (!nameEl || !removeBtn) return;
+
+        if (fileName) {
+            nameEl.textContent = fileName.split("/").pop();
+            removeBtn.style.display = "inline-flex";
+        } else {
+            nameEl.textContent = "Choose File";
+            removeBtn.style.display = "none";
+        }
+    }
+
     window.removeTctFile = function() {
         document.getElementById("editDeleteTctFile").value = "1";
         document.getElementById("editCurrentTctFile").value = "";
-
-        document.getElementById("editTctFileInfo").style.display = "none";
-        document.getElementById("editTctFileEmpty").style.display = "block";
-        document.getElementById("editTctFileEmpty").textContent = "File will be removed after saving changes.";
-
         document.getElementById("editTctFile").value = "";
+
+        updateTctBox("edit", "");
     };
-
-
 
     window.removeAddTctFile = function() {
         document.getElementById("addTctFile").value = "";
         document.getElementById("addCurrentTctFile").value = "";
 
-        document.getElementById("addTctFileInfo").style.display = "none";
-        document.getElementById("addTctFileEmpty").style.display = "block";
-        document.getElementById("addTctFileEmpty").textContent = "No TCT file uploaded";
+        updateTctBox("add", "");
     };
 
     document.getElementById("addTctFile")?.addEventListener("change", function() {
         const file = this.files[0];
 
         if (file) {
-            document.getElementById("addTctFileName").textContent = file.name;
-            document.getElementById("addTctFileInfo").style.display = "flex";
-            document.getElementById("addTctFileEmpty").style.display = "none";
+            updateTctBox("add", file.name);
         } else {
             removeAddTctFile();
+        }
+    });
+
+    document.getElementById("editTctFile")?.addEventListener("change", function() {
+        const file = this.files[0];
+
+        if (file) {
+            document.getElementById("editDeleteTctFile").value = "0";
+            updateTctBox("edit", file.name);
+        } else {
+            removeTctFile();
         }
     });
 
