@@ -115,7 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <td>
                         <div style="display: flex; gap: 5px;">
                             <button class="btn-edit" onclick="editResident(${res.originalIndex})">Edit</button>
-                            <button class="btn-delete" onclick="deleteResident(${res.originalIndex})" style="background:#991b1b;">Del</button>
+                            <button class="btn-delete" onclick="deleteResident(${res.originalIndex})">Delete</button>
                         </div>
                     </td>
                 `;

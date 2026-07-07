@@ -337,11 +337,17 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
         <section id="section-residents" class="app-page">
             <div class="page-header" style="margin-bottom: 25px;"><h2 class="page-title">Residents Management</h2></div>
             <div class="residents-toolbar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <button class="primary-btn" onclick="openResidentForm()">+ Add Resident</button>
-                <!-- Fake fields to trick Chrome autofill away from the search bar -->
-                <input type="text" style="display:none;" aria-hidden="true">
-                <input type="password" style="display:none;" aria-hidden="true">
-                <input type="text" id="residentSearch" placeholder="Search by name, TCT, or account..." class="search-input" autocomplete="off" name="search_residents">
+                <div class="search-wrapper">
+                    <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <!-- Fake fields to trick Chrome autofill away from the search bar -->
+                    <input type="text" style="display:none;" aria-hidden="true">
+                    <input type="password" style="display:none;" aria-hidden="true">
+                    <input type="text" id="residentSearch" placeholder="Search by Name, TCT, or Account" class="search-input" autocomplete="off" name="search_residents">
+                </div>
+                <button class="primary-btn btn-add-resident" onclick="openResidentForm()"><span class="plus-icon">+</span> Add Resident</button>
             </div>
             <div class="residents-table-wrapper">
                 <table class="residents-table">
@@ -1049,7 +1055,7 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
 <script src="../javascript/ui_utils.js"></script>
 <script src="../javascript/mapModal.js?v=<?php echo filemtime(__DIR__ . '/../javascript/mapModal.js'); ?>"></script>
 <script src="../javascript/connovateModal.js?v=<?php echo filemtime(__DIR__ . '/../javascript/connovateModal.js'); ?>"></script>
-<script src="../javascript/residentsManagement.js"></script>
+<script src="../javascript/residentsManagement.js?v=<?php echo filemtime(__DIR__ . '/../javascript/residentsManagement.js'); ?>"></script>
 <script src="../javascript/connovateManagement.js?v=<?php echo filemtime(__DIR__ . '/../javascript/connovateManagement.js'); ?>"></script>
 <script src="../javascript/adminManagement.js"></script>
 <script src="../javascript/auditReports.js"></script>

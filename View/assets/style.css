@@ -433,10 +433,24 @@ body.sidebar-collapsed .imperial-brand-text {
     margin-bottom: 25px;
 }
 
+
+.search-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.search-icon {
+    position: absolute;
+    left: 14px;
+    color: #64748b;
+    pointer-events: none;
+}
+
 .search-input {
     width: 350px;
-    padding: 12px 18px;
-    border-radius: 10px;
+    padding: 12px 18px 12px 40px;
+    border-radius: 30px;
     border: 1px solid #334155;
     background: #1e293b;
     color: white;
@@ -631,13 +645,16 @@ textarea { min-height: 80px; resize: vertical; }
     color: white;
     padding: 10px 22px;
     border: none;
-    border-radius: 8px;
+    border-radius: 30px;
     font-weight: 700;
     cursor: pointer;
 }
 
-.btn-edit { background: #0ea5e9 !important; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: 700; font-size: 11px; cursor: pointer; text-transform: uppercase; }
-.btn-delete { background: #ef4444 !important; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: 700; font-size: 11px; cursor: pointer; text-transform: uppercase; }
+.btn-edit { background: #0ea5e9 !important; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: 700; font-size: 11px; cursor: pointer; text-transform: uppercase; transition: background 0.2s ease; }
+.btn-delete { background: #ef4444 !important; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: 700; font-size: 11px; cursor: pointer; text-transform: uppercase; transition: background 0.2s ease; }
+
+.btn-edit:hover { background: #0369a1 !important; }
+.btn-delete:hover { background: #991b1b !important; }
 
 .modal-footer {
     padding: 15px 24px;
@@ -1512,6 +1529,21 @@ textarea { min-height: 80px; resize: vertical; }
     background: #ffae00 !important;
 }
 
+.btn-add-resident {
+    padding: 10px 20px !important;
+    font-size: 13px !important;
+    margin-right: 40px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-add-resident .plus-icon {
+    font-size: 20px;
+    font-weight: 800;
+    line-height: 1;
+}
+
 .btn-edit-admin {
     background: #1e293b;
     border: 1px solid #3b82f6;
@@ -1815,7 +1847,6 @@ body,
 
 .stat-card,
 .location-selector-section,
-.residents-table-wrapper,
 .connovate-table-wrapper,
 .connovate-panel-toolbar,
 .audit-table-wrapper,
@@ -1839,6 +1870,13 @@ body,
     box-shadow: 0 12px 30px rgba(98, 54, 16, 0.08) !important;
 }
 
+.residents-table-wrapper {
+    background: var(--panel) !important;
+    color: var(--ink) !important;
+    border: 1px solid #000000 !important;
+    box-shadow: 0 12px 30px rgba(98, 54, 16, 0.08) !important;
+}
+
 .connovate-hero {
     background: var(--orange-soft) !important;
     border-color: var(--border) !important;
@@ -1850,7 +1888,6 @@ body,
     color: var(--ink) !important;
 }
 
-.search-input,
 .header-select,
 .modal-body input,
 .modal-body select,
@@ -1864,6 +1901,12 @@ body,
     background: #ffffff !important;
     color: var(--ink) !important;
     border-color: var(--border) !important;
+}
+
+.search-input {
+    background: #ffffff !important;
+    color: var(--ink) !important;
+    border: 1px solid #000000 !important;
 }
 
 .search-input::placeholder,
@@ -2286,12 +2329,17 @@ body.sidebar-collapsed .menu-label {
 .connovate-chart-card,
 .connovate-board-chart-block,
 .connovate-panel-toolbar,
-.residents-table-wrapper,
 .connovate-table-wrapper,
 .audit-table-wrapper,
 .admin-list-wrapper {
     border-radius: 12px !important;
     border: 1px solid var(--border) !important;
+    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.07) !important;
+}
+
+.residents-table-wrapper {
+    border-radius: 12px !important;
+    border: 1px solid #000000 !important;
     box-shadow: 0 14px 34px rgba(15, 23, 42, 0.07) !important;
 }
 
@@ -2303,7 +2351,6 @@ body.sidebar-collapsed .menu-label {
 }
 
 .header-select,
-.search-input,
 .admin-form-input,
 .connovate-select,
 .modal-body input,
@@ -2316,7 +2363,12 @@ body.sidebar-collapsed .menu-label {
     font-size: 14px !important;
 }
 
-.primary-btn,
+.search-input {
+    min-height: 42px;
+    border-radius: 30px !important;
+    font-size: 14px !important;
+}
+
 .btn-load,
 .btn-add-admin,
 .btn-save-admin,
@@ -2327,6 +2379,12 @@ body.sidebar-collapsed .menu-label {
 .btn-delete-admin {
     min-height: 38px;
     border-radius: 8px !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease !important;
+}
+
+.primary-btn {
+    min-height: 38px;
+    border-radius: 30px !important;
     transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease !important;
 }
 
