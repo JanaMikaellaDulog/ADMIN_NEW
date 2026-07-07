@@ -843,7 +843,9 @@ textarea { min-height: 80px; resize: vertical; }
 }
 .status-tag.active { background: #dcfce7; color: #166534; }
 .status-tag.inactive { background: #fee2e2; color: #991b1b; }
-.status-tag.moved-out { background: #475569; color: #cbd5e1; }
+.status-tag.finished { background: #dcfce7; color: #166534; }
+.status-tag.ongoing { background: #fef3c7; color: #92400e; }
+.status-tag.not-started { background: #fee2e2; color: #991b1b; }
 
 /* =========================
     11. MAP PINS
@@ -1427,10 +1429,7 @@ textarea { min-height: 80px; resize: vertical; }
 }
 
 #section-admins .page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
+    margin-bottom: 20px;
     border-bottom: 2px solid #334155;
     padding-bottom: 15px;
 }
@@ -1444,6 +1443,37 @@ textarea { min-height: 80px; resize: vertical; }
 #section-admins .page-header p {
     color: #94a3b8;
     font-size: 14px;
+    margin-top: 6px;
+}
+
+.admin-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.admin-search-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.admin-search-label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6b6b6b;
+    white-space: nowrap;
+}
+
+.admin-search-input {
+    width: 180px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    border: 1px solid #e5e7eb !important;
 }
 
 .admin-list-wrapper {
@@ -1873,7 +1903,7 @@ body,
 .residents-table-wrapper {
     background: var(--panel) !important;
     color: var(--ink) !important;
-    border: 1px solid #000000 !important;
+    border: 1px solid var(--border) !important;
     box-shadow: 0 12px 30px rgba(98, 54, 16, 0.08) !important;
 }
 
@@ -1906,7 +1936,7 @@ body,
 .search-input {
     background: #ffffff !important;
     color: var(--ink) !important;
-    border: 1px solid #000000 !important;
+    border: 1px solid var(--orange) !important;
 }
 
 .search-input::placeholder,
@@ -1929,11 +1959,16 @@ body,
 }
 
 .residents-table th,
-.connovate-table th,
 .audit-log-table th,
 .admin-list-wrapper th,
 #section-admins th {
-    background: var(--orange-soft) !important;
+    background: #fcd8bc !important;
+    color: var(--orange) !important;
+    border-bottom-color: var(--border) !important;
+}
+
+.connovate-table th {
+    background: #fcd8bc !important;
     color: var(--orange) !important;
     border-bottom-color: var(--border) !important;
 }
@@ -2046,11 +2081,6 @@ body,
 }
 
 .action-tag.login {
-    background: #f1f5f9 !important;
-    color: #334155 !important;
-}
-
-.status-tag.moved-out {
     background: #f1f5f9 !important;
     color: #334155 !important;
 }
@@ -2339,7 +2369,7 @@ body.sidebar-collapsed .menu-label {
 
 .residents-table-wrapper {
     border-radius: 12px !important;
-    border: 1px solid #000000 !important;
+    border: 1px solid var(--border) !important;
     box-shadow: 0 14px 34px rgba(15, 23, 42, 0.07) !important;
 }
 
@@ -2365,7 +2395,7 @@ body.sidebar-collapsed .menu-label {
 
 .search-input {
     min-height: 42px;
-    border-radius: 30px !important;
+    border-radius: 8px !important;
     font-size: 14px !important;
 }
 
@@ -2469,6 +2499,41 @@ body.sidebar-collapsed .menu-label {
     line-height: 1.1;
 }
 
+#connovateBoardTitle {
+    color: var(--orange) !important;
+    text-transform: uppercase;
+}
+
+#solarBoardTitle {
+    color: var(--orange) !important;
+    text-transform: uppercase;
+}
+
+#connovateRecordsTitle {
+    color: var(--orange) !important;
+    text-transform: uppercase;
+}
+
+#connovatePartsListTitle {
+    color: var(--orange) !important;
+    text-transform: uppercase;
+}
+
+#solarRecordsTitle {
+    color: var(--orange) !important;
+    text-transform: uppercase;
+}
+
+#connovateRecordsTable th {
+    background: #f5a662 !important;
+    color: #ffffff !important;
+}
+
+#solarInstallationTable th {
+    background: #fcd8bc !important;
+    color: var(--orange) !important;
+}
+
 .connovate-floor-meta {
     grid-template-columns: repeat(4, minmax(150px, 1fr)) !important;
     overflow-wrap: anywhere;
@@ -2569,7 +2634,7 @@ body.sidebar-collapsed .menu-label {
     .connovate-selector-wrapper,
     .residents-toolbar,
     .connovate-panel-toolbar,
-    #section-admins .page-header {
+    .admin-toolbar {
         grid-template-columns: 1fr !important;
         flex-direction: column !important;
         align-items: stretch !important;
@@ -2581,6 +2646,10 @@ body.sidebar-collapsed .menu-label {
     .primary-btn,
     .btn-add-admin {
         width: 100% !important;
+    }
+
+    .admin-search-group {
+        width: 100%;
     }
 
     #project-analytics-box,

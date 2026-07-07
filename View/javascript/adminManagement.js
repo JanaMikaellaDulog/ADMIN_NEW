@@ -3,6 +3,26 @@
  * Handles CRUD for System Administrators
  */
 
+// Filters the (server-rendered) admin table rows by whatever's typed
+// in the Search box — matches on any visible cell text (username, level, status, etc).
+function filterAdminTable() {
+    const searchInput = document.getElementById("adminSearch");
+    const term = String(searchInput?.value || "").trim().toLowerCase();
+    const rows = document.querySelectorAll("#adminTableBody tr");
+
+    rows.forEach((row) => {
+        const rowText = row.textContent.toLowerCase();
+        row.style.display = !term || rowText.includes(term) ? "" : "none";
+    });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const adminSearchInput = document.getElementById("adminSearch");
+    if (adminSearchInput) {
+        adminSearchInput.addEventListener("input", filterAdminTable);
+    }
+});
+
 // Function to open the modal for adding a NEW admin
 function openAddAdminModal() {
     const form = document.getElementById('adminAccountForm');

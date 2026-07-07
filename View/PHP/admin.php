@@ -383,8 +383,8 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
                     <div class="connovate-board-stage" id="connovateBoardStage">
                         <div class="connovate-board-strip">
                             <span class="board-box-label">Project Summary</span>
-                            <strong id="connovateBoardProjectTotal">0</strong>
-                            <small id="connovateBoardProjectMeta">0 records | 0 completed</small>
+                            <strong id="connovateBoardProjectTotal">0%</strong>
+                            <small id="connovateBoardProjectMeta">0 of 0 houses finished</small>
                         </div>
 
                         <div class="connovate-board-main connovate-board-chart-block">
@@ -408,7 +408,29 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
                 </div>
             </div>
             <div class="connovate-panel-toolbar" style="display: flex; justify-content: space-between; align-items: center; margin-top: 30px; margin-bottom: 20px;">
-                <h3 style="color: #f8fafc; margin: 0; font-size: 16px; font-weight: 600;">Connovate Parts List</h3>
+                <h3 id="connovateRecordsTitle" style="margin: 0; font-size: 16px; font-weight: 600;">Connovated Records</h3>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <label style="color: #6b6b6b; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Search:</label>
+                    <input type="text" id="connovateRecordsSearch" style="padding: 6px 12px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 6px; color: #1a1a1a; font-size: 13px; min-width: 180px; outline: none;">
+                    <label style="color: #6b6b6b; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Block:</label>
+                    <select id="connovateRecordsBlockFilter" style="padding: 6px 12px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 6px; color: #1a1a1a; font-size: 13px; min-width: 100px; cursor: pointer; outline: none;">
+                        <option value="">All</option>
+                    </select>
+                </div>
+            </div>
+            <div class="connovate-table-wrapper">
+                <table class="connovate-table" id="connovateRecordsTable">
+                    <thead>
+                        <tr>
+                            <th>Block</th><th>Lot</th><th>Phase</th><th>Connovated Quantity</th><th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="connovateRecordsTableBody"></tbody>
+                </table>
+                <p id="connovateRecordsEmpty" style="display:none; text-align:center; color:#94a3b8; padding: 20px; font-size: 13px;">Select a project above to view Block/Lot records.</p>
+            </div>
+            <div class="connovate-panel-toolbar" style="display: flex; justify-content: space-between; align-items: center; margin-top: 30px; margin-bottom: 20px;">
+                <h3 id="connovatePartsListTitle" style="margin: 0; font-size: 16px; font-weight: 600;">Connovate Parts List</h3>
                 <div id="connovateFilterContainer" style="display: flex; gap: 10px; align-items: center;"></div>
             </div>
             <div class="connovate-table-wrapper">
@@ -607,7 +629,6 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
                             <select id="addStatus" name="resident_status">
                                 <option value="Active">Active</option>
                                 <option value="Inactive">Inactive</option>
-                                <option value="Moved Out">Moved Out</option>
                             </select>
                         </div>
                         <div><label>Registration Date</label><input type="date" id="addCreatedAt" name="created_at" value="<?php echo date('Y-m-d'); ?>"></div>
@@ -712,7 +733,6 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
                             <select id="editStatus" name="resident_status">
                                 <option value="Active">Active</option>
                                 <option value="Inactive">Inactive</option>
-                                <option value="Moved Out">Moved Out</option>
                             </select>
                         </div>
                         <div><label>Remarks</label><textarea id="editRemarks" name="remarks"></textarea></div>
@@ -838,9 +858,14 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
 
     <section id="section-admins" class="app-page">
     <div class="page-header">
-        <div class="header-info">
-            <h2 class="page-title">Admin Management</h2>
-            <p>Master admins can manage all accounts. Staff can only edit their own profile.</p>
+        <h2 class="page-title">Admin Management</h2>
+        <p>Master admins can manage all accounts. Staff can only edit their own profile.</p>
+    </div>
+
+    <div class="admin-toolbar">
+        <div class="admin-search-group">
+            <span class="admin-search-label">Search:</span>
+            <input type="text" id="adminSearch" placeholder="Search" class="search-input admin-search-input" autocomplete="off">
         </div>
 
         <?php
