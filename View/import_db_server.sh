@@ -6,7 +6,7 @@
 
 DB_NAME="subdivision_management"
 DB_USER="root"
-DB_PASS=""          # ilagay dito password ng MySQL user sa server (kung meron)
+DB_PASS="@ImperialInterns0987"      
 
 # Kinukuha ang folder kung saan naka-save itong script mismo
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
