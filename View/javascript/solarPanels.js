@@ -360,14 +360,14 @@ function renderSolarTab() {
                                     class="solar-table-edit-btn"
                                     title="Edit"
                                     onclick='window.openSolarModalFromDashboard(${JSON.stringify(row).replace(/'/g, "&apos;")})'>
-                                ✎
+                                <img src="../assets/img/icons/pencil.png" alt="Edit">
                             </button>
 
                             <button type="button"
                                     class="solar-table-delete-btn"
                                     title="Delete"
                                     onclick='window.deleteSolarInstallationRecord(${JSON.stringify(row).replace(/'/g, "&apos;")})'>
-                                🗑
+                                <img src="../assets/img/icons/trash.png" alt="Delete">
                             </button>
                         </div>
                     </td>
@@ -489,6 +489,22 @@ function renderSolarTab() {
     }
 
     
+        const SOLAR_PART_ICONS = {
+        "Solar Panel": "solar_panel.png",
+        "Solar Inverter": "solar_inverter.png",
+        "Battery Inverter": "battery_inverter.png",
+        "Electrical Cables": "electrical_cables.png",
+        "Mounting Structure": "mounting_structure.png",
+        "Electrical Devices": "electrical_devices.png",
+        "Net Metering": "net_metering.png"
+    };
+
+    function getSolarPartIcon(partName) {
+        const key = String(partName || "").trim();
+        const file = SOLAR_PART_ICONS[key] || "solar_panel.png";
+        return `../assets/img/icons/${file}`;
+    }
+
     function renderSolarPartsList(parts = []) {
         const list = document.getElementById("solarPartsList");
         const countEl = document.getElementById("solarInstalledPartsCount");
@@ -517,7 +533,9 @@ function renderSolarTab() {
 
             return `
                 <div class="solar-part-row">
-                    <div class="solar-part-icon">${index + 1}</div>
+                    <div class="solar-part-icon">
+                        <img src="${getSolarPartIcon(part.part_name)}" alt="${part.part_name}">
+                    </div>
 
                     <div>
                         <div class="solar-part-name">
@@ -534,7 +552,7 @@ function renderSolarTab() {
                     <button type="button"
                             class="solar-part-edit-btn"
                             data-index="${index}">
-                        ✎
+                        <img src="../assets/img/icons/pencil.png" alt="Edit">
                     </button>
                 </div>
             `;

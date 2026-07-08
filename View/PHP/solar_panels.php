@@ -20,7 +20,7 @@
                 <div class="stat-value" id="solarNotInstalledCount">0</div>
             </div>
             <div class="stat-icon stat-icon-red">
-                <img src="../assets/img/icons/cross.png" alt="">
+                <img src="../assets/img/icons/clock.png" alt="">
             </div>
         </div>
         <div class="stat-card">
