@@ -7,7 +7,7 @@
     <div class="stats-ribbon">
         <div class="stat-card">
             <div class="stat-card-text">
-                <div class="stat-label">Installed</div>
+                <div class="stat-label">Fully Installed</div>
                 <div class="stat-value" id="solarInstalledCount">0</div>
             </div>
             <div class="stat-icon stat-icon-green">
@@ -16,7 +16,7 @@
         </div>
         <div class="stat-card">
             <div class="stat-card-text">
-                <div class="stat-label">Not Installed</div>
+                <div class="stat-label">In Progress</div>
                 <div class="stat-value" id="solarNotInstalledCount">0</div>
             </div>
             <div class="stat-icon stat-icon-red">
@@ -25,7 +25,7 @@
         </div>
         <div class="stat-card">
             <div class="stat-card-text">
-                <div class="stat-label">Total Records</div>
+                <div class="stat-label">Total Houses</div>
                 <div class="stat-value" id="solarTotalCount">0</div>
             </div>
             <div class="stat-icon stat-icon-blue">
@@ -33,6 +33,8 @@
             </div>
         </div>
     </div>
+
+    
 
     <div class="location-selector-section" style="margin-top: 25px;">
         <h2 class="section-title">Project Selection</h2>
@@ -52,7 +54,7 @@
             <div class="connovate-chart-header">
                 <div>
                     <h3 id="solarBoardTitle">All Projects Solar Panel</h3>
-                    <p id="solarBoardSubtitle">Installed vs not installed houses.</p>
+                    <p id="solarBoardSubtitle">Fully installed, in progress, and no installation houses.</p>
                 </div>
             </div>
 
@@ -60,7 +62,7 @@
                 <div class="connovate-board-strip">
                     <span class="board-box-label">Project Summary</span>
                     <strong id="solarCompletionRate">0%</strong>
-                    <small id="solarBoardMeta">0 of 0 houses installed</small>
+                    <small id="solarBoardMeta">0 of 0 houses fully installed</small>
                 </div>
                 <div class="connovate-board-main connovate-board-chart-block">
                     <div class="connovate-chart-frame">
@@ -68,15 +70,16 @@
                     </div>
 
                     <div class="connovate-floor-meta">
-                        <span>Installed Houses: <strong id="solarBoardInstalled">0</strong></span>
-                        <span>Not Installed Houses: <strong id="solarBoardNotInstalled">0</strong></span>
+                        <span>Fully Installed: <strong id="solarBoardInstalled">0</strong></span>
+                        <span>In Progress: <strong id="solarBoardInProgress">0</strong></span>
+                        <span>No Installation: <strong id="solarBoardNotInstalled">0</strong></span>
                     </div>
                 </div>
 
                 <div class="connovate-board-strip connovate-board-strip-bottom">
                     <span class="board-box-label">Remaining Summary</span>
                     <strong id="solarBoardRemaining">0</strong>
-                    <small>houses without solar installation</small>
+                    <small>houses with no installed solar parts</small>
                 </div>
             </div>
         </div>
@@ -95,14 +98,15 @@
             <table class="residents-table" id="solarInstallationTable">
                 <thead>
                     <tr>
-                        <th>Resident ID</th>
-                        <th>Project</th>
-                        <th>Block</th>
-                        <th>Lot</th>
-                        <th>Status</th>
-                        <th>Provider</th>
-                        <th>Installation Date</th>
-                        <th>Proof</th>
+                        <tr>
+                            <th>Resident ID</th>
+                            <th>Project</th>
+                            <th>Block</th>
+                            <th>Lot</th>
+                            <th>Solar Type</th>
+                            <th>Progress</th>
+                            <th>Last Updated</th>
+                            <th>Action</th>
                     </tr>
                 </thead>
                 <tbody id="solarTableBody"></tbody>
@@ -127,7 +131,11 @@
                         <h2 id="solarResidentName">-</h2>
                         <p id="solarResidentMeta">Resident ID: -</p>
                     </div>
-                    <span id="solarStatusBadge" class="status-tag">Not Installed</span>
+                    <div class="solar-progress-badge">
+                        <strong id="solarInstalledPartsCount">0</strong>
+                        <span id="solarPartsTotal">/ 6</span>
+                        <small>Installed</small>
+                    </div>
                 </div>
 
                 <input type="hidden" id="solarResidentId">
@@ -135,69 +143,111 @@
                 <input type="hidden" id="solarBlockNo">
                 <input type="hidden" id="solarLotNo">
 
-                <div class="connovate-grid">
-                    <div class="connovate-card">
-                        <label>Lot Context</label>
-                        <span id="solarLotContext">No lot selected</span>
-                    </div>
 
-                    <div class="connovate-card">
-                        <label>Solar Status</label>
-                        <select id="solarStatus">
-                            <option value="Not Installed">Not Installed</option>
-                            <option value="Installed">Installed</option>
-                        </select>
-                    </div>
-
-                    <div class="connovate-card">
-                        <label>Installation Date</label>
-                        <input type="date" id="solarInstallationDate">
-                    </div>
-
-                    <div class="connovate-card">
-                        <label>Provider / Company</label>
-                        <input type="text" id="solarProvider" placeholder="Provider/company">
-                    </div>
-
-                    <div class="connovate-card">
-                        <label>Capacity / Details</label>
-                        <input type="text" id="solarCapacity" placeholder="Example: 5kW / 10 panels">
-                    </div>
-
-                    <div class="connovate-card">
-                        <label>Proof File</label>
-                        <input type="file" id="solarProofFile" accept=".pdf,.jpg,.jpeg,.png" style="display:none;">
-
-                        <div class="solar-file-box" onclick="document.getElementById('solarProofFile').click()">
-                            <span id="solarProofFileName">Choose File</span>
-
-                            <button type="button"
-                                    id="solarProofRemoveBtn"
-                                    class="solar-file-x"
-                                    style="display:none;"
-                                    onclick="event.stopPropagation(); removeSolarProofFile();">
-                                ✕
-                            </button>
-                        </div>
-                    </div>
+                <div class="connovate-card" style="margin-bottom: 16px;">
+                    <label>Solar Type</label>
+                    <select id="solarType">
+                        <option value="Grid-Tied">Grid-Tied</option>
+                        <option value="Hybrid">Hybrid</option>
+                    </select>
                 </div>
 
-                <div class="connovate-card" style="margin-top: 16px;">
-                    <label>Remarks</label>
-                    <textarea id="solarRemarks" placeholder="Solar installation notes..."></textarea>
-                </div>
+                <div class="solar-parts-overview">
+                    <div class="solar-parts-header">
+                        <h3>Solar Parts Checklist</h3>
+                        <p>Review each installed solar component per house.</p>
+                    </div>
 
-                <div class="connovate-card" style="margin-top: 16px;">
-                    <label>Uploaded Proof</label>
-                    <span id="solarProofInfo">No proof uploaded</span><br>
-                    <a id="solarProofLink" href="#" target="_blank" style="display:none;">Open Proof File</a>
+                    <div id="solarPartsList" class="solar-parts-list"></div>
                 </div>
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn-cancel" onclick="window.clearSolarForm()">Clear</button>
-                <button type="submit" class="primary-btn">Save Solar Info</button>
+                <button type="button" class="btn-cancel" onclick="window.closeSolarModal()">Close</button>
             </div>
         </form>
+    </div>
+</div>
+
+<div id="solarPartEditModal" class="modal-overlay solar-modal-overlay" style="z-index: 10030;">
+        <div class="modal-container connovate-modal-container">
+            <div class="modal-top-bar">
+                <button type="button" onclick="window.closeSolarPartEditModal()">←</button>
+                <span>Edit Solar Part</span>
+                <button type="button" onclick="window.closeSolarPartEditModal()">✕</button>
+            </div>
+
+            <form id="solarPartForm" enctype="multipart/form-data">
+                <div class="modal-body connovate-modal-body">
+                    <div class="connovate-hero">
+                        <div>
+                            <div class="connovate-eyebrow">Edit Solar Part</div>
+                            <h2 id="solarPartTitle">Solar Part</h2>
+                            <p id="solarPartDescription">-</p>
+                        </div>
+                    </div>
+
+                    <input type="hidden" id="solarPartName">
+
+                    <div class="connovate-grid">
+                        <div class="connovate-card">
+                            <label>Solar Status</label>
+                            <select id="solarStatus">
+                                <option value="Not Installed">Not Installed</option>
+                                <option value="Installed">Installed</option>
+                            </select>
+                        </div>
+
+                        <div class="connovate-card">
+                            <label>Installation Date</label>
+                            <input type="date" id="solarInstallationDate">
+                        </div>
+
+                        <div class="connovate-card">
+                            <label>Provider / Company</label>
+                            <input type="text" id="solarProvider" placeholder="Provider/company">
+                        </div>
+
+                        <div class="connovate-card">
+                            <label>Capacity / Details</label>
+                            <input type="text" id="solarCapacity" placeholder="Example: 5kW / 10 panels">
+                        </div>
+
+                        <div class="connovate-card" style="grid-column: span 2;">
+                            <label>Proof File</label>
+                            <input type="file" id="solarProofFile" accept=".pdf,.jpg,.jpeg,.png" style="display:none;">
+
+                            <div class="solar-file-box" onclick="document.getElementById('solarProofFile').click()">
+                                <span id="solarProofFileName">Choose File</span>
+
+                                <button type="button"
+                                        id="solarProofRemoveBtn"
+                                        class="solar-file-x"
+                                        style="display:none;"
+                                        onclick="event.stopPropagation(); removeSolarProofFile();">
+                                    ✕
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="connovate-card" style="margin-top: 16px;">
+                        <label>Remarks</label>
+                        <textarea id="solarRemarks" placeholder="Solar installation notes..."></textarea>
+                    </div>
+
+                    <div class="connovate-card" style="margin-top: 16px;">
+                        <label>Uploaded Proof</label>
+                        <span id="solarProofInfo">No proof uploaded</span><br>
+                        <a id="solarProofLink" href="#" target="_blank" style="display:none;">Open Proof File</a>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel" onclick="window.closeSolarPartEditModal()">Cancel</button>
+                    <button type="submit" class="primary-btn">Save Part</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>

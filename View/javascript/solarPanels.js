@@ -5,150 +5,58 @@
     let currentProofFile = "";
     let solarChart = null;
     let lastInstalledRows = [];
+    const REQUIRED_SOLAR_PARTS = 6;
+    const OPTIONAL_SOLAR_PART = "Net Metering";
 
     const ENDPOINTS = {
         load: "get_solar_panels.php",
         save: "save_solar_panel.php",
         upload: "upload_solar_proof.php",
-        deleteProof: "delete_solar_proof.php"
+        deleteProof: "delete_solar_proof.php",
+        deleteSolarParts: "delete_solar_panel_parts.php"
     };
-
 
 function renderSolarAnalytics(rows = []) {
     rows = Array.isArray(rows) ? rows : [];
 
-    const installed = rows.filter(row => String(row.solar_status || "").toLowerCase() === "installed").length;
+    const total = rows.length;
 
-    const projectSelect = document.getElementById("solarProjectSelect");
-    const selectedProject = projectSelect ? projectSelect.value : "";
+    const completed = rows.filter(row => row.installed_count === REQUIRED_SOLAR_PARTS).length;
+    const inProgress = rows.filter(row => row.installed_count > 0 && row.installed_count < REQUIRED_SOLAR_PARTS).length;
+    const noInstallation = rows.filter(row => row.installed_count === 0).length;
 
-    let total = 0;
+    const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
 
-    if (selectedProject) {
-        total = (window.PROJECT_MARKERS?.[selectedProject] || []).length;
-    } else {
-        total = Object.values(window.PROJECT_MARKERS || {})
-            .reduce((sum, lots) => sum + lots.length, 0);
-    }
+    document.getElementById("solarBoardInstalled").textContent = completed;
+    document.getElementById("solarBoardInProgress").textContent = inProgress;
+    document.getElementById("solarBoardNotInstalled").textContent = noInstallation;
+    document.getElementById("solarCompletionRate").textContent = completionRate + "%";
+    document.getElementById("solarBoardRemaining").textContent = noInstallation;
+    document.getElementById("solarBoardMeta").textContent = `${completed} of ${total} houses fully installed`;
 
-    const notInstalled = total - installed;
-
-    const installedEl = document.getElementById("solarBoardInstalled");
-    const notInstalledEl = document.getElementById("solarBoardNotInstalled");
-    const completionEl = document.getElementById("solarCompletionRate");
-    const remainingEl = document.getElementById("solarBoardRemaining");
-    const metaEl = document.getElementById("solarBoardMeta");
-
-
-
-    const completionRate = total > 0
-        ? Math.round((installed / total) * 100)
-        : 0;
-
-    if (installedEl) installedEl.textContent = installed;
-    if (notInstalledEl) notInstalledEl.textContent = notInstalled;
-
-    if (completionEl) {
-        completionEl.textContent = completionRate + "%";
-    }
-
-    if (remainingEl) {
-        remainingEl.textContent = notInstalled;
-    }
-
-    if (metaEl) {
-        metaEl.textContent = `${installed} of ${total} houses installed`;
-    }
     const canvas = document.getElementById("solarStatusChart");
     if (!canvas || typeof Chart === "undefined") return;
 
     if (solarChart) solarChart.destroy();
 
-    const solarValueLabels = {
-        id: "solarValueLabels",
-        afterDatasetsDraw(chart) {
-            const { ctx } = chart;
-            const meta = chart.getDatasetMeta(0);
-
-            ctx.save();
-            ctx.fillStyle = "#172033";
-            ctx.font = '700 13px "Century Gothic", "Segoe UI", sans-serif';
-            ctx.textAlign = "center";
-            ctx.textBaseline = "bottom";
-
-            meta.data.forEach((bar, index) => {
-                const value = chart.data.datasets[0].data[index];
-                ctx.fillText(String(value), bar.x, bar.y - 8);
-            });
-
-            ctx.restore();
-        }
-    };
-
     solarChart = new Chart(canvas.getContext("2d"), {
         type: "bar",
         data: {
-            labels: ["Installed", "Not Installed"],
+            labels: ["Fully Installed", "In Progress", "No Installation"],
             datasets: [{
-                label: "Solar Status",
-                data: [installed, notInstalled],
-                backgroundColor: ["#16a34a", "#f57c1f"],
-                borderColor: ["#15803d", "#e06a10"],
+                label: "Solar Progress",
+                data: [completed, inProgress, noInstallation],
+                backgroundColor: ["#16a34a", "#f57c1f", "#ef4444"],
+                borderColor: ["#15803d", "#e06a10", "#dc2626"],
                 borderWidth: 1,
                 borderRadius: 10,
-                borderSkipped: false,
-                barPercentage: 0.58,
-                categoryPercentage: 0.62
+                borderSkipped: false
             }]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false,
-            layout: {
-                padding: { top: 28, right: 12, bottom: 6, left: 6 }
-            },
-            plugins: {
-                legend: {
-                    position: "bottom",
-                    labels: {
-                        color: "#172033",
-                        usePointStyle: true,
-                        boxWidth: 8,
-                        font: { family: "Century Gothic", size: 12, weight: "700" }
-                    }
-                },
-                tooltip: {
-                    backgroundColor: "rgba(255, 255, 255, 0.96)",
-                    titleColor: "#172033",
-                    bodyColor: "#172033",
-                    borderColor: "#e5e7eb",
-                    borderWidth: 1,
-                    displayColors: false
-                }
-            },
-            scales: {
-                x: {
-                    ticks: {
-                        color: "#172033",
-                        font: { family: "Century Gothic", size: 12, weight: "700" }
-                    },
-                    grid: { display: false },
-                    border: { display: false }
-                },
-                y: {
-                    beginAtZero: true,
-                    grace: "18%",
-                    ticks: {
-                        color: "#64748b",
-                        precision: 0,
-                        font: { family: "Century Gothic", size: 11 }
-                    },
-                    grid: { color: "rgba(148, 163, 184, 0.22)" },
-                    border: { display: false }
-                }
-            }
-        },
-        plugins: [solarValueLabels]
+            maintainAspectRatio: false
+        }
     });
 }
 
@@ -175,25 +83,92 @@ function makeLotKey(project, block, lot) {
 // arrays inside a loop. This is what was freezing/crashing the tab when a
 // project with a lot of lots was selected.
 function buildSolarLookups() {
-    const residents = Array.isArray(window.residents) ? window.residents : [];
+    const residents = Array.isArray(window.solarHouses)
+        ? window.solarHouses
+        : [];
+
     const solarPanels = Array.isArray(window.solarPanels) ? window.solarPanels : [];
 
     const residentMap = new Map();
+
     residents.forEach(resident => {
-        const projectName = resident.project || findProjectNameById(resident.subdivision_id) || "";
+        const projectName = resident.project || "";
         const k = makeLotKey(projectName, resident.block_no, resident.lot_no);
-        // Keep first match if duplicates exist
+
         if (!residentMap.has(k)) residentMap.set(k, resident);
     });
 
-    const solarMap = new Map();
-    solarPanels.forEach(panel => {
-        const k = makeLotKey(panel.project_name, panel.block_no, panel.lot_no);
-        solarMap.set(k, panel); // last one wins (most recently saved record)
+    const solarPartsMap = new Map();
+
+    solarPanels.forEach(part => {
+        const k = makeLotKey(part.project_name, part.block_no, part.lot_no);
+
+        if (!solarPartsMap.has(k)) {
+            solarPartsMap.set(k, []);
+        }
+
+        solarPartsMap.get(k).push(part);
     });
 
-    return { residentMap, solarMap, residents };
+    return { residentMap, solarPartsMap, residents };
 }
+
+function summarizeSolarParts(parts = []) {
+    const requiredInstalledCount = parts.filter(part =>
+        String(part.part_name || "") !== OPTIONAL_SOLAR_PART &&
+        String(part.solar_status || "").toLowerCase() === "installed"
+    ).length;
+
+    const optionalInstalled = parts.some(part =>
+        String(part.part_name || "") === OPTIONAL_SOLAR_PART &&
+        String(part.solar_status || "").toLowerCase() === "installed"
+    );
+
+    const displayedInstalledCount = requiredInstalledCount + (optionalInstalled ? 1 : 0);
+
+    const latestUpdatedRaw = parts
+        .map(part => part.updated_at || part.created_at || "")
+        .filter(Boolean)
+        .sort()
+        .pop() || "";
+
+    const latestUpdated = latestUpdatedRaw
+        ? latestUpdatedRaw.split(" ")[0]
+        : "-";
+
+    const solarType = parts.find(part => part.solar_type)?.solar_type || "Grid-Tied";
+
+    let progressStatus = "No Installation";
+
+    if (requiredInstalledCount === REQUIRED_SOLAR_PARTS) {
+        progressStatus = optionalInstalled
+            ? "Completed (+Net Metering)"
+            : "Completed";
+    } else if (requiredInstalledCount > 0 || optionalInstalled) {
+        progressStatus = "In Progress";
+    }
+
+    return {
+        installed_count: requiredInstalledCount,
+        optional_installed: optionalInstalled,
+        displayed_installed_count: displayedInstalledCount,
+        total_parts: REQUIRED_SOLAR_PARTS,
+        progress_text: `${displayedInstalledCount}/${REQUIRED_SOLAR_PARTS}`,
+        progress_percent: Math.min(
+            100,
+            Math.round((requiredInstalledCount / REQUIRED_SOLAR_PARTS) * 100)
+        ),
+        progress_status: progressStatus,
+        last_updated: latestUpdated
+    };
+}
+
+function getProgressClass(row) {
+    if (row.installed_count === REQUIRED_SOLAR_PARTS) return "solar-progress-complete";
+    if (row.installed_count > 0) return "solar-progress-progress";
+    return "solar-progress-none";
+}
+
 
 function solarFieldsFor(solar) {
     return {
@@ -204,54 +179,59 @@ function solarFieldsFor(solar) {
     };
 }
 
+function findMarkersKey(projectName) {
+    const target = String(projectName || "").trim().toLowerCase();
+    const keys = Object.keys(window.PROJECT_MARKERS || {});
+    return keys.find(k => k.trim().toLowerCase() === target);
+}
+
 function buildSolarDashboardRows(selectedProject = "") {
-    const projectMarkers = window.PROJECT_MARKERS || {};
-    const { residentMap, solarMap, residents } = buildSolarLookups();
+    const { residentMap, solarPartsMap } = buildSolarLookups();
+    const allMarkers = window.PROJECT_MARKERS || {};
 
-    // All Projects = registered residents only (keeps this view light)
-    if (!selectedProject) {
-        return residents.map(resident => {
-            const projectName = resident.project || findProjectNameById(resident.subdivision_id) || "-";
-            const k = makeLotKey(projectName, resident.block_no, resident.lot_no);
-            const solar = solarMap.get(k);
-
-            return {
-                resident_id: resident.resident_id || "-",
-                project_name: projectName,
-                block_no: resident.block_no || "-",
-                lot_no: resident.lot_no || "-",
-                ...solarFieldsFor(solar)
-            };
-        });
+    let projectKeys;
+    if (selectedProject) {
+        const key = findMarkersKey(selectedProject);
+        projectKeys = key ? [key] : [];
+    } else {
+        projectKeys = Object.keys(allMarkers);
     }
 
-    // Selected Project = include vacant pins too, but use O(1) map lookups
-    // instead of .find() over the whole residents/solarPanels arrays.
-    const markers = projectMarkers[selectedProject] || [];
+    const rows = [];
 
-    return markers.map(marker => {
-        const block = String(marker.block || "").trim();
-        const lot = String(marker.lot || "").trim();
-        const k = makeLotKey(selectedProject, block, lot);
+    projectKeys.forEach(projectKey => {
+        const markers = allMarkers[projectKey] || [];
 
-        const resident = residentMap.get(k);
-        const solar = solarMap.get(k);
+        markers.forEach(markerData => {
+            const block = String(markerData.block).trim();
+            const lot = String(markerData.lot).trim();
+            const k = makeLotKey(projectKey, block, lot);
 
-        return {
-            resident_id: resident ? resident.resident_id : "Vacant",
-            project_name: selectedProject,
-            block_no: block,
-            lot_no: lot,
-            ...solarFieldsFor(solar)
-        };
+            const resident = residentMap.get(k);
+            const parts = solarPartsMap.get(k) || [];
+            const summary = summarizeSolarParts(parts);
+
+            rows.push({
+                resident_id: resident ? resident.resident_id : "-",
+                buyer_name: resident ? resident.buyer_name : "Vacant",
+                project_name: projectKey,
+                block_no: block,
+                lot_no: lot,
+                resident_status: resident ? resident.resident_status : "Vacant",
+                resident: resident || null,
+                ...summary
+            });
+        });
     });
+
+    return rows;
 }
 
 // Stats/board use every house (installed + not installed) so totals and
 // completion % stay accurate. The Solar Installation Records table only
 // needs to show houses that actually have solar installed.
-function installedOnly(rows) {
-    return rows.filter(row => String(row.solar_status || "").toLowerCase() === "installed");
+function activeSolarRows(rows) {
+    return rows.filter(row => row.installed_count > 0);
 }
 
 // Filters the cached installed-only rows by whatever's typed in the
@@ -263,10 +243,13 @@ function filterSolarRows(rows) {
 
     return rows.filter(row =>
         String(row.resident_id || "").toLowerCase().includes(term) ||
+        String(row.buyer_name || "").toLowerCase().includes(term) ||
         String(row.project_name || "").toLowerCase().includes(term) ||
         String(row.block_no || "").toLowerCase().includes(term) ||
         String(row.lot_no || "").toLowerCase().includes(term) ||
-        String(row.provider || "").toLowerCase().includes(term)
+        String(row.solar_type || "").toLowerCase().includes(term) ||
+        String(row.progress_text || "").toLowerCase().includes(term) ||
+        String(row.progress_status || "").toLowerCase().includes(term)
     );
 }
 
@@ -278,30 +261,14 @@ function refreshSolarTable(installedRows) {
     renderSolarTable(filterSolarRows(lastInstalledRows));
 }
 
-function renderSolarTab() {
-    if (!Array.isArray(window.solarPanels)) {
-        window.solarPanels = [];
-    }
-
-    const projectSelect = document.getElementById("solarProjectSelect");
-    const selectedProject = projectSelect ? projectSelect.value : "";
-    const rows = buildSolarDashboardRows(selectedProject);
-
-    populateSolarProjects();
-    updateSolarStats(rows);
-    refreshSolarTable(installedOnly(rows));
-    renderSolarAnalytics(rows);
-
-
-
-}
-
 function populateSolarProjects() {
     const select = document.getElementById("solarProjectSelect");
     if (!select) return;
 
     const projectMarkers = window.PROJECT_MARKERS || {};
     const projects = Object.keys(projectMarkers).sort();
+
+    const previousValue = select.value; // remember current selection
 
     select.innerHTML = '<option value="">-- All Projects --</option>';
 
@@ -311,31 +278,43 @@ function populateSolarProjects() {
         option.textContent = project;
         select.appendChild(option);
     });
+
+    // restore it if it still exists in the rebuilt list
+    if (previousValue && projects.includes(previousValue)) {
+        select.value = previousValue;
+    }
+}
+
+function renderSolarTab() {
+    if (!Array.isArray(window.solarPanels)) {
+        window.solarPanels = [];
+    }
+
+    populateSolarProjects(); // rebuild first (now preserves selection)
+
+    const projectSelect = document.getElementById("solarProjectSelect");
+    const selectedProject = projectSelect ? projectSelect.value : ""; // read AFTER rebuild
+    const rows = buildSolarDashboardRows(selectedProject);
+
+    updateSolarStats(rows);
+    refreshSolarTable(activeSolarRows(rows));
+    renderSolarAnalytics(rows);
 }
 
     function updateSolarStats(rows) {
+        const total = rows.length;
 
-        const projectSelect = document.getElementById("solarProjectSelect");
-        const selectedProject = projectSelect ? projectSelect.value : "";
-
-        let totalLots = 0;
-
-        if (selectedProject) {
-            totalLots = (window.PROJECT_MARKERS?.[selectedProject] || []).length;
-        } else {
-            totalLots = Object.values(window.PROJECT_MARKERS || {})
-                .reduce((sum, lots) => sum + lots.length, 0);
-        }
-
-        const installed = rows.filter(
-            row => String(row.solar_status).toLowerCase() === "installed"
+        const fullyInstalled = rows.filter(row =>
+            row.installed_count === REQUIRED_SOLAR_PARTS
         ).length;
 
-        const notInstalled = totalLots - installed;
+        const inProgress = rows.filter(row =>
+            row.installed_count > 0 && row.installed_count < REQUIRED_SOLAR_PARTS
+        ).length;
 
-        document.getElementById("solarInstalledCount").textContent = installed;
-        document.getElementById("solarNotInstalledCount").textContent = notInstalled;
-        document.getElementById("solarTotalCount").textContent = totalLots;
+        document.getElementById("solarInstalledCount").textContent = fullyInstalled;
+        document.getElementById("solarNotInstalledCount").textContent = inProgress;
+        document.getElementById("solarTotalCount").textContent = total;
     }
 
     function renderSolarTable(rows) {
@@ -346,20 +325,15 @@ function populateSolarProjects() {
             tbody.innerHTML = `
                 <tr>
                     <td colspan="8" style="text-align:center; padding:40px; color:#6b6b6b;">
-                        No installed solar panels found for this selection.
+                        No solar installation progress found for this selection.
                     </td>
                 </tr>
             `;
             return;
         }
 
-        // Build the whole table body as one string and write it once.
-        // (Looping tbody.innerHTML += ... re-parses the accumulated HTML
-        // on every iteration, which gets very slow for large row counts.)
         const html = rows.map(row => {
-            const proof = row.proof_file
-                ? `<a href="../../${row.proof_file}" target="_blank">Open File</a>`
-                : "No file";
+            const progressClass = getProgressClass(row);
 
             return `
                 <tr>
@@ -367,10 +341,36 @@ function populateSolarProjects() {
                     <td>${row.project_name || "-"}</td>
                     <td>${row.block_no || "-"}</td>
                     <td>${row.lot_no || "-"}</td>
-                    <td><span class="status-tag">${row.solar_status || "Not Installed"}</span></td>
-                    <td>${row.provider || "-"}</td>
-                    <td>${row.installation_date || "-"}</td>
-                    <td>${proof}</td>
+                    <td>${row.solar_type || "Grid-Tied"}</td>
+                    <td>
+                        <div class="solar-table-progress">
+                            <div class="solar-progress-line">
+                                <span class="${progressClass}" style="width:${row.progress_percent}%"></span>
+                            </div>
+                            <div class="solar-progress-label-row">
+                                <strong>${row.progress_text}</strong>
+                                <small>${row.progress_status}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>${row.last_updated || "-"}</td>
+                    <td>
+                        <div class="solar-table-actions">
+                            <button type="button"
+                                    class="solar-table-edit-btn"
+                                    title="Edit"
+                                    onclick='window.openSolarModalFromDashboard(${JSON.stringify(row).replace(/'/g, "&apos;")})'>
+                                ✎
+                            </button>
+
+                            <button type="button"
+                                    class="solar-table-delete-btn"
+                                    title="Delete"
+                                    onclick='window.deleteSolarInstallationRecord(${JSON.stringify(row).replace(/'/g, "&apos;")})'>
+                                🗑
+                            </button>
+                        </div>
+                    </td>
                 </tr>
             `;
         }).join("");
@@ -438,13 +438,23 @@ function populateSolarProjects() {
 
         if (fileInput) fileInput.value = "";
 
+        const fileToDelete = currentProofFile || "";
+
         window.solarProofCleared = true;
-        window.clearedProofFile = currentProofFile || "";
+        window.clearedProofFile = fileToDelete;
 
         currentProofFile = "";
 
         updateSolarFileBox("");
-        updateProofLink("");
+
+        const info = document.getElementById("solarProofInfo");
+        const link = document.getElementById("solarProofLink");
+
+        if (info) info.textContent = "No proof uploaded";
+        if (link) {
+            link.style.display = "none";
+            link.href = "#";
+        }
     };
 
 
@@ -462,32 +472,115 @@ function populateSolarProjects() {
             const response = await fetch(`${ENDPOINTS.load}?${params.toString()}`, {
                 headers: { Accept: "application/json" }
             });
+
             const data = await response.json();
 
-            if (!data.success || !data.solar) {
-                setValue("solarStatus", "Not Installed");
-                setValue("solarInstallationDate", "");
-                setValue("solarProvider", "");
-                setValue("solarCapacity", "");
-                setValue("solarRemarks", "");
-                updateProofLink("");
-                setText("solarStatusBadge", "Not Installed");
+            if (!data.success) {
+                alert(data.message || "Unable to load solar parts.");
                 return;
             }
 
-            const solar = data.solar;
+            window.currentSolarParts = data.parts || [];
+            renderSolarPartsList(window.currentSolarParts);
 
-            setValue("solarStatus", solar.solar_status || "Not Installed");
-            setValue("solarInstallationDate", solar.installation_date || "");
-            setValue("solarProvider", solar.provider || "");
-            setValue("solarCapacity", solar.capacity_details || "");
-            setValue("solarRemarks", solar.remarks || "");
-            updateProofLink(solar.proof_file || "");
-            setText("solarStatusBadge", solar.solar_status || "Not Installed");
         } catch (error) {
-            console.warn("Unable to load solar info.", error);
+            console.warn("Unable to load solar parts.", error);
         }
     }
+
+    
+    function renderSolarPartsList(parts = []) {
+        const list = document.getElementById("solarPartsList");
+        const countEl = document.getElementById("solarInstalledPartsCount");
+        const totalEl = document.getElementById("solarPartsTotal");
+
+        if (!list) return;
+
+        const requiredInstalled = parts.filter(part =>
+            String(part.part_name || "").trim() !== OPTIONAL_SOLAR_PART &&
+            String(part.solar_status || "").toLowerCase() === "installed"
+        ).length;
+
+        const optionalInstalled = parts.some(part =>
+            String(part.part_name || "").trim() === OPTIONAL_SOLAR_PART &&
+            String(part.solar_status || "").toLowerCase() === "installed"
+        );
+
+        const displayedInstalled = requiredInstalled + (optionalInstalled ? 1 : 0);
+
+        if (countEl) countEl.textContent = displayedInstalled;
+        if (totalEl) totalEl.textContent = optionalInstalled ? "/ 6" : "/ 6";
+
+        list.innerHTML = parts.map((part, index) => {
+            const installed = String(part.solar_status || "").toLowerCase() === "installed";
+            const isOptional = String(part.part_name || "").trim() === OPTIONAL_SOLAR_PART;
+
+            return `
+                <div class="solar-part-row">
+                    <div class="solar-part-icon">${index + 1}</div>
+
+                    <div>
+                        <div class="solar-part-name">
+                            ${part.part_name}
+                            ${isOptional ? '<small class="solar-optional-label">Optional</small>' : ''}
+                        </div>
+                        <div class="solar-part-desc">${part.description || ""}</div>
+                    </div>
+
+                    <span class="solar-part-status ${installed ? "installed" : ""}">
+                        ${part.solar_status || "Not Installed"}
+                    </span>
+
+                    <button type="button"
+                            class="solar-part-edit-btn"
+                            data-index="${index}">
+                        ✎
+                    </button>
+                </div>
+            `;
+        }).join("");
+
+        list.querySelectorAll(".solar-part-edit-btn").forEach(button => {
+            button.addEventListener("click", function () {
+                const index = this.dataset.index;
+                window.openSolarPartEdit(parts[index]);
+            });
+        });
+    }
+
+    window.openSolarPartEdit = function (part) {
+        const modal = document.getElementById("solarPartEditModal");
+        if (!modal) return;
+
+        window.currentSolarPart = part;
+
+        setValue("solarPartName", part.part_name || "");
+        setText("solarPartTitle", part.part_name || "Solar Part");
+        setText("solarPartDescription", part.description || "");
+
+        setValue("solarStatus", part.solar_status || "Not Installed");
+        setValue("solarInstallationDate", part.installation_date || "");
+        setValue("solarProvider", part.provider || "");
+        setValue("solarCapacity", part.capacity_details || "");
+        setValue("solarRemarks", part.remarks || "");
+
+        window.solarProofCleared = false;
+        window.clearedProofFile = "";
+
+        const proofInput = document.getElementById("solarProofFile");
+        if (proofInput) proofInput.value = "";
+
+        updateProofLink(part.proof_file || "");
+        updateSolarFileBox(part.proof_file || "");
+
+        modal.classList.add("show");
+    };
+
+    window.closeSolarPartEditModal = function () {
+        const modal = document.getElementById("solarPartEditModal");
+        if (modal) modal.classList.remove("show");
+    };
+
 
     async function uploadProofIfNeeded() {
         const fileInput = document.getElementById("solarProofFile");
@@ -520,11 +613,24 @@ function populateSolarProjects() {
             const uploadedFile = await uploadProofIfNeeded();
 
             if (window.solarProofCleared && window.clearedProofFile) {
-                await fetch(ENDPOINTS.deleteProof, {
+                const deleteResponse = await fetch(ENDPOINTS.deleteProof, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ file: window.clearedProofFile })
                 });
+
+                const deleteText = await deleteResponse.text();
+
+                try {
+                    const deleteData = JSON.parse(deleteText);
+
+                    if (!deleteData.success) {
+                        throw new Error(deleteData.message || "Unable to delete proof file.");
+                    }
+                } catch (e) {
+                    console.error("Delete proof response:", deleteText);
+                    throw new Error("Invalid response from delete_solar_proof.php");
+                }
             }
 
 
@@ -533,6 +639,8 @@ function populateSolarProjects() {
             formData.append("project_name", document.getElementById("solarProjectName")?.value || "");
             formData.append("block_no", document.getElementById("solarBlockNo")?.value || "");
             formData.append("lot_no", document.getElementById("solarLotNo")?.value || "");
+            formData.append("part_name", document.getElementById("solarPartName")?.value || "");
+            formData.append("solar_type", document.getElementById("solarType")?.value || "Grid-Tied");
             formData.append("solar_status", document.getElementById("solarStatus")?.value || "Not Installed");
             formData.append("installation_date", document.getElementById("solarInstallationDate")?.value || "");
             formData.append("provider", document.getElementById("solarProvider")?.value || "");
@@ -554,11 +662,16 @@ function populateSolarProjects() {
                 throw new Error(data.message || "Unable to save solar information.");
             }
 
-            alert("Solar information saved.");
+            alert("Solar part saved.");
+
+            const finalProofFile = window.solarProofCleared ? "" : uploadedFile;
+
+            updateProofLink(finalProofFile);
+
             window.solarProofCleared = false;
             window.clearedProofFile = "";
-
-            updateProofLink(uploadedFile);
+            window.closeSolarPartEditModal();
+            loadSolarInfo();
             setText("solarStatusBadge", document.getElementById("solarStatus")?.value || "Not Installed");
 
             // Keep window.solarPanels in sync so re-rendering the table/board
@@ -571,18 +684,25 @@ function populateSolarProjects() {
                     document.getElementById("solarProjectName")?.value,
                     document.getElementById("solarBlockNo")?.value,
                     document.getElementById("solarLotNo")?.value
-                )
+                ) &&
+                String(p.part_name || "") === String(document.getElementById("solarPartName")?.value || "")
             );
             const updatedRecord = {
                 project_name: document.getElementById("solarProjectName")?.value || "",
                 block_no: document.getElementById("solarBlockNo")?.value || "",
                 lot_no: document.getElementById("solarLotNo")?.value || "",
+
+                solar_type: document.getElementById("solarType")?.value || "Grid-Tied",
+                part_name: document.getElementById("solarPartName")?.value || "",
+
                 solar_status: document.getElementById("solarStatus")?.value || "Not Installed",
                 installation_date: document.getElementById("solarInstallationDate")?.value || "",
                 provider: document.getElementById("solarProvider")?.value || "",
                 capacity_details: document.getElementById("solarCapacity")?.value || "",
                 proof_file: window.solarProofCleared ? "" : (uploadedFile || ""),
-                remarks: document.getElementById("solarRemarks")?.value || ""
+                remarks: document.getElementById("solarRemarks")?.value || "",
+
+                updated_at: new Date().toISOString().slice(0, 19).replace("T", " ")
             };
             if (idx >= 0) {
                 window.solarPanels[idx] = { ...window.solarPanels[idx], ...updatedRecord };
@@ -595,7 +715,7 @@ function populateSolarProjects() {
             const selectedProject = projectSelect ? projectSelect.value : "";
             const rows = buildSolarDashboardRows(selectedProject);
             updateSolarStats(rows);
-            refreshSolarTable(installedOnly(rows));
+            refreshSolarTable(activeSolarRows(rows));
             renderSolarAnalytics(rows);
         } catch (error) {
             alert(error.message || "Unable to save solar information.");
@@ -615,9 +735,8 @@ function populateSolarProjects() {
             });
         }
 
-        const form = document.getElementById("solarPanelForm");
+        const form = document.getElementById("solarPartForm");
         if (form) form.addEventListener("submit", saveSolarInfo);
-
         if (solarModal) {
             solarModal.addEventListener("click", (event) => {
                 if (event.target === solarModal) {
@@ -739,6 +858,73 @@ function populateSolarProjects() {
         });
     };
 
+    window.openSolarModalFromDashboard = function (row) {
+        const resident = row.resident || {
+            resident_id: row.resident_id,
+            buyer_name: row.buyer_name,
+            project: row.project_name,
+            block_no: row.block_no,
+            lot_no: row.lot_no
+        };
+
+        const context = {
+            project: row.project_name,
+            block: row.block_no,
+            lot: row.lot_no
+        };
+
+        window.openSolarModal(resident, context);
+    };
+
+    window.deleteSolarInstallationRecord = async function (row) {
+        const confirmDelete = confirm(
+            `Delete all solar installation records for Block ${row.block_no} Lot ${row.lot_no}?`
+        );
+
+        if (!confirmDelete) return;
+
+        try {
+            const response = await fetch(ENDPOINTS.deleteSolarParts, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    project_name: row.project_name,
+                    block_no: row.block_no,
+                    lot_no: row.lot_no
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                throw new Error(data.message || "Unable to delete solar records.");
+            }
+
+            if (Array.isArray(window.solarPanels)) {
+                window.solarPanels = window.solarPanels.filter(part =>
+                    !(
+                        makeLotKey(part.project_name, part.block_no, part.lot_no) ===
+                        makeLotKey(row.project_name, row.block_no, row.lot_no)
+                    )
+                );
+            }
+
+            const projectSelect = document.getElementById("solarProjectSelect");
+            const selectedProject = projectSelect ? projectSelect.value : "";
+            const rows = buildSolarDashboardRows(selectedProject);
+
+            updateSolarStats(rows);
+            refreshSolarTable(activeSolarRows(rows));
+            renderSolarAnalytics(rows);
+
+            alert("Solar installation records deleted.");
+        } catch (error) {
+            alert(error.message || "Unable to delete solar records.");
+            console.warn(error);
+        }
+    };
 
 
     window.loadSolarProject = function () {
@@ -748,7 +934,7 @@ function populateSolarProjects() {
         const rows = buildSolarDashboardRows(selectedProject);
 
         updateSolarStats(rows);
-        refreshSolarTable(installedOnly(rows));
+        refreshSolarTable(activeSolarRows(rows));
         renderSolarAnalytics(rows);
     };
 

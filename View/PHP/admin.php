@@ -72,6 +72,28 @@ if ($resQuery) {
     }
 }
 
+$solarHousesQuery = $conn->query("
+    SELECT
+        r.resident_id,
+        r.subdivision_id,
+        s.project_name AS project,
+        r.block_no,
+        r.lot_no,
+        r.buyer_name,
+        r.resident_status
+    FROM residents r
+    LEFT JOIN subdivisions s ON r.subdivision_id = s.subdivision_id
+    ORDER BY r.resident_id DESC
+");
+
+$solarHousesArray = [];
+
+if ($solarHousesQuery) {
+    while ($row = $solarHousesQuery->fetch_assoc()) {
+        $solarHousesArray[] = $row;
+    }
+}
+
 $connovateQuery = $conn->query("
     SELECT
         id,
@@ -98,7 +120,7 @@ if ($connovateQuery) {
 
 $solarPanelsArray = [];
 
-$solarCheck = $conn->query("SHOW TABLES LIKE 'solar_panels'");
+$solarCheck = $conn->query("SHOW TABLES LIKE 'solar_panel_parts'");
 
 if ($solarCheck && $solarCheck->num_rows > 0) {
     $solarQuery = $conn->query("
@@ -108,6 +130,8 @@ if ($solarCheck && $solarCheck->num_rows > 0) {
             project_name,
             block_no,
             lot_no,
+            solar_type,
+            part_name,
             solar_status,
             installation_date,
             provider,
@@ -116,8 +140,8 @@ if ($solarCheck && $solarCheck->num_rows > 0) {
             remarks,
             created_at,
             updated_at
-        FROM solar_panels
-        ORDER BY id DESC
+        FROM solar_panel_parts
+        ORDER BY updated_at DESC
     ");
 
     if ($solarQuery) {
@@ -126,7 +150,6 @@ if ($solarCheck && $solarCheck->num_rows > 0) {
         }
     }
 }
-
 /**
  * 5. SYSTEM LOGS & ADMINISTRATIVE DATA
  */
@@ -1025,9 +1048,9 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
 <script>
     // Residents Data (Fail-safe: defaults to empty array if null)
     window.residents = <?php echo json_encode($residentsArray ?? []); ?>;
+    window.solarHouses = <?php echo json_encode($solarHousesArray ?? []); ?>;
     window.connovatePanels = <?php echo json_encode($connovatePanelsArray ?? []); ?>;
     window.solarPanels = <?php echo json_encode($solarPanelsArray ?? []); ?>;
-
 
     // Audit Logs Data (Using the processed array from your PHP update)
     window.auditLogs = <?php echo json_encode($auditLogsArray ?? []); ?>;
@@ -1056,7 +1079,7 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
 <script src="../javascript/menu.js"></script>
 <script src="../javascript/map.js"></script>
 <script src="../javascript/logOut.js"></script>
-<script src="../javascript/solarPanels.js"></script>
+<script src="../javascript/solarPanels.js?v=<?php echo filemtime(__DIR__ . '/../javascript/solarPanels.js'); ?>"></script>
 
 
 
