@@ -508,13 +508,13 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
 
                     </div>
 
-                    <div style="background: #0f172a; padding: 15px; border-radius: 8px; border: 1px solid #334155; margin-bottom: 20px;">
-                        <h3 style="font-size: 11px; color: #d49006; margin-top: 0; margin-bottom: 12px; text-transform: uppercase;">Latest Billing Summary</h3>
+                    <div style="background: var(--orange-soft); padding: 15px; border-radius: 8px; border: 1px solid #fed7aa; margin-bottom: 20px;">
+                        <h3 style="font-size: 11px; color: var(--orange); margin-top: 0; margin-bottom: 12px; text-transform: uppercase; font-weight: 700;">Latest Billing Summary</h3>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                            <div><label style="color: #64748b; font-size: 9px; display: block;">ACCOUNT NO.</label><span id="infoAccNo" style="font-size: 13px; font-weight: 600;">-</span></div>
-                            <div><label style="color: #64748b; font-size: 9px; display: block;">BILL STATUS</label><span id="infoBillStatus" style="font-size: 13px; font-weight: bold;">-</span></div>
-                            <div><label style="color: #64748b; font-size: 9px; display: block;">OUTSTANDING BAL.</label><span id="infoTotalBill" style="font-size: 16px; font-weight: bold; color: #fb7185;">₱ 0.00</span></div>
-                            <div><label style="color: #64748b; font-size: 9px; display: block;">LAST UPDATE</label><span id="infoCreated" style="font-size: 13px;">-</span></div>
+                            <div><label style="color: #92703a; font-size: 9px; display: block;">ACCOUNT NO.</label><span id="infoAccNo" style="font-size: 13px; font-weight: 600; color: #172033;">-</span></div>
+                            <div><label style="color: #92703a; font-size: 9px; display: block;">BILL STATUS</label><span id="infoBillStatus" style="font-size: 13px; font-weight: bold; color: #172033;">-</span></div>
+                            <div><label style="color: #92703a; font-size: 9px; display: block;">OUTSTANDING BAL.</label><span id="infoTotalBill" style="font-size: 16px; font-weight: bold; color: #dc2626;">₱ 0.00</span></div>
+                            <div><label style="color: #92703a; font-size: 9px; display: block;">LAST UPDATE</label><span id="infoCreated" style="font-size: 13px; color: #172033;">-</span></div>
                         </div>
                     </div>
 
