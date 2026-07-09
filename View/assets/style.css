@@ -3449,3 +3449,59 @@ body.sidebar-collapsed .menu-label {
 #editProfileModal .admin-form-divider {
     margin: 14px 0 10px;
 }
+
+.solar-net-metering-icon{
+    display:inline-block;
+    margin-left:6px;
+    color:#16a34a;
+    font-size:20px;
+    font-weight:700;
+    vertical-align:middle;
+}
+
+.solar-installed-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.solar-net-metering-icon {
+    color: #16a34a;
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.solar-progress-badge{
+    display:flex;
+    align-items:flex-end;
+    gap:4px;
+}
+
+.solar-net-metering-icon{
+    color:#16a34a;
+    font-size:24px;
+    font-weight:700;
+    margin-left:4px;
+    margin-bottom:2px;
+}
+
+.solar-progress-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.solar-progress-main {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.solar-net-metering-icon {
+    color: #16a34a !important;
+    font-size: 24px;
+    font-weight: 800;
+    line-height: 1;
+}

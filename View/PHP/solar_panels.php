@@ -132,8 +132,11 @@
                         <p id="solarResidentMeta">Resident ID: -</p>
                     </div>
                     <div class="solar-progress-badge">
-                        <strong id="solarInstalledPartsCount">0</strong>
-                        <span id="solarPartsTotal">/ 6</span>
+                        <div class="solar-progress-main">
+                            <strong id="solarInstalledPartsCount">0</strong>
+                            <span id="solarPartsTotal">/ 5</span>
+                            <span id="solarNetMeteringIcon" class="solar-net-metering-icon" style="display:none;">⇅</span>
+                        </div>
                         <small>Installed</small>
                     </div>
                 </div>
@@ -164,6 +167,7 @@
 
             <div class="modal-footer">
                 <button type="button" class="btn-cancel" onclick="window.closeSolarModal()">Close</button>
+                <button type="button" class="primary-btn" onclick="window.saveSolarTypeChange()">Save</button>
             </div>
         </form>
     </div>

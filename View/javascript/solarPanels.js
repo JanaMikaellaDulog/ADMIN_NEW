@@ -5,8 +5,34 @@
     let currentProofFile = "";
     let solarChart = null;
     let lastInstalledRows = [];
-    const REQUIRED_SOLAR_PARTS = 6;
     const OPTIONAL_SOLAR_PART = "Net Metering";
+    const HYBRID_ONLY_PART = "Battery Inverter";
+
+    function normalizeSolarType(type = "") {
+        return String(type || "Grid-Tied").trim().toLowerCase();
+    }
+
+    function getRequiredSolarTotal(solarType = "Grid-Tied") {
+        return normalizeSolarType(solarType) === "hybrid" ? 6 : 5;
+    }
+
+    function isOptionalSolarPart(partName = "") {
+        return String(partName || "").trim() === OPTIONAL_SOLAR_PART;
+    }
+
+    function isHybridOnlyPart(partName = "") {
+        return String(partName || "").trim() === HYBRID_ONLY_PART;
+    }
+
+    function isRequiredPartForType(partName = "", solarType = "Grid-Tied") {
+        if (isOptionalSolarPart(partName)) return false;
+        if (normalizeSolarType(solarType) !== "hybrid" && isHybridOnlyPart(partName)) return false;
+        return true;
+    }
+
+    function getSolarTypeFromParts(parts = []) {
+        return parts.find(part => part.solar_type)?.solar_type || "Grid-Tied";
+    }
 
     const ENDPOINTS = {
         load: "get_solar_panels.php",
@@ -21,9 +47,14 @@ function renderSolarAnalytics(rows = []) {
 
     const total = rows.length;
 
-    const completed = rows.filter(row => row.installed_count === REQUIRED_SOLAR_PARTS).length;
-    const inProgress = rows.filter(row => row.installed_count > 0 && row.installed_count < REQUIRED_SOLAR_PARTS).length;
-    const noInstallation = rows.filter(row => row.installed_count === 0).length;
+    const completed = rows.filter(row => row.installed_count === row.total_parts).length;
+    const inProgress = rows.filter(row =>
+        (row.installed_count > 0 || row.optional_installed) &&
+        row.installed_count < row.total_parts
+    ).length;
+    const noInstallation = rows.filter(row =>
+        row.installed_count === 0 && !row.optional_installed
+    ).length;
 
     const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
 
@@ -114,17 +145,18 @@ function buildSolarLookups() {
 }
 
 function summarizeSolarParts(parts = []) {
+    const solarType = getSolarTypeFromParts(parts);
+    const requiredTotal = getRequiredSolarTotal(solarType);
+
     const requiredInstalledCount = parts.filter(part =>
-        String(part.part_name || "") !== OPTIONAL_SOLAR_PART &&
+        isRequiredPartForType(part.part_name, solarType) &&
         String(part.solar_status || "").toLowerCase() === "installed"
     ).length;
 
     const optionalInstalled = parts.some(part =>
-        String(part.part_name || "") === OPTIONAL_SOLAR_PART &&
+        isOptionalSolarPart(part.part_name) &&
         String(part.solar_status || "").toLowerCase() === "installed"
     );
-
-    const displayedInstalledCount = requiredInstalledCount + (optionalInstalled ? 1 : 0);
 
     const latestUpdatedRaw = parts
         .map(part => part.updated_at || part.created_at || "")
@@ -136,11 +168,9 @@ function summarizeSolarParts(parts = []) {
         ? latestUpdatedRaw.split(" ")[0]
         : "-";
 
-    const solarType = parts.find(part => part.solar_type)?.solar_type || "Grid-Tied";
-
     let progressStatus = "No Installation";
 
-    if (requiredInstalledCount === REQUIRED_SOLAR_PARTS) {
+    if (requiredInstalledCount === requiredTotal) {
         progressStatus = optionalInstalled
             ? "Completed (+Net Metering)"
             : "Completed";
@@ -149,14 +179,15 @@ function summarizeSolarParts(parts = []) {
     }
 
     return {
+        solar_type: solarType,
         installed_count: requiredInstalledCount,
         optional_installed: optionalInstalled,
-        displayed_installed_count: displayedInstalledCount,
-        total_parts: REQUIRED_SOLAR_PARTS,
-        progress_text: `${displayedInstalledCount}/${REQUIRED_SOLAR_PARTS}`,
+        total_parts: requiredTotal,
+        progress_text: `${requiredInstalledCount} / ${requiredTotal}`,
+        progress_icon: optionalInstalled,
         progress_percent: Math.min(
             100,
-            Math.round((requiredInstalledCount / REQUIRED_SOLAR_PARTS) * 100)
+            Math.round((requiredInstalledCount / requiredTotal) * 100)
         ),
         progress_status: progressStatus,
         last_updated: latestUpdated
@@ -164,8 +195,8 @@ function summarizeSolarParts(parts = []) {
 }
 
 function getProgressClass(row) {
-    if (row.installed_count === REQUIRED_SOLAR_PARTS) return "solar-progress-complete";
-    if (row.installed_count > 0) return "solar-progress-progress";
+    if (row.installed_count === row.total_parts) return "solar-progress-complete";
+    if (row.installed_count > 0 || row.optional_installed) return "solar-progress-progress";
     return "solar-progress-none";
 }
 
@@ -231,7 +262,7 @@ function buildSolarDashboardRows(selectedProject = "") {
 // completion % stay accurate. The Solar Installation Records table only
 // needs to show houses that actually have solar installed.
 function activeSolarRows(rows) {
-    return rows.filter(row => row.installed_count > 0);
+    return rows.filter(row => row.installed_count > 0 || row.optional_installed);
 }
 
 // Filters the cached installed-only rows by whatever's typed in the
@@ -305,11 +336,12 @@ function renderSolarTab() {
         const total = rows.length;
 
         const fullyInstalled = rows.filter(row =>
-            row.installed_count === REQUIRED_SOLAR_PARTS
+            row.installed_count === row.total_parts
         ).length;
 
         const inProgress = rows.filter(row =>
-            row.installed_count > 0 && row.installed_count < REQUIRED_SOLAR_PARTS
+            (row.installed_count > 0 || row.optional_installed) &&
+            row.installed_count < row.total_parts
         ).length;
 
         document.getElementById("solarInstalledCount").textContent = fullyInstalled;
@@ -348,7 +380,12 @@ function renderSolarTab() {
                                 <span class="${progressClass}" style="width:${row.progress_percent}%"></span>
                             </div>
                             <div class="solar-progress-label-row">
-                                <strong>${row.progress_text}</strong>
+                                <strong class="solar-progress-number">
+                                    ${row.progress_text}
+                                    ${row.progress_icon
+                                        ? '<span class="solar-net-metering-icon" title="Net Metering Installed">⇅</span>'
+                                        : ''}
+                                </strong>
                                 <small>${row.progress_status}</small>
                             </div>
                         </div>
@@ -509,27 +546,57 @@ function renderSolarTab() {
         const list = document.getElementById("solarPartsList");
         const countEl = document.getElementById("solarInstalledPartsCount");
         const totalEl = document.getElementById("solarPartsTotal");
+        const solarTypeSelect = document.getElementById("solarType");
 
         if (!list) return;
 
+        const savedSolarType = getSolarTypeFromParts(parts);
+        const selectedSolarType = solarTypeSelect?.value || savedSolarType || "Grid-Tied";
+        const requiredTotal = getRequiredSolarTotal(selectedSolarType);
+
+        if (solarTypeSelect) {
+            solarTypeSelect.value = selectedSolarType;
+
+            solarTypeSelect.onchange = function () {
+                renderSolarPartsList(parts);
+            };
+        }
+
         const requiredInstalled = parts.filter(part =>
-            String(part.part_name || "").trim() !== OPTIONAL_SOLAR_PART &&
+            isRequiredPartForType(part.part_name, selectedSolarType) &&
             String(part.solar_status || "").toLowerCase() === "installed"
         ).length;
 
         const optionalInstalled = parts.some(part =>
-            String(part.part_name || "").trim() === OPTIONAL_SOLAR_PART &&
+            isOptionalSolarPart(part.part_name) &&
             String(part.solar_status || "").toLowerCase() === "installed"
         );
 
-        const displayedInstalled = requiredInstalled + (optionalInstalled ? 1 : 0);
+        const netIconEl = document.getElementById("solarNetMeteringIcon");
 
-        if (countEl) countEl.textContent = displayedInstalled;
-        if (totalEl) totalEl.textContent = optionalInstalled ? "/ 6" : "/ 6";
+        if (countEl) {
+            countEl.textContent = requiredInstalled;
+        }
 
-        list.innerHTML = parts.map((part, index) => {
+        if (totalEl) {
+            totalEl.textContent = `/ ${requiredTotal}`;
+        }
+
+        if (netIconEl) {
+            netIconEl.style.display = optionalInstalled ? "inline-block" : "none";
+        }
+
+        const visibleParts = parts.filter(part => {
+            if (isHybridOnlyPart(part.part_name) && normalizeSolarType(selectedSolarType) !== "hybrid") {
+                return false;
+            }
+
+            return true;
+        });
+
+        list.innerHTML = visibleParts.map((part, index) => {
             const installed = String(part.solar_status || "").toLowerCase() === "installed";
-            const isOptional = String(part.part_name || "").trim() === OPTIONAL_SOLAR_PART;
+            const isOptional = isOptionalSolarPart(part.part_name);
 
             return `
                 <div class="solar-part-row">
@@ -551,7 +618,7 @@ function renderSolarTab() {
 
                     <button type="button"
                             class="solar-part-edit-btn"
-                            data-index="${index}">
+                            data-part-name="${part.part_name}">
                         <img src="../assets/img/icons/pencil.png" alt="Edit">
                     </button>
                 </div>
@@ -560,11 +627,13 @@ function renderSolarTab() {
 
         list.querySelectorAll(".solar-part-edit-btn").forEach(button => {
             button.addEventListener("click", function () {
-                const index = this.dataset.index;
-                window.openSolarPartEdit(parts[index]);
+                const partName = this.dataset.partName;
+                const selectedPart = parts.find(part => part.part_name === partName);
+                window.openSolarPartEdit(selectedPart);
             });
         });
     }
+
 
     window.openSolarPartEdit = function (part) {
         const modal = document.getElementById("solarPartEditModal");
@@ -816,6 +885,74 @@ function renderSolarTab() {
         solarModal.classList.add("show");
         loadSolarInfo();
     };
+
+
+    window.saveSolarTypeChange = async function () {
+        if (!currentContext) return;
+
+        const selectedType = document.getElementById("solarType")?.value || "Grid-Tied";
+
+        try {
+            const parts = Array.isArray(window.currentSolarParts)
+                ? window.currentSolarParts
+                : [];
+
+            for (const part of parts) {
+                const formData = new FormData();
+
+                formData.append("resident_id", document.getElementById("solarResidentId")?.value || "");
+                formData.append("project_name", currentContext.project || "");
+                formData.append("block_no", currentContext.block || "");
+                formData.append("lot_no", currentContext.lot || "");
+                formData.append("part_name", part.part_name || "");
+                formData.append("solar_type", selectedType);
+                formData.append("solar_status", part.solar_status || "Not Installed");
+                formData.append("installation_date", part.installation_date || "");
+                formData.append("provider", part.provider || "");
+                formData.append("capacity_details", part.capacity_details || "");
+                formData.append("proof_file", part.proof_file || "");
+                formData.append("remarks", part.remarks || "");
+
+                const response = await fetch(ENDPOINTS.save, {
+                    method: "POST",
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || "Unable to save solar type.");
+                }
+            }
+
+            if (Array.isArray(window.solarPanels)) {
+                window.solarPanels = window.solarPanels.map(part => {
+                    const sameLot =
+                        makeLotKey(part.project_name, part.block_no, part.lot_no) ===
+                        makeLotKey(currentContext.project, currentContext.block, currentContext.lot);
+
+                    return sameLot ? { ...part, solar_type: selectedType } : part;
+                });
+            }
+
+            alert("Solar type saved.");
+
+            await loadSolarInfo();
+
+            const projectSelect = document.getElementById("solarProjectSelect");
+            const selectedProject = projectSelect ? projectSelect.value : "";
+            const rows = buildSolarDashboardRows(selectedProject);
+
+            updateSolarStats(rows);
+            refreshSolarTable(activeSolarRows(rows));
+            renderSolarAnalytics(rows);
+
+        } catch (error) {
+            alert(error.message || "Unable to save solar type.");
+            console.warn(error);
+        }
+    };
+
 
     window.closeSolarModal = function () {
         if (!solarModal) solarModal = document.getElementById("solarEditModal")
