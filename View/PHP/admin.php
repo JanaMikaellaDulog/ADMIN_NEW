@@ -175,6 +175,24 @@ if ($audit_logs && $audit_logs->num_rows > 0) {
 // Administrative Users Management
 $admins = $conn->query("SELECT admin_id, admin_name, authority_level, admin_status, auth_key FROM admins ORDER BY admin_id ASC");
 
+// My Own Profile (topbar avatar + Edit Profile modal)
+$myProfile = ['admin_name' => $_SESSION['admin_name'] ?? 'Admin', 'auth_key' => '', 'profile_photo' => null];
+$myProfileStmt = $conn->prepare("SELECT admin_name, auth_key, profile_photo FROM admins WHERE admin_id = ?");
+$myProfileStmt->bind_param("i", $currentSessionId);
+$myProfileStmt->execute();
+$myProfileResult = $myProfileStmt->get_result()->fetch_assoc();
+if ($myProfileResult) {
+    $myProfile = $myProfileResult;
+}
+
+$profilePhotoWebPath = null;
+if (!empty($myProfile['profile_photo'])) {
+    $photoFsPath = __DIR__ . '/../assets/img/profiles/' . $myProfile['profile_photo'];
+    if (file_exists($photoFsPath)) {
+        $profilePhotoWebPath = '../assets/img/profiles/' . $myProfile['profile_photo'] . '?v=' . filemtime($photoFsPath);
+    }
+}
+
 /**
  * 6. SYSTEM UTILITIES
  */
@@ -238,26 +256,64 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
                 <img src="../assets/img/icons/auditWhite.png" class="menu-icon icon-active" alt="">
                 <span class="menu-label">Audit Logs</span>
             </li>
-            <li class="left-menu-item logout-item" onclick="confirmLogout(event)">
-                <img src="../assets/img/icons/logoutBlack.png" class="menu-icon icon-default" alt="">
-                <img src="../assets/img/icons/logoutWhite.png" class="menu-icon icon-active" alt="">
-                <span class="menu-label">LOG OUT</span>
-            </li>
         </ul>
 
     </div>
 
 <header class="topbar">
-        <button type="button" id="sidebarToggle" class="sidebar-toggle" aria-controls="leftMenu" aria-expanded="true" title="Toggle navigation">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-    </header>
+    <button type="button" id="sidebarToggle" class="sidebar-toggle" aria-controls="leftMenu" aria-expanded="true" title="Toggle navigation">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <div class="topbar-date">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+            <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+        <span><?php echo date('l, F j, Y'); ?></span>
+    </div>
+
+    <!-- RIGHT SIDE: Welcome + User Dropdown -->
+    <div class="topbar-user-area">
+        <span class="topbar-welcome">
+            Welcome, <strong><?php echo htmlspecialchars(strtoupper($_SESSION['admin_name'] ?? 'Admin')); ?></strong>!
+        </span>
+
+        <div class="topbar-user-menu" id="topbarUserMenu">
+            <!-- Orange user icon button -->
+            <button class="topbar-avatar-btn" onclick="toggleUserDropdown(event)" aria-label="User menu">
+                <?php if ($profilePhotoWebPath): ?>
+                    <img src="<?php echo htmlspecialchars($profilePhotoWebPath); ?>" alt="Profile" id="topbarAvatarImg" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">
+                <?php else: ?>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+                    <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+                </svg>
+                <?php endif; ?>
+            </button>
+
+            <!-- Dropdown -->
+            <div class="topbar-dropdown" id="topbarDropdown">
+                <button class="topbar-dropdown-item" onclick="openEditProfileModal()">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15"><path d="M3 17.25V21h3.75l11.06-11.06-3.75-3.75L3 17.25zm17.71-10.21a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                    Edit Profile
+                </button>
+                <button class="topbar-dropdown-item topbar-dropdown-signout" onclick="confirmLogout(event)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5a2 2 0 0 0-2 2v4h2V5h14v14H5v-4H3v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/></svg>
+                    Sign Out
+                </button>
+            </div>
+        </div>
+    </div>
+</header>
 
 
 <main class="main-content">
         <section id="section-dashboard" class="app-page active">
+            <div class="page-header" style="margin-bottom: 25px;"><h2 class="page-title">Dashboard</h2></div>
             <div class="stats-ribbon">
                 <div class="stat-card">
                     <div class="stat-card-text">
@@ -324,17 +380,14 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
         </section>
 
         <section id="section-residents" class="app-page">
-            <div class="page-header" style="margin-bottom: 25px;"><h2>Residents Management</h2></div>
+            <div class="page-header" style="margin-bottom: 25px;"><h2 class="page-title">Residents Management</h2></div>
             <div class="residents-toolbar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <div class="search-wrapper">
-                    <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-                        <circle cx="11" cy="11" r="8"></circle>
-                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                    </svg>
+                <div class="admin-search-group">
+                    <span class="admin-search-label">Search:</span>
                     <!-- Fake fields to trick Chrome autofill away from the search bar -->
                     <input type="text" style="display:none;" aria-hidden="true">
                     <input type="password" style="display:none;" aria-hidden="true">
-                    <input type="text" id="residentSearch" placeholder="Search by Name, TCT, or Account" class="search-input" autocomplete="off" name="search_residents">
+                    <input type="text" id="residentSearch" placeholder="Search by Name, TCT, or Account" class="search-input admin-search-input" autocomplete="off" name="search_residents">
                 </div>
                 <button class="primary-btn btn-add-resident" onclick="openResidentForm()"><span class="plus-icon">+</span> Add Resident</button>
             </div>
@@ -352,7 +405,7 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
         </section>
 
 <section id="section-connovate" class="app-page">
-            <div class="page-header" style="margin-bottom: 25px;"><h2>Connovate</h2></div>
+            <div class="page-header" style="margin-bottom: 25px;"><h2 class="page-title">Connovate</h2></div>
             <div class="connovate-toolbar location-selector-section">
                 <h2 class="section-title">Project Selection</h2>
                 <div class="selector-wrapper connovate-selector-wrapper">
@@ -763,7 +816,7 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
         <section id="section-reports" class="app-page">
     <div class="page-header" style="margin-bottom: 25px; display: flex; justify-content: space-between; align-items: flex-end;">
         <div>
-            <h2 style="color: #d49006; margin-bottom: 5px;">System Audit Log</h2>
+            <h2 class="page-title">System Audit Log</h2>
             <p style="color: #64748b; font-size: 13px; margin: 0;">Track all administrative changes and system activities.</p>
         </div>
 
@@ -866,9 +919,7 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
 
         if($iAmMaster):
         ?>
-        <button type="button" class="btn-add-admin" onclick="openAddAdminModal()">
-            <i class="fas fa-plus"></i> Register New Admin
-        </button>
+        <button type="button" class="primary-btn btn-add-resident" onclick="openAddAdminModal()"><span class="plus-icon">+</span> Register New Admin</button>
         <?php endif; ?>
     </div>
 
@@ -1045,6 +1096,107 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
 </div>
 
 
+<!-- EDIT PROFILE MODAL -->
+<div id="editProfileModal" class="modal-overlay" style="display:none; position:fixed; inset:0; background:rgba(15, 23, 42, 0.6); backdrop-filter:blur(5px); z-index:10040; justify-content:center; align-items:center;">
+    <div class="admin-modal-content">
+        <div class="admin-modal-header">
+            <h3>Edit Profile</h3>
+        </div>
+
+        <form id="editProfileForm" class="edit-profile-form" onsubmit="event.preventDefault(); requestSaveProfile();" enctype="multipart/form-data">
+
+            <div class="admin-modal-scroll-body">
+
+                <div class="profile-avatar-upload">
+                    <div class="profile-avatar-circle" onclick="document.getElementById('profilePhotoInput').click()">
+                        <img id="profileAvatarPreview"
+                             src="<?php echo $profilePhotoWebPath ? htmlspecialchars($profilePhotoWebPath) : ''; ?>"
+                             alt="Profile Photo"
+                             style="<?php echo $profilePhotoWebPath ? '' : 'display:none;'; ?>">
+                        <div class="profile-avatar-default" id="profileAvatarDefault" style="<?php echo $profilePhotoWebPath ? 'display:none;' : ''; ?>">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="38" height="38">
+                                <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+                            </svg>
+                        </div>
+                        <div class="profile-avatar-edit-badge">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M3 17.25V21h3.75l11.06-11.06-3.75-3.75L3 17.25zm17.71-10.21a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                        </div>
+                    </div>
+                    <input type="file" id="profilePhotoInput" accept=".jpg,.jpeg,.png,.gif" style="display:none;" onchange="previewProfilePhoto(event)">
+                    <p class="admin-form-hint" style="text-align:center; margin-top:8px;">Click the photo to change it</p>
+                </div>
+
+                <div class="admin-form-group">
+                    <label>Username</label>
+                    <input type="text" id="profileUsername" class="admin-form-input" value="<?php echo htmlspecialchars($myProfile['admin_name']); ?>" required>
+                </div>
+
+                <div class="admin-form-group">
+                    <label>Master PIN / Auth Key</label>
+                    <div class="profile-readonly-field"><?php echo htmlspecialchars($myProfile['auth_key'] !== '' ? $myProfile['auth_key'] : '------'); ?></div>
+                    <p class="admin-form-hint">This key is fixed and cannot be changed here.</p>
+                </div>
+
+                <hr class="admin-form-divider">
+                <p class="admin-form-section-label">Change Password (optional)</p>
+
+                <div class="admin-form-group">
+                    <label>Current Password</label>
+                    <div class="password-field-wrapper">
+                        <input type="password" id="profileCurrentPassword" class="admin-form-input" placeholder="Enter current password">
+                        <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('profileCurrentPassword', this)" aria-label="Show password">
+                            <svg class="icon-eye" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            <svg class="icon-eye-off" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" style="display:none;"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a18.6 18.6 0 0 1 5.06-5.94M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a18.6 18.6 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="admin-form-group">
+                    <label>New Password</label>
+                    <div class="password-field-wrapper">
+                        <input type="password" id="profileNewPassword" class="admin-form-input" placeholder="Enter new password">
+                        <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('profileNewPassword', this)" aria-label="Show password">
+                            <svg class="icon-eye" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            <svg class="icon-eye-off" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" style="display:none;"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a18.6 18.6 0 0 1 5.06-5.94M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a18.6 18.6 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="admin-form-group">
+                    <label>Confirm New Password</label>
+                    <div class="password-field-wrapper">
+                        <input type="password" id="profileConfirmPassword" class="admin-form-input" placeholder="Confirm new password">
+                        <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('profileConfirmPassword', this)" aria-label="Show password">
+                            <svg class="icon-eye" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            <svg class="icon-eye-off" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" style="display:none;"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a18.6 18.6 0 0 1 5.06-5.94M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a18.6 18.6 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="admin-modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeEditProfileModal()">Cancel</button>
+                <button type="submit" class="btn-save-admin">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- CONFIRM SAVE PROFILE MODAL -->
+<div id="confirmProfileModal" class="modal-overlay" style="display:none; position:fixed; inset:0; background:rgba(15, 23, 42, 0.9); backdrop-filter:blur(5px); z-index:10050; justify-content:center; align-items:center;">
+    <div style="background:#1e293b; border:1px solid #334155; padding:30px; border-radius:15px; width:350px; text-align:center; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+        <h3 style="color:#f8fafc; margin-bottom:10px; font-weight:800; text-transform:uppercase; letter-spacing:1px;">Save Changes?</h3>
+        <p style="color:#94a3b8; font-size:14px; margin-bottom:25px;" id="confirmProfileText">Are you sure you want to save these changes?</p>
+
+        <div style="display:flex; gap:10px;">
+            <button type="button" onclick="closeConfirmProfileModal()" style="flex:1; padding:9px 12px; font-size:13px; background:#334155; color:#f8fafc; border:none; border-radius:8px; cursor:pointer; font-weight:700;">CANCEL</button>
+<button type="button" onclick="submitProfileChanges()" id="confirmProfileSaveBtn" style="flex:1; padding:px 12px; font-size:13px; background:#d49006; color:#0f172a; border:none; border-radius:8px; cursor:pointer; font-weight:700;">SAVE CHANGES</button>
+        </div>
+    </div>
+</div>
+
+
 <script>
     // Residents Data (Fail-safe: defaults to empty array if null)
     window.residents = <?php echo json_encode($residentsArray ?? []); ?>;
@@ -1080,9 +1232,9 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
 <script src="../javascript/map.js"></script>
 <script src="../javascript/logOut.js"></script>
 <script src="../javascript/solarPanels.js?v=<?php echo filemtime(__DIR__ . '/../javascript/solarPanels.js'); ?>"></script>
+<script src="../javascript/editProfile.js?v=<?php echo filemtime(__DIR__ . '/../javascript/editProfile.js'); ?>"></script>
 
 
 
 </body>
 </html>
-

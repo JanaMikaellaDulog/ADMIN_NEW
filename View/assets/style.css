@@ -1468,13 +1468,17 @@ textarea { min-height: 80px; resize: vertical; }
     white-space: nowrap;
 }
 
-#adminSearch.admin-search-input {
+.search-input.admin-search-input {
     width: 180px !important;
     min-height: unset !important;
     padding: 6px 12px !important;
     border-radius: 6px !important;
     font-size: 13px !important;
     border: 1px solid #e5e7eb !important;
+}
+
+#residentSearch.admin-search-input {
+    width: 260px !important; /* a bit wider than the admin search box since its placeholder text is longer */
 }
 
 .admin-list-wrapper {
@@ -2130,6 +2134,30 @@ body,
 }
 
 #logoutModal button:last-child {
+    background: var(--orange) !important;
+    color: #ffffff !important;
+}
+
+#confirmProfileModal h3 {
+    color: var(--ink) !important;
+}
+
+#confirmProfileModal p {
+    color: var(--muted) !important;
+}
+
+#confirmProfileModal > div {
+    background: #ffffff !important;
+    border-color: var(--border) !important;
+    box-shadow: 0 20px 50px rgba(98, 54, 16, 0.14) !important;
+}
+
+#confirmProfileModal button:first-child {
+    background: #f1f5f9 !important;
+    color: var(--ink) !important;
+}
+
+#confirmProfileModal button:last-child {
     background: var(--orange) !important;
     color: #ffffff !important;
 }
@@ -3211,4 +3239,213 @@ body.sidebar-collapsed .menu-label {
     padding: 2px 6px;
     border-radius: 999px;
     vertical-align: middle;
+}
+
+/* =========================
+   EDIT PROFILE MODAL
+========================= */
+.profile-avatar-upload {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.profile-avatar-circle {
+    position: relative;
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.profile-avatar-circle img,
+.profile-avatar-default {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    box-sizing: border-box;
+}
+
+.profile-avatar-circle img {
+    border: 3px solid var(--orange);
+    background: #f1f5f9;
+}
+
+.profile-avatar-default {
+    background: var(--orange);
+    color: #ffffff;
+    position: relative;
+    border: 3px solid var(--orange);
+}
+
+.profile-avatar-default svg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.profile-avatar-edit-badge {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 26px;
+    height: 26px;
+    background: var(--orange);
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+}
+
+.profile-readonly-field {
+    width: 100%;
+    padding: 10px 12px;
+    background: #f1f5f9 !important;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: #6b7280 !important;
+    font-size: 0.95rem;
+    letter-spacing: 2px;
+    cursor: not-allowed;
+}
+
+.admin-form-hint {
+    font-size: 11px;
+    color: #8a8a8a;
+    margin-top: 4px;
+}
+
+.admin-form-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 20px 0 15px;
+}
+
+.admin-form-section-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #8a8a8a;
+    margin-bottom: 10px;
+}
+
+/* =========================
+   EDIT PROFILE MODAL - COMPACT + SCROLLABLE
+========================= */
+#editProfileModal .admin-modal-content {
+    max-width: 380px;
+    max-height: 85vh;
+    padding: 0; /* padding now lives on the header/scroll-body/footer individually */
+    border-radius: 18px !important;
+    overflow: hidden; /* clips header/footer/scrollbar to the rounded corners */
+    display: flex;
+    flex-direction: column;
+}
+
+#editProfileModal .admin-modal-header {
+    flex: 0 0 auto;
+    margin-bottom: 0; /* override the generic 20px gap so the header's border-bottom sits flush against the scrollable area, not floating above it */
+    padding: 22px 22px 14px; /* bottom padding pushes the divider line down, away from the title text */
+}
+
+#editProfileModal .edit-profile-form {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0; /* required so the scroll-body inside can actually shrink and scroll */
+}
+
+#editProfileModal .admin-modal-scroll-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    overflow-x: hidden; /* pairs with overflow-y so the scrollbar itself gets clipped to the rounded corners instead of overhanging as a square edge */
+    min-height: 0;
+    padding: 22px;
+    scrollbar-width: thin;
+}
+
+#editProfileModal .admin-modal-scroll-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+#editProfileModal .admin-modal-scroll-body::-webkit-scrollbar-track {
+    margin: 12px 0; /* keeps the track short of the top/bottom of the scroll area */
+    background: transparent;
+}
+
+#editProfileModal .admin-modal-scroll-body::-webkit-scrollbar-thumb {
+    background: #e2c48d;
+    border-radius: 10px;
+}
+
+#editProfileModal .admin-modal-footer {
+    flex: 0 0 auto;
+    margin-top: 0;
+    padding: 16px 22px;
+    background: var(--panel);
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -4px 10px rgba(98, 54, 16, 0.06); /* subtle lift so it reads as pinned above the scroll content */
+}
+
+/* --- Password field show/hide toggle --- */
+.password-field-wrapper {
+    position: relative;
+}
+
+.password-field-wrapper .admin-form-input {
+    padding-right: 40px; /* room for the eye icon */
+}
+
+.password-toggle-btn {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 4px;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #8a8a8a;
+    cursor: pointer;
+    line-height: 0;
+}
+
+.password-toggle-btn:hover {
+    color: #d49006;
+}
+
+#editProfileModal .admin-modal-header h3 {
+    margin-bottom: 4px;
+}
+
+#editProfileModal .profile-avatar-upload {
+    margin-bottom: 14px;
+}
+
+#editProfileModal .profile-avatar-circle {
+    width: 68px;
+    height: 68px;
+}
+
+#editProfileModal .profile-avatar-edit-badge {
+    width: 22px;
+    height: 22px;
+}
+
+#editProfileModal .admin-form-group {
+    margin-bottom: 12px;
+}
+
+#editProfileModal .admin-form-divider {
+    margin: 14px 0 10px;
 }

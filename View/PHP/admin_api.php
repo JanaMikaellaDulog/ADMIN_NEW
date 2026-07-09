@@ -103,6 +103,115 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    // --- ACTION: UPDATE OWN PROFILE (Edit Profile modal) ---
+    elseif ($action === 'update_profile') {
+        // Security: this action always operates on the logged-in admin's own
+        // account. We never trust a posted admin_id here.
+        $target_id = $currentSessionId;
+
+        $name             = trim($_POST['admin_name'] ?? '');
+        $currentPassword  = $_POST['current_password'] ?? '';
+        $newPassword      = $_POST['new_password'] ?? '';
+        $confirmPassword  = $_POST['confirm_password'] ?? '';
+
+        if (empty($name)) {
+            echo json_encode(['success' => false, 'message' => 'Username cannot be empty.']);
+            exit;
+        }
+
+        $checkStmt = $conn->prepare("SELECT admin_name, password FROM admins WHERE admin_id = ?");
+        $checkStmt->bind_param("i", $target_id);
+        $checkStmt->execute();
+        $myData = $checkStmt->get_result()->fetch_assoc();
+
+        if (!$myData) {
+            echo json_encode(['success' => false, 'message' => 'Account not found.']);
+            exit;
+        }
+
+        // --- Handle profile photo upload (renamed to match the username) ---
+        $newPhotoFilename = null;
+
+        if (!empty($_FILES['profile_photo']['name']) && $_FILES['profile_photo']['error'] === UPLOAD_ERR_OK) {
+            $allowedExt = ['jpg', 'jpeg', 'png', 'gif'];
+            $ext = strtolower(pathinfo($_FILES['profile_photo']['name'], PATHINFO_EXTENSION));
+
+            if (!in_array($ext, $allowedExt)) {
+                echo json_encode(['success' => false, 'message' => 'Invalid image type. Use JPG, PNG, or GIF.']);
+                exit;
+            }
+
+            $safeUsername = preg_replace('/[^a-zA-Z0-9_-]/', '', strtolower($name));
+            if ($safeUsername === '') { $safeUsername = 'admin_' . $target_id; }
+
+            $destDir = __DIR__ . '/../assets/img/profiles/';
+            if (!is_dir($destDir)) {
+                mkdir($destDir, 0755, true);
+            }
+
+            // Clean up any old photo for this user saved under a different extension
+            foreach ($allowedExt as $oldExt) {
+                $oldPath = $destDir . $safeUsername . '.' . $oldExt;
+                if ($oldExt !== $ext && file_exists($oldPath)) {
+                    @unlink($oldPath);
+                }
+            }
+
+            $newPhotoFilename = $safeUsername . '.' . $ext;
+            $destPath = $destDir . $newPhotoFilename;
+
+            if (!move_uploaded_file($_FILES['profile_photo']['tmp_name'], $destPath)) {
+                echo json_encode(['success' => false, 'message' => 'Failed to save the uploaded photo.']);
+                exit;
+            }
+        }
+
+        // --- Handle password change (requires current password verification) ---
+        $wantsPasswordChange = !empty($newPassword);
+        $hashedNew = null;
+
+        if ($wantsPasswordChange) {
+            if (empty($currentPassword) || !password_verify($currentPassword, $myData['password'])) {
+                echo json_encode(['success' => false, 'message' => 'Your current password is incorrect.']);
+                exit;
+            }
+            if ($newPassword !== $confirmPassword) {
+                echo json_encode(['success' => false, 'message' => 'New password and confirmation do not match.']);
+                exit;
+            }
+            if (strlen($newPassword) < 6) {
+                echo json_encode(['success' => false, 'message' => 'New password must be at least 6 characters.']);
+                exit;
+            }
+            $hashedNew = password_hash($newPassword, PASSWORD_DEFAULT);
+        }
+
+        // --- Build and run the appropriate UPDATE based on what actually changed ---
+        if ($wantsPasswordChange && $newPhotoFilename) {
+            $stmt = $conn->prepare("UPDATE admins SET admin_name = ?, password = ?, profile_photo = ? WHERE admin_id = ?");
+            $stmt->bind_param("sssi", $name, $hashedNew, $newPhotoFilename, $target_id);
+        } elseif ($wantsPasswordChange) {
+            $stmt = $conn->prepare("UPDATE admins SET admin_name = ?, password = ? WHERE admin_id = ?");
+            $stmt->bind_param("ssi", $name, $hashedNew, $target_id);
+        } elseif ($newPhotoFilename) {
+            $stmt = $conn->prepare("UPDATE admins SET admin_name = ?, profile_photo = ? WHERE admin_id = ?");
+            $stmt->bind_param("ssi", $name, $newPhotoFilename, $target_id);
+        } else {
+            $stmt = $conn->prepare("UPDATE admins SET admin_name = ? WHERE admin_id = ?");
+            $stmt->bind_param("si", $name, $target_id);
+        }
+
+        if ($stmt->execute()) {
+            // Keep the session in sync so "Welcome, X" updates immediately
+            $_SESSION['admin_name'] = $name;
+
+            insert_audit_log($conn, "UPDATED", "Updated own profile" . ($wantsPasswordChange ? " (password changed)" : ""));
+            echo json_encode(['success' => true]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Update failed: ' . $conn->error]);
+        }
+    }
+
     // --- ACTION: DELETE ADMIN (Merged logic) ---
     elseif ($action === 'delete_admin') {
         if (!$isMaster) {
