@@ -433,6 +433,86 @@ body.sidebar-collapsed .imperial-brand-text {
     margin-bottom: 25px;
 }
 
+/* New Resident Registration - boxed sections */
+#addResidentModal .form-section-card {
+    background: #fffaf5;
+    border: 1px solid #f3e4d7;
+    border-radius: 16px;
+    padding: 18px 20px;
+    margin-bottom: 18px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+}
+
+#addResidentModal .modal-body input,
+#addResidentModal .modal-body select,
+#addResidentModal .modal-body textarea,
+#addResidentModal .custom-file-box {
+    border: 1px solid #d1d5db !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04) !important;
+}   
+
+#addResidentModal .form-section-card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 0 0 15px 0;
+}
+
+#addResidentModal .modal-body label {
+    color: var(--orange) !important;
+}
+
+/* New Resident Registration - unified footer buttons */
+#addResidentModal .modal-footer {
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+#addResidentModal .footer-btn {
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+#addResidentModal .footer-btn-outline {
+    background: #ffffff;
+    border-color: var(--orange);
+    color: var(--orange);
+}
+
+#addResidentModal .footer-btn-outline:hover {
+    background: var(--orange-soft);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 22px rgba(212, 144, 6, 0.25);
+}
+
+#addResidentModal .footer-btn-cancel {
+    background: #ffffff;
+    border-color: var(--orange);
+    color: #000000;
+}
+
+#addResidentModal .footer-btn-cancel:hover {
+    background: var(--orange-soft);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 22px rgba(212, 144, 6, 0.25);
+}
+
+#addResidentModal .footer-btn-primary {
+    background: var(--orange);
+    border-color: var(--orange);
+    color: #ffffff;
+}
+
+#addResidentModal .footer-btn-primary:hover {
+    background: var(--orange-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 22px rgba(212, 144, 6, 0.25);
+}
 
 .search-wrapper {
     position: relative;
@@ -613,6 +693,13 @@ body.sidebar-collapsed .imperial-brand-text {
 textarea { min-height: 80px; resize: vertical; }
 
 /* Close Button (X) Styling */
+.modal-top-bar span {
+    font-size: 18px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.3px;
+}
+
 .modal-top-bar button {
     background: rgba(255, 255, 255, 0.1);
     border: none;
