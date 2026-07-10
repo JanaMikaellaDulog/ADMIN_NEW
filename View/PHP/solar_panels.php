@@ -91,6 +91,10 @@
             <div style="display: flex; gap: 10px; align-items: center;">
                 <label style="color: #6b6b6b; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Search:</label>
                 <input type="text" id="solarRecordsSearch" style="padding: 6px 12px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 6px; color: #1a1a1a; font-size: 13px; min-width: 180px; outline: none;">
+                <label style="color: #6b6b6b; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Block:</label>
+                <select id="solarRecordsBlockFilter" style="padding: 6px 12px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 6px; color: #1a1a1a; font-size: 13px; min-width: 100px; cursor: pointer; outline: none;">
+                    <option value="">All</option>
+                </select>
             </div>
         </div>
 
@@ -111,6 +115,7 @@
                 </thead>
                 <tbody id="solarTableBody"></tbody>
             </table>
+            <p id="solarRecordsEmpty" style="display:none; text-align:center; color:#94a3b8; padding: 20px; font-size: 13px;">Select a project above to view Block/Lot records.</p>
         </div>
     </div>
 

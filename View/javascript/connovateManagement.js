@@ -644,7 +644,7 @@ document.addEventListener("DOMContentLoaded", () => {
         tableBody.innerHTML = "";
         filtered.forEach((row) => {
             const tr = document.createElement("tr");
-            const statusLabel = row.status === "finished" ? "Finished" : row.status === "ongoing" ? "Ongoing" : "Not Started";
+            const statusLabel = row.status === "finished" ? "Finished" : row.status === "ongoing" ? "Ongoing" : "Incomplete";
 
             tr.innerHTML = `
                 <td>${row.blockNo}</td>

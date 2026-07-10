@@ -265,30 +265,73 @@ function activeSolarRows(rows) {
     return rows.filter(row => row.installed_count > 0 || row.optional_installed);
 }
 
-// Filters the cached installed-only rows by whatever's typed in the
+// Filters the cached rows by the Block dropdown + whatever's typed in the
 // Search box (resident id, project, block, lot, or provider).
 function filterSolarRows(rows) {
     const searchInput = document.getElementById("solarRecordsSearch");
+    const blockFilterSelect = document.getElementById("solarRecordsBlockFilter");
     const term = String(searchInput?.value || "").trim().toLowerCase();
-    if (!term) return rows;
+    const blockFilter = String(blockFilterSelect?.value || "").trim().toLowerCase();
 
-    return rows.filter(row =>
-        String(row.resident_id || "").toLowerCase().includes(term) ||
-        String(row.buyer_name || "").toLowerCase().includes(term) ||
-        String(row.project_name || "").toLowerCase().includes(term) ||
-        String(row.block_no || "").toLowerCase().includes(term) ||
-        String(row.lot_no || "").toLowerCase().includes(term) ||
-        String(row.solar_type || "").toLowerCase().includes(term) ||
-        String(row.progress_text || "").toLowerCase().includes(term) ||
-        String(row.progress_status || "").toLowerCase().includes(term)
-    );
+    return rows.filter(row => {
+        if (blockFilter && String(row.block_no || "").trim().toLowerCase() !== blockFilter) {
+            return false;
+        }
+
+        if (!term) return true;
+
+        return String(row.resident_id || "").toLowerCase().includes(term) ||
+            String(row.buyer_name || "").toLowerCase().includes(term) ||
+            String(row.project_name || "").toLowerCase().includes(term) ||
+            String(row.block_no || "").toLowerCase().includes(term) ||
+            String(row.lot_no || "").toLowerCase().includes(term) ||
+            String(row.solar_type || "").toLowerCase().includes(term) ||
+            String(row.progress_text || "").toLowerCase().includes(term) ||
+            String(row.progress_status || "").toLowerCase().includes(term);
+    });
 }
 
-// Caches the latest installed rows, then renders whatever matches the
-// current search term. Call this instead of renderSolarTable(installedOnly(rows))
-// anywhere the table needs a refresh, so search stays in sync with new data.
-function refreshSolarTable(installedRows) {
-    lastInstalledRows = installedRows;
+// Rebuilds the Block dropdown options from whatever rows are currently loaded.
+function populateSolarRecordsBlockFilter(rows) {
+    const blockFilterSelect = document.getElementById("solarRecordsBlockFilter");
+    if (!blockFilterSelect) return;
+
+    const previousValue = blockFilterSelect.value;
+    const blocks = [...new Set(rows.map(row => String(row.block_no || "").trim()).filter(Boolean))]
+        .sort((a, b) => {
+            const na = parseInt(a, 10);
+            const nb = parseInt(b, 10);
+            const aNum = Number.isFinite(na) ? na : Number.MAX_SAFE_INTEGER;
+            const bNum = Number.isFinite(nb) ? nb : Number.MAX_SAFE_INTEGER;
+            return aNum - bNum || a.localeCompare(b);
+        });
+
+    blockFilterSelect.innerHTML = '<option value="">All</option>';
+    blocks.forEach(block => {
+        const option = document.createElement("option");
+        option.value = block;
+        option.textContent = block;
+        blockFilterSelect.appendChild(option);
+    });
+
+    if (blocks.includes(previousValue)) {
+        blockFilterSelect.value = previousValue;
+    }
+}
+
+// Caches the latest rows (now includes not-started/incomplete houses too),
+// rebuilds the Block dropdown, then renders whatever matches the current
+// search + block filter. Call this instead of renderSolarTable(rows) anywhere
+// the table needs a refresh, so search/block stay in sync with new data.
+// If no specific project is selected, we skip caching rows entirely — the
+// table stays hidden behind the "select a project" message instead of
+// listing every house across every subdivision.
+function refreshSolarTable(rows) {
+    const projectSelect = document.getElementById("solarProjectSelect");
+    const hasProject = String(projectSelect?.value || "").trim() !== "";
+
+    lastInstalledRows = hasProject ? rows : [];
+    populateSolarRecordsBlockFilter(lastInstalledRows);
     renderSolarTable(filterSolarRows(lastInstalledRows));
 }
 
@@ -328,7 +371,7 @@ function renderSolarTab() {
     const rows = buildSolarDashboardRows(selectedProject);
 
     updateSolarStats(rows);
-    refreshSolarTable(activeSolarRows(rows));
+    refreshSolarTable(rows);
     renderSolarAnalytics(rows);
 }
 
@@ -352,6 +395,21 @@ function renderSolarTab() {
     function renderSolarTable(rows) {
         const tbody = document.getElementById("solarTableBody");
         if (!tbody) return;
+
+        const table = document.getElementById("solarInstallationTable");
+        const emptyMsg = document.getElementById("solarRecordsEmpty");
+        const projectSelect = document.getElementById("solarProjectSelect");
+        const hasProject = String(projectSelect?.value || "").trim() !== "";
+
+        if (!hasProject) {
+            if (table) table.style.display = "none";
+            if (emptyMsg) emptyMsg.style.display = "block";
+            tbody.innerHTML = "";
+            return;
+        }
+
+        if (table) table.style.display = "";
+        if (emptyMsg) emptyMsg.style.display = "none";
 
         if (!rows.length) {
             tbody.innerHTML = `
@@ -802,7 +860,7 @@ function renderSolarTab() {
             const selectedProject = projectSelect ? projectSelect.value : "";
             const rows = buildSolarDashboardRows(selectedProject);
             updateSolarStats(rows);
-            refreshSolarTable(activeSolarRows(rows));
+            refreshSolarTable(rows);
             renderSolarAnalytics(rows);
         } catch (error) {
             alert(error.message || "Unable to save solar information.");
@@ -818,6 +876,13 @@ function renderSolarTab() {
         const recordsSearchInput = document.getElementById("solarRecordsSearch");
         if (recordsSearchInput) {
             recordsSearchInput.addEventListener("input", () => {
+                renderSolarTable(filterSolarRows(lastInstalledRows));
+            });
+        }
+
+        const recordsBlockFilterSelect = document.getElementById("solarRecordsBlockFilter");
+        if (recordsBlockFilterSelect) {
+            recordsBlockFilterSelect.addEventListener("change", () => {
                 renderSolarTable(filterSolarRows(lastInstalledRows));
             });
         }
@@ -944,7 +1009,7 @@ function renderSolarTab() {
             const rows = buildSolarDashboardRows(selectedProject);
 
             updateSolarStats(rows);
-            refreshSolarTable(activeSolarRows(rows));
+            refreshSolarTable(rows);
             renderSolarAnalytics(rows);
 
         } catch (error) {
@@ -1071,7 +1136,7 @@ function renderSolarTab() {
             const rows = buildSolarDashboardRows(selectedProject);
 
             updateSolarStats(rows);
-            refreshSolarTable(activeSolarRows(rows));
+            refreshSolarTable(rows);
             renderSolarAnalytics(rows);
 
             alert("Solar installation records deleted.");
@@ -1089,7 +1154,7 @@ function renderSolarTab() {
         const rows = buildSolarDashboardRows(selectedProject);
 
         updateSolarStats(rows);
-        refreshSolarTable(activeSolarRows(rows));
+        refreshSolarTable(rows);
         renderSolarAnalytics(rows);
     };
 
