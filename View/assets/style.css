@@ -765,6 +765,39 @@ textarea { min-height: 80px; resize: vertical; }
     box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
 }
 
+/* Property Detail View & Edit Resident Information:
+   Connovate + Solar Panels buttons match the New Resident Registration
+   outline style (white bg, orange border, orange text) */
+#modalOverlay .connovate-btn,
+#modalOverlay .solar-btn,
+#editResidentModal .connovate-btn,
+#editResidentModal .solar-btn {
+    background: #ffffff !important;
+    border: 1.5px solid var(--orange) !important;
+    color: var(--orange) !important;
+    box-shadow: none !important;
+}
+
+#modalOverlay .connovate-btn:hover,
+#modalOverlay .solar-btn:hover,
+#editResidentModal .connovate-btn:hover,
+#editResidentModal .solar-btn:hover {
+    background: var(--orange-soft) !important;
+    color: var(--orange) !important;
+    transform: translateY(-1px);
+}
+
+/* Edit Resident Information & New Resident Registration footers:
+   Cancel button rounded to match Connovate/Solar Panels/Save Changes
+   (pill shape, not the compact table-row .btn-delete style) */
+#editResidentModal .modal-footer .btn-delete,
+#addResidentModal .modal-footer .btn-delete {
+    border-radius: 30px !important;
+    padding: 10px 22px;
+    font-size: 13px;
+    text-transform: none;
+}
+
 #connovateModal {
     align-items: center;
 }
@@ -990,12 +1023,9 @@ textarea { min-height: 80px; resize: vertical; }
 
 
 .accent-bar {
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 6px;
-    background: linear-gradient(180deg, #d4941f 0%, #c88419 100%);
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #d4941f 0%, #c88419 100%);
 }
 
 .details-section {

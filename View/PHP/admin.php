@@ -494,7 +494,7 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
                 <span id="modalTitle">Property Detail View</span>
                 <button class="close-x" id="modalClose" onclick="window.closeMarkerModal()">✕</button>
             </div>
-            <div id="markerModalContent" style="position: relative; max-height: 80vh; overflow-y: auto; background: #1e293b; color: white;">
+            <div id="markerModalContent" class="modal-body" style="position: relative; max-height: 65vh; overflow-y: auto; background: #1e293b; color: white;">
                 <div class="accent-bar" style="height: 4px; background: #d49006;"></div>
                 <div class="details-section" style="padding: 20px;">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 15px;">
@@ -561,7 +561,7 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
 
                     </div>
 
-                    <div style="background: var(--orange-soft); padding: 15px; border-radius: 8px; border: 1px solid #fed7aa; margin-bottom: 20px;">
+                    <div style="background: #fffaf5; padding: 15px; border-radius: 8px; border: 1px solid #f3e4d7; margin-bottom: 20px;">
                         <h3 style="font-size: 11px; color: var(--orange); margin-top: 0; margin-bottom: 12px; text-transform: uppercase; font-weight: 700;">Latest Billing Summary</h3>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                             <div><label style="color: #92703a; font-size: 9px; display: block;">ACCOUNT NO.</label><span id="infoAccNo" style="font-size: 13px; font-weight: 600; color: #172033;">-</span></div>
@@ -571,22 +571,20 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
                         </div>
                     </div>
 
-                    <div style="margin-bottom: 25px;">
+                    <div style="margin-bottom: 5px;">
                         <label style="color: #94a3b8; font-size: 10px; display: block;">REMARKS</label>
                         <p id="infoRemarks" style="font-size: 12px; color: #cbd5e1; font-style: italic; margin-top: 5px;">-</p>
                     </div>
-
-                    <div class="property-modal-actions">
-                        <button id="infoConnovateBtn" class="primary-btn connovate-btn" style="width: 100%; padding: 12px; font-weight: bold;" onclick="window.openConnovateFromInfo && window.openConnovateFromInfo()">Connovate</button>
-
-                        <button id="infoSolarBtn" class="primary-btn solar-btn" style="width: 100%; padding: 12px; font-weight: bold;" onclick="window.openSolarFromInfo && window.openSolarFromInfo()">Solar Panels</button>
-
-                        <button id="infoEditBtn" class="primary-btn" style="width: 100%; padding: 12px; font-weight: bold;">Go to Management Profile</button>
-                    </div>
                 </div>
+            </div>
+            <div class="modal-footer" style="justify-content: flex-end; flex-wrap: wrap;">
+                <button id="infoConnovateBtn" class="primary-btn connovate-btn" onclick="window.openConnovateFromInfo && window.openConnovateFromInfo()">Connovate</button>
+                <button id="infoSolarBtn" class="primary-btn solar-btn" onclick="window.openSolarFromInfo && window.openSolarFromInfo()">Solar Panels</button>
+                <button id="infoEditBtn" class="primary-btn">Go to Management Profile</button>
             </div>
         </div>
     </div>
+
 
     <div id="addResidentModal" class="modal-overlay">
         <div class="modal-container" style="max-width: 800px;">
@@ -688,7 +686,7 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
                 <div class="modal-footer">
                     <button type="button" class="footer-btn footer-btn-outline" onclick="openConnovateFromAddForm()">Connovate</button>
                     <button type="button" class="footer-btn footer-btn-outline" onclick="openSolarFromAddForm()">Solar Panels</button>
-                    <button type="button" class="footer-btn footer-btn-cancel" onclick="closeAddModal()">Cancel</button>
+                    <button type="button" class="btn-delete" onclick="closeAddModal()">Cancel</button>
                     <button type="submit" class="footer-btn footer-btn-primary">Register Resident</button>
                 </div>
             </form>
@@ -791,11 +789,11 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
                     </div>
                 </div>
                 <div class="modal-footer" style="justify-content: space-between;">
-                    <button type="button" class="danger-btn" onclick="openDeleteConfirmation()" style="background: #991b1b; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer;">Delete Resident</button>
+                    <button type="button" class="danger-btn" onclick="openDeleteConfirmation()" style="background: #991b1b; color: white; border: none; padding: 10px 20px; border-radius: 30px; font-weight: 700; cursor: pointer;">Delete Resident</button>
                     <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end;">
                         <button type="button" class="primary-btn connovate-btn" onclick="openConnovateFromEditForm()">Connovate</button>
                         <button type="button" class="primary-btn solar-btn" onclick="openSolarFromEditForm()">Solar Panels</button>
-                        <button type="button" class="btn-delete" onclick="closeEditModal()" style="background: #475569;">Cancel</button>
+                        <button type="button" class="btn-delete" onclick="closeEditModal()">Cancel</button>
                         <button type="submit" class="primary-btn">Save Changes</button>
                     </div>
                 </div>
