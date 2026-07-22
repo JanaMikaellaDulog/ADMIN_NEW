@@ -1218,6 +1218,7 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
         (window.residents ? window.residents.length : 0) + " residents and " +
         (window.auditLogs ? window.auditLogs.length : 0) + " logs loaded."
     );
+    
 </script>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -1239,7 +1240,11 @@ function insert_audit_log($conn, $admin_name, $action_type, $module, $details) {
 <script src="../javascript/logOut.js"></script>
 <script src="../javascript/solarPanels.js?v=<?php echo filemtime(__DIR__ . '/../javascript/solarPanels.js'); ?>"></script>
 <script src="../javascript/editProfile.js?v=<?php echo filemtime(__DIR__ . '/../javascript/editProfile.js'); ?>"></script>
-
+<script>
+function exportAuditLog() {
+    window.location.href = "export_audit_log.php";
+}
+</script>
 
 
 </body>
